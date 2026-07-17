@@ -14,6 +14,7 @@ dotfiles/
 │   └── lazy-lock.json      # pinned plugin versions → ~/.config/nvim/lazy-lock.json
 ├── vscode/
 │   └── settings.json       # SNAPSHOT of VS Code settings (see note below)
+├── vim-cheatsheet.md       # Vim grammar + all our <leader> mappings (PT-BR)
 └── README.md
 ```
 
