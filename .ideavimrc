@@ -1,0 +1,98 @@
+" =====================================================================
+"  ~/.ideavimrc  —  Vim emulation for ALL JetBrains IDEs (IdeaVim)
+"  Shared by IntelliJ, WebStorm, PyCharm, Rider, DataGrip, Studio.
+"  Mirrors my Neovim setup so muscle memory transfers both ways.
+"
+"  Reload after editing:  :source ~/.ideavimrc
+"  Find an IDE action id:  :actionlist <keyword>
+"  Docs:                   https://github.com/JetBrains/ideavim
+" =====================================================================
+
+let mapleader = " "               " space = leader (same as Neovim)
+
+" ---- Options ----
+set number relativenumber         " relative line numbers = motion counts
+set scrolloff=8                   " keep context around the cursor
+set ignorecase smartcase          " smart-case search
+set incsearch hlsearch            " highlight/jump while searching
+set showmode showcmd              " show mode + pending keys
+set visualbell                    " no beep
+set clipboard+=unnamed,ideaput    " share system clipboard, use IDE paste
+set ideajoin                      " J uses the IDE's smart line-join
+
+" ---- Built-in emulated plugins (work with just IdeaVim installed) ----
+set surround                      " cs\"'  ds\"  ysiw)   (change/delete/add surrounds)
+set commentary                    " gcc = toggle line, gc{motion} = comment range
+set highlightedyank               " flash text you just yanked
+set NERDTree                      " :NERDTree file explorer (uses IDE project view)
+
+" ---- Escape & search ----
+inoremap jk <Esc>
+nnoremap <leader>nh :nohlsearch<CR>
+
+" =====================================================================
+"  Mappings via IDE actions  (`:action <Id>` runs a real IDE command)
+"  These mirror my Neovim/telescope leader keys.
+" =====================================================================
+
+" --- Find / navigate ---
+nnoremap <C-p>      :action GotoFile<CR>
+nnoremap <leader>ff :action GotoFile<CR>
+nnoremap <leader>fg :action FindInPath<CR>
+nnoremap <leader>fb :action Switcher<CR>
+nnoremap <leader>fc :action GotoClass<CR>
+nnoremap <leader>fs :action GotoSymbol<CR>
+nnoremap <leader>fr :action RecentFiles<CR>
+nnoremap <leader>fa :action GotoAction<CR>
+
+" --- Code navigation ---
+nnoremap gd :action GotoDeclaration<CR>
+nnoremap gy :action GotoTypeDeclaration<CR>
+nnoremap gi :action GotoImplementation<CR>
+nnoremap gr :action FindUsages<CR>
+nnoremap K  :action QuickJavaDoc<CR>
+nnoremap [e :action GotoPreviousError<CR>
+nnoremap ]e :action GotoNextError<CR>
+nnoremap [m :action MethodUp<CR>
+nnoremap ]m :action MethodDown<CR>
+
+" --- Refactor / code actions ---
+nnoremap <leader>rn :action RenameElement<CR>
+nnoremap <leader>ca :action ShowIntentionActions<CR>
+nnoremap <leader>rf :action ReformatCode<CR>
+nnoremap <leader>oi :action OptimizeImports<CR>
+nnoremap <leader>o  :action FileStructurePopup<CR>
+
+" --- Run / debug ---
+nnoremap <leader>rr :action Run<CR>
+nnoremap <leader>rd :action Debug<CR>
+nnoremap <leader>b  :action ToggleLineBreakpoint<CR>
+
+" --- Tool windows ---
+nnoremap <leader>e  :action ActivateProjectToolWindow<CR>
+nnoremap <leader>t  :action ActivateTerminalToolWindow<CR>
+nnoremap <leader>p  :action ActivateProblemsViewToolWindow<CR>
+nnoremap <leader>g  :action ActivateVersionControlToolWindow<CR>
+
+" --- Window splits (Vim-style) ---
+nnoremap <leader>sv :action SplitVertically<CR>
+nnoremap <leader>sh :action SplitHorizontally<CR>
+nnoremap <leader>sc :action Unsplit<CR>
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+" --- Keep visual selection after indenting ---
+vnoremap < <gv
+vnoremap > >gv
+
+" =====================================================================
+"  OPTIONAL extras — enable AFTER installing the extra marketplace
+"  plugins (see the README / IDE Marketplace), then uncomment:
+"
+"    set which-key      " popup cheat-sheet for <leader>  (plugin: 'Which-Key')
+"    set notimeout      " don't time out waiting for which-key
+"    set easymotion     " jump anywhere (plugins: 'IdeaVim-EasyMotion' + 'AceJump')
+"    set sneak          " s{char}{char} motion (plugin: 'IdeaVim-Sneak')
+" =====================================================================
