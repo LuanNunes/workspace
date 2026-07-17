@@ -88,11 +88,34 @@ vnoremap < <gv
 vnoremap > >gv
 
 " =====================================================================
-"  OPTIONAL extras — enable AFTER installing the extra marketplace
-"  plugins (see the README / IDE Marketplace), then uncomment:
+"  Which-Key — popup cheat-sheet when you pause on <leader>.
+"  Requires the 'IdeaVim-Which-Key' plugin (Settings > Plugins > Marketplace).
+"  Harmless until the plugin is installed.
+" =====================================================================
+set which-key
+set notimeout                     " wait indefinitely for the next key (so the popup stays)
+let g:WhichKey_ShowVimActions = "true"
+
+" Group labels shown in the Which-Key popup
+let g:WhichKeyDesc_find        = "<leader>f find"
+let g:WhichKeyDesc_find_files  = "<leader>ff files"
+let g:WhichKeyDesc_find_grep   = "<leader>fg grep in project"
+let g:WhichKeyDesc_find_buf    = "<leader>fb open buffers"
+let g:WhichKeyDesc_find_class  = "<leader>fc class"
+let g:WhichKeyDesc_find_sym    = "<leader>fs symbol"
+let g:WhichKeyDesc_find_recent = "<leader>fr recent files"
+let g:WhichKeyDesc_find_action = "<leader>fa actions"
+let g:WhichKeyDesc_refactor    = "<leader>r refactor/run"
+let g:WhichKeyDesc_rename      = "<leader>rn rename"
+let g:WhichKeyDesc_reformat    = "<leader>rf reformat"
+let g:WhichKeyDesc_run         = "<leader>rr run"
+let g:WhichKeyDesc_debug       = "<leader>rd debug"
+let g:WhichKeyDesc_split       = "<leader>s splits"
+let g:WhichKeyDesc_nohl        = "<leader>nh clear search highlight"
+
+" =====================================================================
+"  Other OPTIONAL extras — install the plugin, then uncomment:
 "
-"    set which-key      " popup cheat-sheet for <leader>  (plugin: 'Which-Key')
-"    set notimeout      " don't time out waiting for which-key
-"    set easymotion     " jump anywhere (plugins: 'IdeaVim-EasyMotion' + 'AceJump')
-"    set sneak          " s{char}{char} motion (plugin: 'IdeaVim-Sneak')
+"    set easymotion   " jump anywhere (plugins: 'IdeaVim-EasyMotion' + 'AceJump')
+"    set sneak        " s{char}{char} motion (plugin: 'IdeaVim-Sneak')
 " =====================================================================
