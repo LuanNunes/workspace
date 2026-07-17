@@ -1,0 +1,4 @@
+# Never commit secrets or backups
+.zshrc.secrets
+*.bak
+*.bak.*
