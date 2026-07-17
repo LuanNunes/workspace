@@ -12,8 +12,17 @@ dotfiles/
 ├── nvim/
 │   ├── init.lua            # Neovim config → symlinked to ~/.config/nvim/init.lua
 │   └── lazy-lock.json      # pinned plugin versions → ~/.config/nvim/lazy-lock.json
+├── vscode/
+│   └── settings.json       # SNAPSHOT of VS Code settings (see note below)
 └── README.md
 ```
+
+> **VS Code note:** VS Code runs on Windows (installed via Scoop, portable mode),
+> so its real config lives at
+> `C:\Users\nunes\scoop\apps\vscode\current\data\user-data\User\settings.json`.
+> That's on the Windows filesystem and **can't be symlinked** from WSL, so
+> `vscode/settings.json` here is a **manual snapshot** — copy it over after edits,
+> or use VS Code's built-in *Settings Sync* for live syncing.
 
 Everything is tracked here and **symlinked** into place, so edits to the repo
 are live immediately and the machine stays reproducible.
@@ -33,6 +42,9 @@ are live immediately and the machine stays reproducible.
   "IdeaVim" → Install → Restart*. Optional extras (uncomment in `.ideavimrc`
   after installing from Marketplace): **Which-Key**, **IdeaVim-EasyMotion** (+AceJump),
   **IdeaVim-Sneak**.
+- **VS Code (vscodevim)**: same `<Space>` leader and `jk`→Esc, relative line
+  numbers, EasyMotion + surround enabled, `<leader>` mapped to VS Code commands
+  (find/navigate/refactor). Extension `vscodevim.vim` installed on the Windows side.
 
 ## Setup on a new machine
 

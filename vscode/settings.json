@@ -1,0 +1,65 @@
+{
+    "editor.fontFamily": "'Hasklug Nerd Font', Noto Sans, 'Courier New', monospace",
+    "security.workspace.trust.untrustedFiles": "open",
+    "redhat.telemetry.enabled": false,
+    "claudeCode.preferredLocation": "sidebar",
+    "mssql.connectionGroups": [
+        {
+            "name": "ROOT",
+            "id": "ROOT"
+        }
+    ],
+    "security.promptForLocalFileProtocolHandling": false,
+    "security.allowedUNCHosts": [
+        "wsl.localhost"
+    ],
+    "editor.fontSize": 12,
+
+    // ===== Vim (vscodevim) — mirrors ~/.ideavimrc and Neovim =====
+    "editor.lineNumbers": "relative",
+    "vim.leader": " ",
+    "vim.useSystemClipboard": true,
+    "vim.hlsearch": true,
+    "vim.ignorecase": true,
+    "vim.smartcase": true,
+    "vim.incsearch": true,
+    "vim.surround": true,
+    "vim.easymotion": true,
+    "vim.highlightedyank.enable": true,
+
+    // jk = Esc (same as Neovim/IdeaVim)
+    "vim.insertModeKeyBindings": [
+        { "before": ["j", "k"], "after": ["<Esc>"] }
+    ],
+
+    // Let VS Code keep Ctrl-P (quick open) instead of Vim capturing it
+    "vim.handleKeys": {
+        "<C-p>": false
+    },
+
+    // <leader> mappings → VS Code commands (mirror telescope / IDE actions)
+    "vim.normalModeKeyBindingsNonRecursive": [
+        { "before": ["<leader>", "n", "h"], "commands": [":nohl"] },
+        { "before": ["<leader>", "f", "f"], "commands": ["workbench.action.quickOpen"] },
+        { "before": ["<leader>", "f", "g"], "commands": ["workbench.action.findInFiles"] },
+        { "before": ["<leader>", "f", "b"], "commands": ["workbench.action.showAllEditors"] },
+        { "before": ["<leader>", "f", "s"], "commands": ["workbench.action.gotoSymbol"] },
+        { "before": ["<leader>", "f", "a"], "commands": ["workbench.action.showCommands"] },
+        { "before": ["<leader>", "r", "n"], "commands": ["editor.action.rename"] },
+        { "before": ["<leader>", "c", "a"], "commands": ["editor.action.quickFix"] },
+        { "before": ["<leader>", "r", "f"], "commands": ["editor.action.formatDocument"] },
+        { "before": ["<leader>", "o"],      "commands": ["workbench.action.gotoSymbol"] },
+        { "before": ["<leader>", "e"],      "commands": ["workbench.view.explorer"] },
+        { "before": ["<leader>", "t"],      "commands": ["workbench.action.terminal.toggleTerminal"] },
+        { "before": ["<leader>", "g"],      "commands": ["workbench.view.scm"] },
+        { "before": ["g", "r"],             "commands": ["editor.action.goToReferences"] },
+        { "before": ["g", "i"],             "commands": ["editor.action.goToImplementation"] },
+        { "before": ["]", "e"],             "commands": ["editor.action.marker.next"] },
+        { "before": ["[", "e"],             "commands": ["editor.action.marker.prev"] }
+    ],
+    "vim.visualModeKeyBindingsNonRecursive": [
+        { "before": ["<"], "commands": ["editor.action.outdentLines"] },
+        { "before": [">"], "commands": ["editor.action.indentLines"] },
+        { "before": ["<leader>", "c", "a"], "commands": ["editor.action.quickFix"] }
+    ]
+}
