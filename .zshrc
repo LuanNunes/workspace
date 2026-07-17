@@ -16,6 +16,10 @@ export LC_ALL="en_US.UTF-8"
 export ANTHROPIC_MODEL=claude-opus-4-8
 export AI_ASSISTANT_ENABLED=true
 
+# Default editor: Neovim (used by git commits, `kubectl edit`, etc.)
+export EDITOR="nvim"
+export VISUAL="nvim"
+
 # Secrets (API keys) — kept out of this file, see ~/.zshrc.secrets (chmod 600)
 [[ -f "$HOME/.zshrc.secrets" ]] && source "$HOME/.zshrc.secrets"
 
@@ -149,8 +153,13 @@ alias firefox="firefox-dev >/tmp/firefox-dev.log 2>&1 & disown"
 alias dcu="docker compose up"
 alias dcd="docker compose down"
 
+# Editor — route muscle memory to Neovim
+alias vim="nvim"
+alias vi="nvim"
+alias v="nvim"
+
 # Zsh config
-alias zshconfig="nano ~/.zshrc"
+alias zshconfig="nvim ~/.zshrc"
 alias zshreload="source ~/.zshrc"
 
 # Domo
