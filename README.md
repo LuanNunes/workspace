@@ -112,9 +112,11 @@ ln -sf "$DOTFILES/nvim/lazy-lock.json" ~/.config/nvim/lazy-lock.json
 ```
 
 Clipboard: `clipboard=unnamedplus` needs a bridge. This machine uses **X410**
-(see below), which means `WAYLAND_DISPLAY` is unset and `wl-clipboard` won't
-work — install [`win32yank`](https://github.com/equalsraf/win32yank) into
-`~/.local/bin` instead.
+(see below), so `WAYLAND_DISPLAY` is unset and `wl-clipboard` is not an option.
+`win32yank` v0.1.1 exits with error 53 here (tested from both the Linux and the
+Windows filesystem), so `init.lua` configures `vim.g.clipboard` to use
+`clip.exe` + PowerShell `Get-Clipboard` instead — no extra install needed, both
+already ship with Windows.
 
 ### 5. JetBrains (IdeaVim)
 

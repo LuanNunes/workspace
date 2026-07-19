@@ -44,6 +44,20 @@ o.splitbelow = true
 -- Persistent undo — undo even after closing a file
 o.undofile = true
 
+-- Clipboard no WSL: usamos X410, então WAYLAND_DISPLAY fica unset e o
+-- wl-clipboard não serve. O win32yank v0.1.1 falha com erro 53 nesta máquina,
+-- então a ponte é o clip.exe/PowerShell — o método documentado pelo Neovim.
+if vim.fn.has("wsl") == 1 then
+  local ps_paste = 'powershell.exe -NoProfile -Command '
+    .. '[Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))'
+  vim.g.clipboard = {
+    name = "WslClipboard",
+    copy  = { ["+"] = "clip.exe",  ["*"] = "clip.exe" },
+    paste = { ["+"] = ps_paste,    ["*"] = ps_paste },
+    cache_enabled = 0,
+  }
+end
+
 -- ---------------------------------------------------------------------
 --  A couple of quality-of-life keymaps
 -- ---------------------------------------------------------------------
