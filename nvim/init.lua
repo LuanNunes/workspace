@@ -67,7 +67,8 @@ vim.opt.rtp:prepend(lazypath)
 
 local plugins = {
   { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
-  { "nvim-telescope/telescope.nvim", tag = "0.1.6", dependencies = { "nvim-lua/plenary.nvim" } },
+  -- sem tag: a versão exata vive em lazy-lock.json (`:Lazy update` para subir)
+  { "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
   { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
   -- which-key: press a prefix (like <leader>) and it shows what comes next.
   -- The best learning plugin there is — makes the whole config discoverable.
@@ -106,7 +107,8 @@ require("nvim-treesitter.configs").setup({
 
 -- Flash what you just yanked — satisfying feedback that copy worked.
 vim.api.nvim_create_autocmd("TextYankPost", {
-  callback = function() vim.highlight.on_yank({ timeout = 200 }) end,
+  -- vim.hl desde o Neovim 0.11 (vim.highlight está deprecado, sai no 0.13)
+  callback = function() (vim.hl or vim.highlight).on_yank({ timeout = 200 }) end,
 })
 
 -- * system clipboard note: on WSL this needs a bridge (win32yank/wl-clipboard).

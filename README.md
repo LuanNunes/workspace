@@ -50,20 +50,86 @@ are live immediately and the machine stays reproducible.
 ## Setup on a new machine
 
 ```sh
-git clone git@github-luan:LuanNunes/workspace.git ~/dotfiles
+git clone git@github.com:LuanNunes/workspace.git ~/projects/resolve-programming/workspace
+export DOTFILES=~/projects/resolve-programming/workspace   # adjust if cloned elsewhere
+```
 
-# zsh
-ln -sf ~/dotfiles/.zshrc ~/.zshrc
-cp ~/dotfiles/.zshrc.secrets.example ~/.zshrc.secrets
+### 1. Packages (all in the Ubuntu repos)
+
+```sh
+sudo nala install -y zsh neovim fzf zoxide atuin eza bat fd-find unzip keychain \
+                     locales ripgrep build-essential
+sudo locale-gen en_US.UTF-8
+```
+
+- `ripgrep` is **required** by telescope's `live_grep` (`<leader>fg`).
+- `build-essential` is **required** by treesitter to compile parsers (`:TSUpdate`).
+- Debian renames two binaries — `.zshrc` looks for the upstream names, so link them:
+  ```sh
+  mkdir -p ~/.local/bin
+  ln -sf "$(command -v batcat)" ~/.local/bin/bat
+  ln -sf "$(command -v fdfind)" ~/.local/bin/fd
+  ```
+
+### 2. zsh
+
+```sh
+ln -sf "$DOTFILES/.zshrc" ~/.zshrc
+cp "$DOTFILES/.zshrc.secrets.example" ~/.zshrc.secrets
 chmod 600 ~/.zshrc.secrets      # then fill in real keys
 
-# neovim
-mkdir -p ~/.config/nvim
-ln -sf ~/dotfiles/nvim/init.lua       ~/.config/nvim/init.lua
-ln -sf ~/dotfiles/nvim/lazy-lock.json ~/.config/nvim/lazy-lock.json
+# Oh My Zsh + spaceship theme (Zinit bootstraps itself on first start)
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+git clone --depth=1 https://github.com/spaceship-prompt/spaceship-prompt.git \
+  "$HOME/.oh-my-zsh/custom/themes/spaceship-prompt"
+ln -sf "$HOME/.oh-my-zsh/custom/themes/spaceship-prompt/spaceship.zsh-theme" \
+       "$HOME/.oh-my-zsh/custom/themes/spaceship.zsh-theme"
 
-# jetbrains (IdeaVim) — then install the "IdeaVim" plugin in each IDE
-ln -sf ~/dotfiles/.ideavimrc ~/.ideavimrc
+chsh -s "$(command -v zsh)"     # make zsh the login shell (takes effect next session)
 ```
+
+> The Oh My Zsh installer overwrites `~/.zshrc` — re-run the `ln -sf` above if it does.
+
+### 3. asdf
+
+asdf 0.16+ is a **Go binary**, not a sourced shell script (`asdf.sh` no longer
+exists). Install the release binary into `/usr/local/bin`, then generate completions:
+
+```sh
+mkdir -p "${ASDF_DATA_DIR:-$HOME/.asdf}/completions"
+asdf completion zsh > "${ASDF_DATA_DIR:-$HOME/.asdf}/completions/_asdf"
+```
+
+`.zshrc` only puts `$ASDF_DATA_DIR/shims` on the PATH — see
+<https://asdf-vm.com/guide/getting-started.html>.
+
+### 4. Neovim
+
+```sh
+mkdir -p ~/.config/nvim
+ln -sf "$DOTFILES/nvim/init.lua"       ~/.config/nvim/init.lua
+ln -sf "$DOTFILES/nvim/lazy-lock.json" ~/.config/nvim/lazy-lock.json
+```
+
+Clipboard: `clipboard=unnamedplus` needs a bridge. This machine uses **X410**
+(see below), which means `WAYLAND_DISPLAY` is unset and `wl-clipboard` won't
+work — install [`win32yank`](https://github.com/equalsraf/win32yank) into
+`~/.local/bin` instead.
+
+### 5. JetBrains (IdeaVim)
+
+```sh
+ln -sf "$DOTFILES/.ideavimrc" ~/.ideavimrc
+```
+
+Then install the **IdeaVim** plugin in each IDE.
+
+### Display (X410)
+
+`.zshrc` points `DISPLAY` at X410 on Windows. WSL2 runs in **NAT** mode here, so
+the host IP changes on every boot and `DISPLAY` is derived from the default
+route rather than hardcoded. On the Windows side: enable **"Allow Public
+Access"** in X410 and allow the *vEthernet (WSL)* adapter through the firewall,
+otherwise the connection is refused.
 
 Secrets (`~/.zshrc.secrets`) are **never** committed — see `.gitignore`.

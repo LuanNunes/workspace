@@ -1,10 +1,12 @@
 # ============================================================================
 #  Environment
 # ============================================================================
+# WSL display / GL — X410 no Windows como servidor X.
+# WSL2 em modo NAT: o IP do host muda a cada boot, então DISPLAY é derivado da
+# rota default em vez de fixo. No Windows: X410 com "Allow Public Access" e a
+# vEthernet (WSL) liberada no firewall, senão a conexão é recusada.
 unset WAYLAND_DISPLAY
-
-# WSL display / GL
-export DISPLAY=0.0.0.0:0
+export DISPLAY="$(ip route show default | awk '{print $3; exit}'):0"
 export LIBGL_ALWAYS_INDIRECT=1
 
 # Locale
@@ -98,10 +100,20 @@ zinit wait lucid light-mode for \
 # ============================================================================
 #  Language / version managers
 # ============================================================================
-. "$HOME/.asdf/asdf.sh"
-. "$HOME/.asdf/completions/asdf.bash"
-. "$HOME/.asdf/plugins/java/set-java-home.zsh"
-. "$HOME/.asdf/plugins/golang/set-env.zsh"
+# asdf v0.16+ é um binário Go: não existe mais asdf.sh para dar source, só os
+# shims no PATH.  https://asdf-vm.com/guide/getting-started.html
+export ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
+export PATH="$ASDF_DATA_DIR/shims:$PATH"
+
+# Completions — compinit tem de vir DEPOIS do Oh My Zsh (que é sourceado acima).
+# Gerar uma vez com:
+#   mkdir -p "$ASDF_DATA_DIR/completions" && asdf completion zsh > "$ASDF_DATA_DIR/completions/_asdf"
+fpath=("$ASDF_DATA_DIR/completions" $fpath)
+autoload -Uz compinit && compinit
+
+# Hooks de plugin — só existem depois de `asdf plugin add java` / `golang`.
+[[ -f "$ASDF_DATA_DIR/plugins/java/set-java-home.zsh" ]] && . "$ASDF_DATA_DIR/plugins/java/set-java-home.zsh"
+[[ -f "$ASDF_DATA_DIR/plugins/golang/set-env.zsh" ]]    && . "$ASDF_DATA_DIR/plugins/golang/set-env.zsh"
 
 # ============================================================================
 #  Modern CLI tools
@@ -135,7 +147,7 @@ command -v bat &>/dev/null && alias cat="bat --paging=never"
 #  Startup commands
 # ============================================================================
 command -v setxkbmap &>/dev/null && setxkbmap -layout us -variant intl 2>/dev/null
-command -v keychain  &>/dev/null && eval "$(keychain --quiet --eval --agents ssh ~/.ssh/nunes@domo)"
+command -v keychain  &>/dev/null && eval "$(keychain --quiet --eval --agents ssh ~/.ssh/nunes.lfa)"
 
 # ============================================================================
 #  Aliases
