@@ -1,4 +1,17 @@
 # ============================================================================
+#  Powerlevel10k instant prompt
+# ============================================================================
+# Draws the prompt from a cache before the rest of this file runs, so the shell
+# feels instant. MUST stay at the very top, and nothing above it may print to
+# stdout or read from stdin — that would corrupt the cached frame.
+# `quiet` because the fastfetch banner below deliberately prints during startup;
+# p10k buffers it and replays it above the prompt instead of warning about it.
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# ============================================================================
 #  Environment
 # ============================================================================
 # WSL display / GL — X410 no Windows como servidor X.
@@ -39,36 +52,15 @@ export PATH="$PATH:$ANDROID_HOME/platform-tools"
 #  Oh My Zsh
 # ============================================================================
 export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="spaceship"
+# Prompt comes from Powerlevel10k, loaded via Zinit below — leave OMZ's theme
+# empty so it doesn't install a prompt of its own.
+ZSH_THEME=""
 
 # Syntax highlighting & autosuggestions are loaded via Zinit (below);
 # asdf is sourced manually (below) — so they are intentionally NOT listed here.
 plugins=(git brew dotnet)
 
 source "$ZSH/oh-my-zsh.sh"
-
-# ============================================================================
-#  Spaceship prompt
-# ============================================================================
-SPACESHIP_PROMPT_ORDER=(
-  user          # Username section
-  dir           # Current directory section
-  host          # Hostname section
-  git           # Git section (git_branch + git_status)
-  dotnet
-  java
-  node
-  vi_mode       # Vi-mode indicator
-  jobs          # Background jobs indicator
-  exit_code     # Exit code section
-  char          # Prompt character
-)
-SPACESHIP_PROMPT_ASYNC=false
-SPACESHIP_USER_COLOR="#5f00d7"
-SPACESHIP_USER_SHOW=always
-SPACESHIP_PROMPT_ADD_NEWLINE=false
-SPACESHIP_CHAR_SYMBOL="❯"
-SPACESHIP_CHAR_SUFFIX=" "
 
 # ============================================================================
 #  Zinit (plugin manager)
@@ -91,6 +83,19 @@ zinit light-mode for \
     zdharma-continuum/zinit-annex-bin-gem-node \
     zdharma-continuum/zinit-annex-patch-dl \
     zdharma-continuum/zinit-annex-rust
+
+# Prompt — loaded eagerly (no Turbo): the prompt is the first thing drawn, and
+# deferring it would defeat the instant-prompt cache at the top of this file.
+zinit ice depth=1
+zinit light romkatv/powerlevel10k
+
+# Inline suggestion (the PSReadLine InlineView equivalent): greys out the rest of
+# the command ahead of the cursor. Set before the plugin loads below.
+#   → / End   accept the whole suggestion
+#   Ctrl-→    accept one word
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#565f89'   # Tokyo Night comment grey
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)  # history first, then completions
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20             # don't suggest on huge buffers
 
 # Turbo mode: load after the prompt appears (faster startup).
 zinit wait lucid light-mode for \
@@ -116,6 +121,14 @@ autoload -Uz compinit && compinit
 [[ -f "$ASDF_DATA_DIR/plugins/golang/set-env.zsh" ]]    && . "$ASDF_DATA_DIR/plugins/golang/set-env.zsh"
 
 # ============================================================================
+#  Key bindings
+# ============================================================================
+# Word-wise movement isn't bound out of the box; Ctrl-←/→ is what the terminal
+# sends, and forward-word doubles as "accept one word of the inline suggestion".
+bindkey '^[[1;5C' forward-word
+bindkey '^[[1;5D' backward-word
+
+# ============================================================================
 #  Modern CLI tools
 # ============================================================================
 # Fuzzy finder (Ctrl-T files, Alt-C cd, Ctrl-R history unless atuin owns it)
@@ -135,9 +148,10 @@ command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 
 # eza (modern ls) aliases
 if command -v eza &>/dev/null; then
+  alias ls="eza --group-directories-first --icons"
   alias ll="eza -lah --group-directories-first --icons"
-  alias la="eza -a  --group-directories-first"
-  alias lt="eza --tree --level=2"
+  alias la="eza -a  --group-directories-first --icons"
+  alias lt="eza --tree --level=2 --icons"
 fi
 
 # bat (modern cat)
@@ -148,6 +162,12 @@ command -v bat &>/dev/null && alias cat="bat --paging=never"
 # ============================================================================
 command -v setxkbmap &>/dev/null && setxkbmap -layout us -variant intl 2>/dev/null
 command -v keychain  &>/dev/null && eval "$(keychain --quiet --eval --agents ssh ~/.ssh/nunes.lfa)"
+
+# System banner, only for a real interactive terminal (skips VS Code tasks,
+# `zsh -c`, scp/rsync sessions and anything else without a tty).
+if [[ -o interactive && -t 1 ]] && command -v fastfetch &>/dev/null; then
+  fastfetch
+fi
 
 # ============================================================================
 #  Aliases
@@ -178,3 +198,10 @@ alias zshreload="source ~/.zshrc"
 alias domo-admin="cd /home/nunes/projects/domo/admin-console && ./initDatabase.sh rig && ./runLocal.sh rig"
 alias tug="tug-eks"
 alias tug-feature="tug set feature -f forms; tug set feature -f workflows; tug set feature -f code-engine-v2; tug set feature -f hopper; tug set feature -f data-app; tug set feature -f forms-widget; tug set feature -f wf_person; tug set feature -f forms-singleton; tug set feature -f domo-wide; tug set feature -f wf_group; tug set feature -f wf_accounts; tug set feature -f wf_templates; tug set feature -f wf-tasks-identifiers; tug set feature -f ce-run-with-defined-object; tug set feature -f ce-example-tab; tug set feature -f wf-form-starts-v2; tug set feature -f forms-question-rail; tug set feature -f gp-admin; tug set feature -f workflow-start-widget; tug set feature -f embed-card-public; tug set feature -f embed-card-view; tug set feature -f embed-card; tug set feature -f private-embed-v2; tug set feature -f story-embed-v2; tug set feature -f story-embed-export; tug set feature -f relational-appdb;"
+
+# ============================================================================
+#  Powerlevel10k config
+# ============================================================================
+# Generated from the official "rainbow" template, recoloured to Tokyo Night.
+# Symlinked to ~/.p10k.zsh; run `p10k configure` to regenerate from scratch.
+[[ -f "$HOME/.p10k.zsh" ]] && source "$HOME/.p10k.zsh"

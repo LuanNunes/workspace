@@ -7,6 +7,7 @@ Personal workstation configuration (WSL2 / Ubuntu / zsh).
 ```
 dotfiles/
 ├── .zshrc                  # zsh config  → symlinked to ~/.zshrc
+├── .p10k.zsh               # Powerlevel10k prompt → symlinked to ~/.p10k.zsh
 ├── .zshrc.secrets.example  # template for API keys (real file is git-ignored)
 ├── .ideavimrc              # IdeaVim config → symlinked to ~/.ideavimrc (all JetBrains IDEs)
 ├── nvim/
@@ -30,9 +31,14 @@ are live immediately and the machine stays reproducible.
 
 ## What's configured
 
-- **zsh**: Oh My Zsh + Zinit (turbo-loaded), spaceship prompt, modern CLI tools
+- **zsh**: Oh My Zsh + Zinit (turbo-loaded), Powerlevel10k prompt (rainbow style,
+  recoloured to Tokyo Night — see `.p10k.zsh`), `fastfetch` banner on startup,
+  modern CLI tools
   (`fzf`, `zoxide`, `atuin`, `eza`, `bat`, `fd`), secrets sourced from an
   untracked `~/.zshrc.secrets`.
+  Inline suggestions (PSReadLine style) come from `zsh-autosuggestions`:
+  <kbd>→</kbd>/<kbd>End</kbd> accepts the whole suggestion, <kbd>Ctrl</kbd>+<kbd>→</kbd>
+  one word at a time. <kbd>Ctrl</kbd>+<kbd>R</kbd> and <kbd>↑</kbd> belong to `atuin`.
 - **Neovim**: lazy.nvim + telescope + treesitter + catppuccin + which-key,
   tuned as a learning-friendly daily driver (relative line numbers, `jk`→Esc,
   `<Space>` leader, highlight-on-yank).
@@ -58,7 +64,7 @@ export DOTFILES=~/projects/resolve-programming/workspace   # adjust if cloned el
 
 ```sh
 sudo nala install -y zsh neovim fzf zoxide atuin eza bat fd-find unzip keychain \
-                     locales ripgrep build-essential
+                     locales ripgrep build-essential fastfetch
 sudo locale-gen en_US.UTF-8
 ```
 
@@ -78,17 +84,21 @@ ln -sf "$DOTFILES/.zshrc" ~/.zshrc
 cp "$DOTFILES/.zshrc.secrets.example" ~/.zshrc.secrets
 chmod 600 ~/.zshrc.secrets      # then fill in real keys
 
-# Oh My Zsh + spaceship theme (Zinit bootstraps itself on first start)
+# Oh My Zsh — Zinit bootstraps itself, and pulls Powerlevel10k, on first start
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-git clone --depth=1 https://github.com/spaceship-prompt/spaceship-prompt.git \
-  "$HOME/.oh-my-zsh/custom/themes/spaceship-prompt"
-ln -sf "$HOME/.oh-my-zsh/custom/themes/spaceship-prompt/spaceship.zsh-theme" \
-       "$HOME/.oh-my-zsh/custom/themes/spaceship.zsh-theme"
 
 chsh -s "$(command -v zsh)"     # make zsh the login shell (takes effect next session)
 ```
 
+```sh
+ln -sf "$DOTFILES/.p10k.zsh" ~/.p10k.zsh
+```
+
 > The Oh My Zsh installer overwrites `~/.zshrc` — re-run the `ln -sf` above if it does.
+
+The prompt needs a **Nerd Font** in the terminal (this setup uses
+*UbuntuSansMono NF*) and a truecolor terminal, since `.p10k.zsh` uses Tokyo Night
+hex colors. To start over from the wizard instead: `p10k configure`.
 
 ### 3. asdf
 
