@@ -24,8 +24,9 @@ win_home() {
 WIN="$(win_home)"
 WT_STATE="$WIN/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState"
 
-# VS Code stores settings under the install dir when portable (Scoop) and under
-# AppData otherwise. Take whichever exists; fall back to the Scoop layout.
+# A portable install (Scoop) keeps settings under the install dir; a regular
+# user install keeps them in %APPDATA%. This machine uses the latter — VS Code
+# lives in AppData\Local\Programs — so that is the fallback.
 VSCODE_USER="$WIN/scoop/apps/vscode/current/data/user-data/User"
 [[ -d $VSCODE_USER ]] || VSCODE_USER="$WIN/AppData/Roaming/Code/User"
 
