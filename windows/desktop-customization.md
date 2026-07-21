@@ -82,6 +82,46 @@ Floating taskbar with rounded corners (dark):
 - **Target:** `Taskbar.TaskbarFrame`
 - **Style:** `CornerRadius=15` `Margin=5,0,5,5` `Background=<acrylic color>#99000000</acrylic>`
 
+#### Start with Windows
+
+The Scoop manifest installs Windhawk with `/portable`, which **skips the
+`WindhawkSvc` service** a normal install would register. Mods therefore only
+apply while `windhawk.exe` is running — and it needs elevation to inject into
+`explorer.exe`. An `HKCU:\...\CurrentVersion\Run` entry (what Ditto and Flow
+Launcher use) won't do: it runs unelevated, so every boot brings a UAC prompt or
+silently applies nothing.
+
+Use a scheduled task with `RunLevel Highest` instead — run this from an
+**elevated** PowerShell:
+
+```powershell
+$exe = "$(scoop prefix windhawk)\windhawk.exe"
+
+$action    = New-ScheduledTaskAction -Execute $exe -Argument '-tray-only'
+$trigger   = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+$principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Highest
+$settings  = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
+                                          -ExecutionTimeLimit 0 -StartWhenAvailable
+
+Register-ScheduledTask -TaskName 'Windhawk' -Action $action -Trigger $trigger `
+                       -Principal $principal -Settings $settings -Force
+```
+
+- `-tray-only` starts the tray icon without opening the main window.
+- `-ExecutionTimeLimit 0` stops Windows from killing the task after 3 days.
+- `scoop prefix` resolves to `...\current\...`, a junction — the path survives
+  `scoop update windhawk`.
+
+Test without rebooting: `Start-ScheduledTask -TaskName Windhawk`.
+Remove: `Unregister-ScheduledTask -TaskName Windhawk -Confirm:$false`.
+
+If mods don't apply after a real boot, Windhawk likely started before
+`explorer.exe` was ready — add a delay to the trigger (`-AtLogOn` plus
+`$trigger.Delay = 'PT30S'` before registering).
+
+The alternative is dropping Scoop for this app and using the official installer,
+which registers the service and needs none of the above.
+
 #### Tips
 
 - Click **Save** after every change — mods reapply in real time.
