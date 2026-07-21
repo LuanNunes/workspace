@@ -121,9 +121,10 @@ if (Get-Command zoxide -ErrorAction SilentlyContinue) {
 #  bat — pager colorido
 # ------------------------------------------------------------
 if (Get-Command bat -ErrorAction SilentlyContinue) {
-    # bat não traz um tema Kanagawa; gruvbox-dark é o built-in mais próximo do
-    # bege quente da paleta. `bat --list-themes` mostra as alternativas.
-    $env:BAT_THEME = 'gruvbox-dark'
+    # bat não traz um tema Kanagawa. 'ansi' usa as 16 cores do terminal, ou
+    # seja, segue o esquema do perfil automaticamente — se o esquema mudar, o
+    # bat acompanha sem precisar editar nada aqui.
+    $env:BAT_THEME = 'ansi'
     Set-Alias -Name cat -Value bat -Option AllScope -Force
     function less { $input | bat --paging=always }
 }
