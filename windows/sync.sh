@@ -41,8 +41,10 @@ PAIRS=(
   "nvim/lazy-lock.json:$NVIM_USER/lazy-lock.json"
   "windows/powershell/Microsoft.PowerShell_profile.ps1:$WIN/Documents/PowerShell/Microsoft.PowerShell_profile.ps1"
   "windows/oh-my-posh/theme.omp.json:$WIN/.config/oh-my-posh/theme.omp.json"
-  "windows/windows-terminal/settings.json:$WT_STATE/settings.json"
   "windows/vscode/settings.json:$VSCODE_USER/settings.json"
+  # NB: o Windows Terminal NÃO entra aqui. Seu settings.json é por máquina
+  # (profiles/GUIDs diferentes), então ./windows/windows-terminal/apply-theme.py
+  # MESCLA o tema no arquivo real em vez de copiá-lo por cima.
 )
 
 usage() { sed -n '2,9p' "${BASH_SOURCE[0]}" | sed 's/^# \?//'; exit 1; }

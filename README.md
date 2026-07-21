@@ -18,8 +18,12 @@ dotfiles/
 ├── windows/                # SNAPSHOTS of the Windows side (see note below)
 │   ├── sync.sh             # copies these files to/from Windows
 │   ├── powershell/         # PowerShell profile (prompt, PSReadLine, aliases)
-│   ├── oh-my-posh/         # oh-my-posh prompt theme (Tokyo Night)
-│   ├── windows-terminal/   # Windows Terminal settings (scheme, font, keys)
+│   ├── oh-my-posh/         # oh-my-posh prompt theme (follows the terminal's ANSI palette)
+│   ├── windows-terminal/   # per-machine theming (see "Temas por máquina" below)
+│   │   ├── settings.base.json  # shared, non-theme prefs (keybindings, padding…)
+│   │   ├── themes.json         # theme catalog + every color scheme
+│   │   ├── machines.json       # %COMPUTERNAME% → theme
+│   │   └── apply-theme.py      # merges base+theme into the live settings.json
 │   └── vscode/             # VS Code settings
 ├── vim-cheatsheet.md       # Vim grammar + all our <leader> mappings (PT-BR)
 ├── shell-cheatsheet.md     # every CLI tool in both shells, and how to use it (PT-BR)
@@ -66,11 +70,38 @@ the repo are live immediately and the machine stays reproducible.
 - **Windows host** (`windows/`): PowerShell profile with an oh-my-posh prompt,
   PSReadLine in `ListView` prediction mode, and the same aliases as zsh
   (`ls`/`ll`/`lt` via eza, git shortcuts, `z`, `fzf`). Same one-line powerline
-  prompt as zsh, but **deliberately distinct**: PowerShell runs *Kanagawa* +
-  *JetBrainsMono NF*, WSL runs *Tokyo Night* + *UbuntuSansMono NF*, so a glance
-  tells you which shell you're in. Both are set per profile in Windows Terminal
-  (the defaults stay on the WSL look); oh-my-posh, PSReadLine and fzf follow the
-  PowerShell palette.
+  prompt as zsh. The color of the prompt, PSReadLine and fzf is **not** hard-coded
+  per theme: they reference the terminal's **ANSI palette** (like `bat`'s `ansi`
+  theme already does), so whichever Windows Terminal color scheme is active
+  retints the whole prompt automatically. The WSL and PowerShell profiles still
+  use **different** schemes on purpose, so a glance tells you which shell you're in.
+
+### Temas por máquina (Windows Terminal)
+
+`windows/windows-terminal/` is a small per-machine theming system, so one shared
+repo can dress each laptop differently without one clobbering the other:
+
+- **`themes.json`** — the catalog. Each theme picks a color scheme for WSL and for
+  PowerShell, plus font and opacity; `schemes` holds every palette
+  (Rosé Pine/Moon, Tokyo Night, Kanagawa, Catppuccin Mocha, Gruvbox Material, Nord).
+- **`machines.json`** — maps `%COMPUTERNAME%` → theme (unlisted machines use `default`).
+- **`settings.base.json`** — shared, non-theme prefs (keybindings, padding, acrylic…).
+- **`apply-theme.py`** — resolves this machine's theme and **merges** base + theme
+  into the *live* `settings.json`, preserving each machine's own profile list and
+  `defaultProfile` (it never overwrites the file wholesale). The color schemes are
+  all injected, so switching themes is instant.
+
+```sh
+./windows/windows-terminal/apply-theme.py            # apply this machine's theme
+./windows/windows-terminal/apply-theme.py rose-pine  # force a specific theme
+./windows/windows-terminal/apply-theme.py --list     # list themes
+./windows/windows-terminal/apply-theme.py --dry-run  # preview, write nothing
+```
+
+> Current mapping: **NUNES-LAPTOP → rose-pine** (WSL *Rosé Pine* + *MonaspiceNe NF*,
+> PowerShell *Catppuccin Mocha*); every other machine falls back to **tokyo-night**
+> (*Tokyo Night* + Kanagawa). `MonaspiceNe NF` must be installed on the machine
+> (Monaspace from the Nerd Fonts release).
 
 ## Setup on a new machine
 

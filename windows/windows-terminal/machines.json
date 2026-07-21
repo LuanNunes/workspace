@@ -1,0 +1,5 @@
+{
+    "//": "Qual tema (de themes.json) cada máquina usa, por %COMPUTERNAME% do Windows. Máquinas não listadas caem no 'default'. Assim o repo é compartilhado entre notebooks sem um sobrescrever o tema do outro.",
+    "default": "tokyo-night",
+    "NUNES-LAPTOP": "rose-pine"
+}

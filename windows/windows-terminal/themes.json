@@ -1,0 +1,108 @@
+{
+    "//": "Catálogo de temas do Windows Terminal. Cada tema define qual colorScheme o WSL e o PowerShell usam, a fonte e a opacidade. 'schemes' traz TODAS as paletas (todos os temas), que o apply-theme.py injeta no settings.json — assim trocar de tema é instantâneo. Qual tema cada máquina usa fica em machines.json. As cores do prompt (oh-my-posh/PSReadLine/fzf) seguem o ANSI do terminal, então não precisam ser repetidas aqui.",
+
+    "themes": {
+        "rose-pine": {
+            "wslScheme": "Rosé Pine",
+            "shellScheme": "Catppuccin Mocha",
+            "font": "MonaspiceNe NF",
+            "fontSize": 12,
+            "opacity": 88
+        },
+        "tokyo-night": {
+            "wslScheme": "Tokyo Night",
+            "shellScheme": "Kanagawa",
+            "font": "UbuntuSansMono NF",
+            "shellFont": "JetBrainsMono NF",
+            "fontSize": 12,
+            "opacity": 92
+        },
+        "catppuccin": {
+            "wslScheme": "Catppuccin Mocha",
+            "shellScheme": "Catppuccin Mocha",
+            "font": "JetBrainsMono NF",
+            "fontSize": 12,
+            "opacity": 92
+        },
+        "gruvbox": {
+            "wslScheme": "Gruvbox Material",
+            "shellScheme": "Gruvbox Material",
+            "font": "JetBrainsMono NF",
+            "fontSize": 12,
+            "opacity": 95
+        },
+        "nord": {
+            "wslScheme": "Nord",
+            "shellScheme": "Nord",
+            "font": "JetBrainsMono NF",
+            "fontSize": 12,
+            "opacity": 95
+        }
+    },
+
+    "schemes": [
+        {
+            "name": "Rosé Pine",
+            "background": "#191724", "foreground": "#E0DEF4",
+            "cursorColor": "#524F67", "selectionBackground": "#403D52",
+            "black": "#26233A", "red": "#EB6F92", "green": "#31748F", "yellow": "#F6C177",
+            "blue": "#9CCFD8", "purple": "#C4A7E7", "cyan": "#EBBCBA", "white": "#E0DEF4",
+            "brightBlack": "#6E6A86", "brightRed": "#EB6F92", "brightGreen": "#31748F", "brightYellow": "#F6C177",
+            "brightBlue": "#9CCFD8", "brightPurple": "#C4A7E7", "brightCyan": "#EBBCBA", "brightWhite": "#E0DEF4"
+        },
+        {
+            "name": "Rosé Pine Moon",
+            "background": "#232136", "foreground": "#E0DEF4",
+            "cursorColor": "#56526E", "selectionBackground": "#44415A",
+            "black": "#393552", "red": "#EB6F92", "green": "#3E8FB0", "yellow": "#F6C177",
+            "blue": "#9CCFD8", "purple": "#C4A7E7", "cyan": "#EA9A97", "white": "#E0DEF4",
+            "brightBlack": "#6E6A86", "brightRed": "#EB6F92", "brightGreen": "#3E8FB0", "brightYellow": "#F6C177",
+            "brightBlue": "#9CCFD8", "brightPurple": "#C4A7E7", "brightCyan": "#EA9A97", "brightWhite": "#E0DEF4"
+        },
+        {
+            "name": "Tokyo Night",
+            "background": "#1A1B26", "foreground": "#C0CAF5",
+            "cursorColor": "#C0CAF5", "selectionBackground": "#33467C",
+            "black": "#15161E", "red": "#F7768E", "green": "#9ECE6A", "yellow": "#E0AF68",
+            "blue": "#7AA2F7", "purple": "#BB9AF7", "cyan": "#7DCFFF", "white": "#A9B1D6",
+            "brightBlack": "#414868", "brightRed": "#F7768E", "brightGreen": "#9ECE6A", "brightYellow": "#E0AF68",
+            "brightBlue": "#7AA2F7", "brightPurple": "#BB9AF7", "brightCyan": "#7DCFFF", "brightWhite": "#C0CAF5"
+        },
+        {
+            "name": "Kanagawa",
+            "background": "#1F1F28", "foreground": "#DCD7BA",
+            "cursorColor": "#C8C093", "selectionBackground": "#2D4F67",
+            "black": "#090618", "red": "#C34043", "green": "#76946A", "yellow": "#C0A36E",
+            "blue": "#7E9CD8", "purple": "#957FB8", "cyan": "#6A9589", "white": "#C8C093",
+            "brightBlack": "#727169", "brightRed": "#E82424", "brightGreen": "#98BB6C", "brightYellow": "#E6C384",
+            "brightBlue": "#7FB4CA", "brightPurple": "#938AA9", "brightCyan": "#7AA89F", "brightWhite": "#DCD7BA"
+        },
+        {
+            "name": "Catppuccin Mocha",
+            "background": "#1E1E2E", "foreground": "#CDD6F4",
+            "cursorColor": "#F5E0DC", "selectionBackground": "#585B70",
+            "black": "#45475A", "red": "#F38BA8", "green": "#A6E3A1", "yellow": "#F9E2AF",
+            "blue": "#89B4FA", "purple": "#F5C2E7", "cyan": "#94E2D5", "white": "#BAC2DE",
+            "brightBlack": "#585B70", "brightRed": "#F38BA8", "brightGreen": "#A6E3A1", "brightYellow": "#F9E2AF",
+            "brightBlue": "#89B4FA", "brightPurple": "#F5C2E7", "brightCyan": "#94E2D5", "brightWhite": "#A6ADC8"
+        },
+        {
+            "name": "Gruvbox Material",
+            "background": "#282828", "foreground": "#D4BE98",
+            "cursorColor": "#D4BE98", "selectionBackground": "#45403D",
+            "black": "#3C3836", "red": "#EA6962", "green": "#A9B665", "yellow": "#D8A657",
+            "blue": "#7DAEA3", "purple": "#D3869B", "cyan": "#89B482", "white": "#D4BE98",
+            "brightBlack": "#928374", "brightRed": "#EA6962", "brightGreen": "#A9B665", "brightYellow": "#D8A657",
+            "brightBlue": "#7DAEA3", "brightPurple": "#D3869B", "brightCyan": "#89B482", "brightWhite": "#D4BE98"
+        },
+        {
+            "name": "Nord",
+            "background": "#2E3440", "foreground": "#D8DEE9",
+            "cursorColor": "#D8DEE9", "selectionBackground": "#434C5E",
+            "black": "#3B4252", "red": "#BF616A", "green": "#A3BE8C", "yellow": "#EBCB8B",
+            "blue": "#81A1C1", "purple": "#B48EAD", "cyan": "#88C0D0", "white": "#E5E9F0",
+            "brightBlack": "#4C566A", "brightRed": "#BF616A", "brightGreen": "#A3BE8C", "brightYellow": "#EBCB8B",
+            "brightBlue": "#81A1C1", "brightPurple": "#B48EAD", "brightCyan": "#8FBCBB", "brightWhite": "#ECEFF4"
+        }
+    ]
+}
