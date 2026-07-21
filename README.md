@@ -20,6 +20,7 @@ dotfiles/
 │   ├── windows-terminal/   # Windows Terminal settings (scheme, font, keys)
 │   └── vscode/             # VS Code settings
 ├── vim-cheatsheet.md       # Vim grammar + all our <leader> mappings (PT-BR)
+├── shell-cheatsheet.md     # every CLI tool in both shells, and how to use it (PT-BR)
 └── README.md
 ```
 
