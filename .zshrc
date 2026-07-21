@@ -140,8 +140,14 @@ if command -v fzf &>/dev/null; then
   fi
 fi
 
-# Smarter cd: `z <partial>` jumps to frecent dirs
-command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+# Smarter cd: `z <partial>` jumps to frecent dirs, `zi` picks from a fzf list.
+# Zinit aliases zi (and zpl/zplg/zini) to itself, and an alias wins over a
+# function — so zi would run the plugin manager instead of zoxide. Drop it;
+# `zinit` still works under its own name.
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh)"
+  unalias zi 2>/dev/null
+fi
 
 # Better shell history (owns Ctrl-R when present)
 command -v atuin &>/dev/null && eval "$(atuin init zsh)"
