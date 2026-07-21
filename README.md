@@ -13,21 +13,29 @@ dotfiles/
 ├── nvim/
 │   ├── init.lua            # Neovim config → symlinked to ~/.config/nvim/init.lua
 │   └── lazy-lock.json      # pinned plugin versions → ~/.config/nvim/lazy-lock.json
-├── vscode/
-│   └── settings.json       # SNAPSHOT of VS Code settings (see note below)
+├── windows/                # SNAPSHOTS of the Windows side (see note below)
+│   ├── sync.sh             # copies these files to/from Windows
+│   ├── powershell/         # PowerShell profile (prompt, PSReadLine, aliases)
+│   ├── oh-my-posh/         # oh-my-posh prompt theme (Tokyo Night)
+│   ├── windows-terminal/   # Windows Terminal settings (scheme, font, keys)
+│   └── vscode/             # VS Code settings
 ├── vim-cheatsheet.md       # Vim grammar + all our <leader> mappings (PT-BR)
 └── README.md
 ```
 
-> **VS Code note:** VS Code runs on Windows (installed via Scoop, portable mode),
-> so its real config lives at
-> `C:\Users\nunes\scoop\apps\vscode\current\data\user-data\User\settings.json`.
-> That's on the Windows filesystem and **can't be symlinked** from WSL, so
-> `vscode/settings.json` here is a **manual snapshot** — copy it over after edits,
-> or use VS Code's built-in *Settings Sync* for live syncing.
+Everything under WSL is tracked here and **symlinked** into place, so edits to
+the repo are live immediately and the machine stays reproducible.
 
-Everything is tracked here and **symlinked** into place, so edits to the repo
-are live immediately and the machine stays reproducible.
+> **Windows note:** everything under `windows/` is a **snapshot**, not a symlink.
+> Those files live on NTFS, the apps that own them rewrite the file wholesale
+> when you edit through their UI, and Windows won't follow a symlink into the
+> WSL filesystem. Keep them in sync with:
+>
+> ```sh
+> ./windows/sync.sh pull    # Windows → repo   (before committing)
+> ./windows/sync.sh push    # repo → Windows   (after cloning or pulling)
+> ./windows/sync.sh diff    # show what drifted
+> ```
 
 ## What's configured
 
@@ -52,6 +60,11 @@ are live immediately and the machine stays reproducible.
 - **VS Code (vscodevim)**: same `<Space>` leader and `jk`→Esc, relative line
   numbers, EasyMotion + surround enabled, `<leader>` mapped to VS Code commands
   (find/navigate/refactor). Extension `vscodevim.vim` installed on the Windows side.
+- **Windows host** (`windows/`): PowerShell profile with an oh-my-posh prompt,
+  PSReadLine in `ListView` prediction mode, and the same aliases as zsh
+  (`ls`/`ll`/`lt` via eza, git shortcuts, `z`, `fzf`); Windows Terminal on the
+  *Tokyo Night* scheme with *UbuntuSansMono NF* at 92% opacity. The whole
+  Windows/WSL setup shares one palette, so both shells look the same.
 
 ## Setup on a new machine
 

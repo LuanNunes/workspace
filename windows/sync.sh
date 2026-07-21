@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Sync the Windows-side config between this repo and the Windows filesystem.
+#
+#   ./windows/sync.sh pull    Windows  → repo   (run before committing)
+#   ./windows/sync.sh push    repo     → Windows (run after cloning or pulling)
+#   ./windows/sync.sh diff    show what differs, change nothing
+#
+# These files can't be symlinked: they live on NTFS, the apps that own them
+# rewrite the file wholesale when you edit through their UI, and Windows won't
+# follow a symlink into the WSL filesystem. So the repo keeps a snapshot and
+# this script copies it back and forth.
+set -euo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# %USERPROFILE% as a WSL path. cmd.exe is run from /mnt/c so it doesn't warn
+# about the current directory being a UNC path.
+win_home() {
+  local p
+  p="$(cd /mnt/c && cmd.exe /c 'echo %USERPROFILE%' 2>/dev/null | tr -d '\r')" || true
+  if [[ -n "${p:-}" ]]; then wslpath -u "$p"; else echo "/mnt/c/Users/$USER"; fi
+}
+
+WIN="$(win_home)"
+WT_STATE="$WIN/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState"
+
+# VS Code stores settings under the install dir when portable (Scoop) and under
+# AppData otherwise. Take whichever exists; fall back to the Scoop layout.
+VSCODE_USER="$WIN/scoop/apps/vscode/current/data/user-data/User"
+[[ -d $VSCODE_USER ]] || VSCODE_USER="$WIN/AppData/Roaming/Code/User"
+
+# repo path (relative to the repo root) : path on the Windows side
+PAIRS=(
+  "windows/powershell/Microsoft.PowerShell_profile.ps1:$WIN/Documents/PowerShell/Microsoft.PowerShell_profile.ps1"
+  "windows/oh-my-posh/theme.omp.json:$WIN/.config/oh-my-posh/theme.omp.json"
+  "windows/windows-terminal/settings.json:$WT_STATE/settings.json"
+  "windows/vscode/settings.json:$VSCODE_USER/settings.json"
+)
+
+usage() { sed -n '2,9p' "${BASH_SOURCE[0]}" | sed 's/^# \?//'; exit 1; }
+
+action="${1:-}"
+[[ $action == pull || $action == push || $action == diff ]] || usage
+
+for pair in "${PAIRS[@]}"; do
+  rel="${pair%%:*}"
+  win="${pair#*:}"
+  repo="$REPO/$rel"
+
+  case $action in
+    pull)
+      if [[ -f $win ]]; then
+        mkdir -p "$(dirname "$repo")"
+        cp "$win" "$repo"
+        echo "pulled  $rel"
+      else
+        echo "missing $win — skipped" >&2
+      fi
+      ;;
+    push)
+      if [[ -f $repo ]]; then
+        if [[ -d $(dirname "$win") ]]; then
+          cp "$repo" "$win"
+          echo "pushed  $rel"
+        else
+          echo "missing $(dirname "$win") — app not installed? skipped" >&2
+        fi
+      fi
+      ;;
+    diff)
+      if [[ -f $repo && -f $win ]]; then
+        if diff -q "$repo" "$win" >/dev/null; then
+          echo "same    $rel"
+        else
+          echo "DIFFERS $rel"
+          diff -u "$repo" "$win" || true
+        fi
+      else
+        echo "missing $rel or its Windows counterpart" >&2
+      fi
+      ;;
+  esac
+done
