@@ -30,8 +30,15 @@ WT_STATE="$WIN/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/Lo
 VSCODE_USER="$WIN/scoop/apps/vscode/current/data/user-data/User"
 [[ -d $VSCODE_USER ]] || VSCODE_USER="$WIN/AppData/Roaming/Code/User"
 
+# Neovim on Windows reads %LOCALAPPDATA%\nvim. The init.lua is shared with WSL
+# as-is — the only platform-specific part of it is the clipboard bridge, which
+# is already guarded by `if vim.fn.has("wsl")`.
+NVIM_USER="$WIN/AppData/Local/nvim"
+
 # repo path (relative to the repo root) : path on the Windows side
 PAIRS=(
+  "nvim/init.lua:$NVIM_USER/init.lua"
+  "nvim/lazy-lock.json:$NVIM_USER/lazy-lock.json"
   "windows/powershell/Microsoft.PowerShell_profile.ps1:$WIN/Documents/PowerShell/Microsoft.PowerShell_profile.ps1"
   "windows/oh-my-posh/theme.omp.json:$WIN/.config/oh-my-posh/theme.omp.json"
   "windows/windows-terminal/settings.json:$WT_STATE/settings.json"

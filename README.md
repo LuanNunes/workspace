@@ -13,6 +13,8 @@ dotfiles/
 ├── nvim/
 │   ├── init.lua            # Neovim config → symlinked to ~/.config/nvim/init.lua
 │   └── lazy-lock.json      # pinned plugin versions → ~/.config/nvim/lazy-lock.json
+│                           # the same two files also feed the Windows Neovim,
+│                           # copied to %LOCALAPPDATA%\nvim by windows/sync.sh
 ├── windows/                # SNAPSHOTS of the Windows side (see note below)
 │   ├── sync.sh             # copies these files to/from Windows
 │   ├── powershell/         # PowerShell profile (prompt, PSReadLine, aliases)

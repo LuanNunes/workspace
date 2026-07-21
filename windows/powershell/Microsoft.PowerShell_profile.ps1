@@ -142,6 +142,17 @@ if (Get-Command eza -ErrorAction SilentlyContinue) {
 }
 
 # ------------------------------------------------------------
+#  Neovim — mesma config do WSL (windows/sync.sh cuida da cópia)
+# ------------------------------------------------------------
+if (Get-Command nvim -ErrorAction SilentlyContinue) {
+    $env:EDITOR = 'nvim'
+    $env:VISUAL = 'nvim'
+    function vim { nvim @args }
+    function vi  { nvim @args }
+    function v   { nvim @args }
+}
+
+# ------------------------------------------------------------
 #  Git — atalhos
 # ------------------------------------------------------------
 function gs  { git status --short --branch @args }
@@ -179,7 +190,7 @@ function which($cmd) { (Get-Command $cmd -ErrorAction SilentlyContinue).Source }
 function touch($f) { if (Test-Path $f) { (Get-Item $f).LastWriteTime = Get-Date } else { New-Item -ItemType File $f | Out-Null } }
 function mkcd($d) { New-Item -ItemType Directory -Force $d | Out-Null; Set-Location $d }
 function rmrf($p) { Remove-Item -Recurse -Force $p }
-function pro    { code $PROFILE }
+function pro    { if (Get-Command nvim -EA SilentlyContinue) { nvim $PROFILE } else { code $PROFILE } }
 function reload { . $PROFILE; Write-Host '✓ profile recarregado' -ForegroundColor Green }
 
 # Busca de conteúdo com preview
