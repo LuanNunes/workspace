@@ -1,9 +1,27 @@
 # ============================================================================
+#  SSH agent
+# ============================================================================
+# Loads the passphrase-protected key into a persistent agent (keychain reuses
+# one agent across shells, so only the first shell after a boot prompts). This
+# MUST run before the instant-prompt block below: it reads the passphrase from
+# the terminal, and p10k's instant prompt would otherwise contend for the tty
+# and swallow the prompt. SSH_ASKPASS_REQUIRE=never forces the prompt onto this
+# terminal instead of a graphical askpass helper — without it the exported
+# DISPLAY makes ssh-add reach for an askpass program that isn't installed, and
+# it fails with "Problem adding; giving up". Guarded to a real interactive tty
+# so non-interactive shells (scp, `zsh -c`, VS Code tasks) never block on it.
+if [[ -o interactive && -t 1 ]] && command -v keychain &>/dev/null; then
+  eval "$(SSH_ASKPASS_REQUIRE=never keychain --quiet --eval --agents ssh ~/.ssh/nunes.lfa)"
+fi
+
+# ============================================================================
 #  Powerlevel10k instant prompt
 # ============================================================================
 # Draws the prompt from a cache before the rest of this file runs, so the shell
-# feels instant. MUST stay at the very top, and nothing above it may print to
-# stdout or read from stdin — that would corrupt the cached frame.
+# feels instant. Nothing below it may print to stdout or read from stdin without
+# p10k noticing — that would corrupt the cached frame. The only thing allowed
+# above it is the SSH agent block, which intentionally prompts for a passphrase
+# and so must own the terminal before instant prompt starts.
 # `quiet` because the fastfetch banner below deliberately prints during startup;
 # p10k buffers it and replays it above the prompt instead of warning about it.
 typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
@@ -167,7 +185,6 @@ command -v bat &>/dev/null && alias cat="bat --paging=never"
 #  Startup commands
 # ============================================================================
 command -v setxkbmap &>/dev/null && setxkbmap -layout us -variant intl 2>/dev/null
-command -v keychain  &>/dev/null && eval "$(keychain --quiet --eval --agents ssh ~/.ssh/nunes.lfa)"
 
 # System banner, only for a real interactive terminal (skips VS Code tasks,
 # `zsh -c`, scp/rsync sessions and anything else without a tty).
