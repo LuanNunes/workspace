@@ -24,7 +24,8 @@ dotfiles/
 │   │   ├── themes.json         # theme catalog + every color scheme
 │   │   ├── machines.json       # %COMPUTERNAME% → theme
 │   │   └── apply-theme.py      # merges base+theme into the live settings.json
-│   └── vscode/             # VS Code settings
+│   ├── vscode/             # VS Code settings
+│   └── desktop-customization.md  # Windhawk, TranslucentTB, Flow Launcher, Bibata cursor
 ├── vim-cheatsheet.md       # Vim grammar + all our <leader> mappings (PT-BR)
 ├── shell-cheatsheet.md     # every CLI tool in both shells, and how to use it (PT-BR)
 └── README.md
