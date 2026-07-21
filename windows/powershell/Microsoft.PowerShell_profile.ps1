@@ -41,27 +41,30 @@ Set-PSReadLineOption -HistoryNoDuplicates
 Set-PSReadLineOption -MaximumHistoryCount 20000
 Set-PSReadLineOption -BellStyle None
 Set-PSReadLineOption -ShowToolTips
-# Paleta Kanagawa — o WSL fica no Tokyo Night, então dá pra saber num relance
-# em qual shell você está.
+# Cores seguindo o ANSI do terminal (nomes ConsoleColor mapeiam para as 16 cores
+# do esquema ativo no Windows Terminal). Assim, ao trocar o tema do terminal, o
+# realce do PSReadLine se ajusta sozinho — sem hex por tema. O esquema do
+# PowerShell (Rosé Pine Moon aqui) difere do WSL (Rosé Pine), então ainda dá pra
+# saber num relance em qual shell você está.
 Set-PSReadLineOption -Colors @{
-    Command                = '#7e9cd8'
-    Parameter              = '#957fb8'
-    Operator               = '#c0a36e'
-    Variable               = '#e6c384'
-    String                 = '#98bb6c'
-    Number                 = '#ffa066'
-    Type                   = '#7aa89f'
-    Member                 = '#7fb4ca'
-    Comment                = '#727169'
-    Keyword                = '#957fb8'
-    Error                  = '#e82424'
-    ContinuationPrompt     = '#727169'
-    Default                = '#dcd7ba'
-    Emphasis               = '#ffa066'
-    Selection              = "`e[48;2;45;79;103m"
-    InlinePrediction       = '#54546d'
-    ListPrediction         = '#7fb4ca'
-    ListPredictionSelected = "`e[48;2;45;79;103m"
+    Command                = 'Cyan'
+    Parameter              = 'Magenta'
+    Operator               = 'DarkYellow'
+    Variable               = 'Blue'
+    String                 = 'Green'
+    Number                 = 'DarkYellow'
+    Type                   = 'Cyan'
+    Member                 = 'Blue'
+    Comment                = 'DarkGray'
+    Keyword                = 'Magenta'
+    Error                  = 'Red'
+    ContinuationPrompt     = 'DarkGray'
+    Default                = 'Gray'
+    Emphasis               = 'White'
+    Selection              = "`e[48;5;8m"
+    InlinePrediction       = 'DarkGray'
+    ListPrediction         = 'Cyan'
+    ListPredictionSelected = "`e[48;5;8m"
 }
 
 # ↑/↓ buscam no histórico pelo que já foi digitado
@@ -102,11 +105,11 @@ if (Get-Module -ListAvailable PSFzf) {
         '--info=inline'
         '--pointer=▶'
         '--marker=✓'
-        '--color=fg:#dcd7ba,bg:-1,hl:#7e9cd8'
-        '--color=fg+:#dcd7ba,bg+:#2d4f67,hl+:#7fb4ca'
-        '--color=info:#98bb6c,prompt:#957fb8,pointer:#e82424'
-        '--color=marker:#98bb6c,spinner:#e6c384,header:#727169'
-        '--color=border:#54546d'
+        '--color=fg:-1,bg:-1,hl:6'
+        '--color=fg+:-1,bg+:8,hl+:14'
+        '--color=info:2,prompt:5,pointer:1'
+        '--color=marker:2,spinner:3,header:8'
+        '--color=border:8'
     ) -join ' '
 }
 
@@ -121,7 +124,7 @@ if (Get-Command zoxide -ErrorAction SilentlyContinue) {
 #  bat — pager colorido
 # ------------------------------------------------------------
 if (Get-Command bat -ErrorAction SilentlyContinue) {
-    # bat não traz um tema Kanagawa. 'ansi' usa as 16 cores do terminal, ou
+    # bat não traz um tema Rosé Pine. 'ansi' usa as 16 cores do terminal, ou
     # seja, segue o esquema do perfil automaticamente — se o esquema mudar, o
     # bat acompanha sem precisar editar nada aqui.
     $env:BAT_THEME = 'ansi'
