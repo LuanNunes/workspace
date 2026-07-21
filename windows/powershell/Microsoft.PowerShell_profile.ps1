@@ -41,26 +41,27 @@ Set-PSReadLineOption -HistoryNoDuplicates
 Set-PSReadLineOption -MaximumHistoryCount 20000
 Set-PSReadLineOption -BellStyle None
 Set-PSReadLineOption -ShowToolTips
-# Paleta Tokyo Night
+# Paleta Kanagawa — o WSL fica no Tokyo Night, então dá pra saber num relance
+# em qual shell você está.
 Set-PSReadLineOption -Colors @{
-    Command                = '#7aa2f7'
-    Parameter              = '#bb9af7'
-    Operator               = '#89ddff'
-    Variable               = '#e0af68'
-    String                 = '#9ece6a'
-    Number                 = '#ff9e64'
-    Type                   = '#2ac3de'
-    Member                 = '#7dcfff'
-    Comment                = '#565f89'
-    Keyword                = '#bb9af7'
-    Error                  = '#f7768e'
-    ContinuationPrompt     = '#565f89'
-    Default                = '#c0caf5'
-    Emphasis               = '#ff9e64'
-    Selection              = "`e[48;2;51;70;124m"
-    InlinePrediction       = '#414868'
-    ListPrediction         = '#7dcfff'
-    ListPredictionSelected = "`e[48;2;51;70;124m"
+    Command                = '#7e9cd8'
+    Parameter              = '#957fb8'
+    Operator               = '#c0a36e'
+    Variable               = '#e6c384'
+    String                 = '#98bb6c'
+    Number                 = '#ffa066'
+    Type                   = '#7aa89f'
+    Member                 = '#7fb4ca'
+    Comment                = '#727169'
+    Keyword                = '#957fb8'
+    Error                  = '#e82424'
+    ContinuationPrompt     = '#727169'
+    Default                = '#dcd7ba'
+    Emphasis               = '#ffa066'
+    Selection              = "`e[48;2;45;79;103m"
+    InlinePrediction       = '#54546d'
+    ListPrediction         = '#7fb4ca'
+    ListPredictionSelected = "`e[48;2;45;79;103m"
 }
 
 # ↑/↓ buscam no histórico pelo que já foi digitado
@@ -101,11 +102,11 @@ if (Get-Module -ListAvailable PSFzf) {
         '--info=inline'
         '--pointer=▶'
         '--marker=✓'
-        '--color=fg:#c0caf5,bg:-1,hl:#7aa2f7'
-        '--color=fg+:#c0caf5,bg+:#292e42,hl+:#7dcfff'
-        '--color=info:#9ece6a,prompt:#bb9af7,pointer:#f7768e'
-        '--color=marker:#9ece6a,spinner:#e0af68,header:#565f89'
-        '--color=border:#414868'
+        '--color=fg:#dcd7ba,bg:-1,hl:#7e9cd8'
+        '--color=fg+:#dcd7ba,bg+:#2d4f67,hl+:#7fb4ca'
+        '--color=info:#98bb6c,prompt:#957fb8,pointer:#e82424'
+        '--color=marker:#98bb6c,spinner:#e6c384,header:#727169'
+        '--color=border:#54546d'
     ) -join ' '
 }
 
@@ -120,7 +121,9 @@ if (Get-Command zoxide -ErrorAction SilentlyContinue) {
 #  bat — pager colorido
 # ------------------------------------------------------------
 if (Get-Command bat -ErrorAction SilentlyContinue) {
-    $env:BAT_THEME = 'tokyonight_night'
+    # bat não traz um tema Kanagawa; gruvbox-dark é o built-in mais próximo do
+    # bege quente da paleta. `bat --list-themes` mostra as alternativas.
+    $env:BAT_THEME = 'gruvbox-dark'
     Set-Alias -Name cat -Value bat -Option AllScope -Force
     function less { $input | bat --paging=always }
 }

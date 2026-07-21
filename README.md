@@ -62,9 +62,11 @@ the repo are live immediately and the machine stays reproducible.
   (find/navigate/refactor). Extension `vscodevim.vim` installed on the Windows side.
 - **Windows host** (`windows/`): PowerShell profile with an oh-my-posh prompt,
   PSReadLine in `ListView` prediction mode, and the same aliases as zsh
-  (`ls`/`ll`/`lt` via eza, git shortcuts, `z`, `fzf`); Windows Terminal on the
-  *Tokyo Night* scheme with *UbuntuSansMono NF* at 92% opacity. The whole
-  Windows/WSL setup shares one palette, so both shells look the same.
+  (`ls`/`ll`/`lt` via eza, git shortcuts, `z`, `fzf`). Same font
+  (*UbuntuSansMono NF*, 92% opacity) and the same one-line powerline prompt as
+  zsh, but a **different palette on purpose**: PowerShell is *Kanagawa*, WSL is
+  *Tokyo Night*, so a glance tells you which shell you're in. The scheme is set
+  per profile in Windows Terminal; oh-my-posh, PSReadLine and fzf follow it.
 
 ## Setup on a new machine
 

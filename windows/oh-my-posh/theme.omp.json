@@ -4,19 +4,19 @@
   "final_space": false,
   "console_title_template": "{{ .Folder }}{{ if .Root }} (admin){{ end }}",
   "palette": {
-    "bg": "#1a1b26",
-    "bg-dark": "#16161e",
-    "fg": "#c0caf5",
-    "blue": "#7aa2f7",
-    "cyan": "#7dcfff",
-    "green": "#9ece6a",
-    "magenta": "#bb9af7",
-    "red": "#f7768e",
-    "yellow": "#e0af68",
-    "orange": "#ff9e64",
-    "teal": "#1abc9c",
-    "grey": "#414868",
-    "comment": "#565f89"
+    "bg": "#1f1f28",
+    "bg-dark": "#16161d",
+    "fg": "#dcd7ba",
+    "blue": "#7e9cd8",
+    "cyan": "#7fb4ca",
+    "green": "#98bb6c",
+    "magenta": "#957fb8",
+    "red": "#e82424",
+    "yellow": "#e6c384",
+    "orange": "#ffa066",
+    "teal": "#7aa89f",
+    "grey": "#363646",
+    "comment": "#727169"
   },
   "blocks": [
     {
