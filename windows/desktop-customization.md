@@ -149,7 +149,11 @@ Configure via the **system-tray icon** (right-click).
 #### Recommended setup (dark mode, uniform look)
 
 1. **Desktop** → pick your effect (Acrylic works well in dark mode).
-2. Set a **Color** — e.g. `#CC1a1a1a` (dark grey, 80 % opacity).
+2. Set a **Color** — e.g. `#CC1a1a1a` (dark grey, 80 % opacity). Keep a real
+   tint here: with **Clear** (or a very low alpha) the thin running-app
+   indicator under each open icon has nothing to sit against and its contrast
+   swings with whatever the wallpaper is doing, making it hard to tell open apps
+   from pinned ones. Acrylic with ~80 % opacity fixes it.
 3. Set **Visible Window / Maximized Window / Start Menu / Search / Task View**
    all to **disabled** so the Desktop effect applies everywhere.
 4. Enable **Open at boot**.
