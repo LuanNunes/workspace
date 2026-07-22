@@ -17,27 +17,41 @@ fi
 # ============================================================================
 #  Powerlevel10k instant prompt
 # ============================================================================
-# Draws the prompt from a cache before the rest of this file runs, so the shell
-# feels instant. Nothing below it may print to stdout or read from stdin without
-# p10k noticing — that would corrupt the cached frame. The only thing allowed
-# above it is the SSH agent block, which intentionally prompts for a passphrase
-# and so must own the terminal before instant prompt starts.
-# `quiet` because the fastfetch banner below deliberately prints during startup;
-# p10k buffers it and replays it above the prompt instead of warning about it.
-typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# Instant prompt draws a cached prompt at the top, then homes the cursor and
+# clears to end of screen (\e[J) once the real prompt is ready — which wipes the
+# fastfetch banner printed during startup. We want BOTH: the banner on the first
+# interactive shell of each boot, and the fast instant prompt on every shell
+# after. So gate it on a marker (created by the banner block below): while the
+# marker is absent (first shell) instant prompt stays OFF so the banner
+# survives; once it exists (later shells, no banner) instant prompt is ON.
+# The marker lives in XDG_RUNTIME_DIR (tmpfs, wiped on reboot), so the banner
+# comes back on the first shell after each restart.
+# Nothing below here may print to stdout or read from stdin — the only thing
+# allowed above is the SSH agent block, which owns the tty for its passphrase
+# prompt before instant prompt starts.
+_p9k_banner_marker="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/fastfetch-shown"
+if [[ -e "$_p9k_banner_marker" ]]; then
+  typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+  if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+  fi
+else
+  typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
 fi
 
 # ============================================================================
 #  Environment
 # ============================================================================
-# WSL display / GL — X410 no Windows como servidor X.
-# WSL2 em modo NAT: o IP do host muda a cada boot, então DISPLAY é derivado da
-# rota default em vez de fixo. No Windows: X410 com "Allow Public Access" e a
-# vEthernet (WSL) liberada no firewall, senão a conexão é recusada.
+# WSL display / GL — X410 on Windows as the X server.
+# WSL2 in MIRRORED networking mode shares the Windows host's network stack, so
+# the host (and X410) is reachable over loopback — DISPLAY is a fixed
+# 0.0.0.0:0. This replaced the old NAT-mode derivation from the default route:
+# in mirrored mode that route's gateway is the real LAN router (e.g.
+# 192.168.50.1), not the Windows host, so the derived DISPLAY pointed at nothing
+# and every GUI app (IDEs, etc.) died with "Can't connect to X11 window server".
+# On Windows: X410 with "Allow Public Access", or the connection is refused.
 unset WAYLAND_DISPLAY
-export DISPLAY="$(ip route show default | awk '{print $3; exit}'):0"
+export DISPLAY=0.0.0.0:0
 export LIBGL_ALWAYS_INDIRECT=1
 
 # Locale
@@ -123,16 +137,32 @@ zinit wait lucid light-mode for \
 # ============================================================================
 #  Language / version managers
 # ============================================================================
-# asdf v0.16+ é um binário Go: não existe mais asdf.sh para dar source, só os
-# shims no PATH.  https://asdf-vm.com/guide/getting-started.html
+# asdf: support both generations. Classic (<=0.15) ships ~/.asdf/asdf.sh, which
+# defines the `asdf` FUNCTION, the PATH (bin + shims) and completions — without
+# sourcing it, plugin hooks like java's set-java-home fail with
+# "command not found: asdf". 0.16+ is a Go binary with no asdf.sh, so the shims
+# on PATH are enough.  https://asdf-vm.com/guide/getting-started.html
 export ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
-export PATH="$ASDF_DATA_DIR/shims:$PATH"
+if [[ -f "$HOME/.asdf/asdf.sh" ]]; then
+  . "$HOME/.asdf/asdf.sh"                       # asdf classic (<=0.15)
+else
+  export PATH="$ASDF_DATA_DIR/shims:$PATH"      # asdf 0.16+ (Go binary)
+fi
 
 # Completions — compinit tem de vir DEPOIS do Oh My Zsh (que é sourceado acima).
 # Gerar uma vez com:
 #   mkdir -p "$ASDF_DATA_DIR/completions" && asdf completion zsh > "$ASDF_DATA_DIR/completions/_asdf"
 fpath=("$ASDF_DATA_DIR/completions" $fpath)
 autoload -Uz compinit && compinit
+
+# Interactive completion menu: Tab highlights an entry; a second Tab enters
+# "menu selection" so you can move with the arrow keys and Enter to pick.
+zstyle ':completion:*' menu select
+zmodload zsh/complist                    # provides the `menuselect` keymap
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'l' vi-forward-char
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'j' vi-down-line-or-history
 
 # Hooks de plugin — só existem depois de `asdf plugin add java` / `golang`.
 [[ -f "$ASDF_DATA_DIR/plugins/java/set-java-home.zsh" ]] && . "$ASDF_DATA_DIR/plugins/java/set-java-home.zsh"
@@ -184,13 +214,24 @@ command -v bat &>/dev/null && alias cat="bat --paging=never"
 # ============================================================================
 #  Startup commands
 # ============================================================================
-command -v setxkbmap &>/dev/null && setxkbmap -layout us -variant intl 2>/dev/null
+# Backgrounded (&!): setxkbmap talks to the X server, so if X410 is down it
+# would block the whole startup (and delay the banner below) until the X
+# connection times out. Detach it — the layout still applies once X is up.
+# (SSH key loading lives in the SSH agent block at the top of this file.)
+command -v setxkbmap &>/dev/null && setxkbmap -layout us -variant intl 2>/dev/null &!
 
 # System banner, only for a real interactive terminal (skips VS Code tasks,
-# `zsh -c`, scp/rsync sessions and anything else without a tty).
+# `zsh -c`, scp/rsync sessions and anything else without a tty), and only on the
+# first such shell per boot — new tabs/panes/ssh sessions after it stay clean.
+# Dropping the marker also flips the instant-prompt block at the top ON for every
+# later shell (see there). The marker is in tmpfs, so it resets on reboot.
 if [[ -o interactive && -t 1 ]] && command -v fastfetch &>/dev/null; then
-  fastfetch
+  if [[ ! -e "$_p9k_banner_marker" ]]; then
+    fastfetch
+    : > "$_p9k_banner_marker"
+  fi
 fi
+unset _p9k_banner_marker
 
 # ============================================================================
 #  Aliases
