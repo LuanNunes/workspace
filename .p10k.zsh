@@ -1811,13 +1811,91 @@
   #   - verbose: Enable instant prompt and print a warning when detecting console output during
   #              zsh initialization. Choose this if you've never tried instant prompt, haven't
   #              seen the warning, or if you are unsure what this all means.
-  typeset -g POWERLEVEL9K_INSTANT_PROMPT=verbose
+  # `quiet`, not the template's `verbose`: whether instant prompt engages is
+  # decided in ~/.zshrc (only from the 2nd shell of a boot, so the fastfetch
+  # banner survives the first). This file is sourced last, so its value is the
+  # effective one — `quiet` keeps the cache generating without warning about the
+  # banner's console output.
+  typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 
   # Hot reload allows you to change POWERLEVEL9K options after Powerlevel10k has been initialized.
   # For example, you can type POWERLEVEL9K_BACKGROUND=red and see your prompt turn red. Hot reload
   # can slow down prompt by 1-2 milliseconds, so it's better to keep it turned off unless you
   # really need it.
   typeset -g POWERLEVEL9K_DISABLE_HOT_RELOAD=true
+
+  # ==========================================================================
+  #  Powerline "blocks" override — the colourful style the user prefers, on a
+  #  fixed 4-colour palette (see the block below). Each segment is a solid block:
+  #  slate username, cyan path (the accent), git coloured by state, cyan/red
+  #  status. Keeps the stock powerline separators set earlier in this file — we
+  #  deliberately do NOT clear them. Placed just before the reload below, like
+  #  the stock config.
+  # ==========================================================================
+  # Colourful powerline recoloured to a fixed 4-colour palette (24-bit hex, so it
+  # does NOT retint with the scheme). Darkest -> lightest:
+  #   _ink   #321E48  dark purple — dark text on bright blocks, exec-time block
+  #   _slate #43637E  slate blue  — the muted block (username, dirty git)
+  #   _cyan  #65DCD5  bright cyan — the accent block (path, clean git, OK status)
+  #   _mint  #D9FFF4  pale mint   — light text on dark blocks
+  # ONE out-of-palette exception: ANSI red (_err) for genuine error/conflict
+  # states (failed command, git conflict, root shell), so failures stay obvious.
+  local _ink='#321E48' _slate='#43637E' _cyan='#65DCD5' _mint='#D9FFF4' _err=1 _s
+
+  # Left: username, path, git, prompt char. Right: elapsed time (slow commands
+  # only), success/failure mark, username.
+  typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(context dir vcs prompt_char)
+  typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(command_execution_time status context)
+
+  # Context — username (%n) on a SLATE block, both sides, with mint text. Remote
+  # shows %n@%m on an ink block; root turns the block red to flag an elevated shell.
+  typeset -g POWERLEVEL9K_CONTEXT_TEMPLATE='%n'
+  for _s in DEFAULT SUDO ROOT REMOTE REMOTE_SUDO DISCONNECTED; do
+    typeset -g POWERLEVEL9K_CONTEXT_${_s}_BACKGROUND=$_slate
+    typeset -g POWERLEVEL9K_CONTEXT_${_s}_FOREGROUND=$_mint
+  done
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_TEMPLATE='%n@%m'
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND=$_err
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_BACKGROUND=$_ink
+
+  # Directory — the CYAN accent block, folder icon, dark ink text, last part bold.
+  typeset -g POWERLEVEL9K_DIR_BACKGROUND=$_cyan
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND=$_ink
+  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=$_ink
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=$_ink
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=true
+
+  # Git — clean is the bright cyan block (dark text); dirty (modified/untracked)
+  # is the muted slate block (mint text); conflict is the red warning block.
+  typeset -g POWERLEVEL9K_VCS_CLEAN_BACKGROUND=$_cyan
+  typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=$_ink
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_BACKGROUND=$_slate
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=$_mint
+  typeset -g POWERLEVEL9K_VCS_UNTRACKED_BACKGROUND=$_slate
+  typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=$_mint
+  typeset -g POWERLEVEL9K_VCS_CONFLICTED_BACKGROUND=$_err
+  typeset -g POWERLEVEL9K_VCS_CONFLICTED_FOREGROUND=$_mint
+  typeset -g POWERLEVEL9K_VCS_LOADING_BACKGROUND=$_ink
+  typeset -g POWERLEVEL9K_VCS_LOADING_FOREGROUND=$_mint
+  # GitHub octocat as the git icon (forced on the generic icon too, since the
+  # remote is an SSH alias git@github-luan: that p10k can't match to github.com).
+  typeset -g POWERLEVEL9K_VCS_GIT_ICON=$''
+  typeset -g POWERLEVEL9K_VCS_GIT_GITHUB_ICON=$''
+
+  # Prompt char — cyan arrow on success, red on error.
+  for _s in VIINS VICMD VIVIS VIOWR; do
+    typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_${_s}_FOREGROUND=$_cyan
+    typeset -g POWERLEVEL9K_PROMPT_CHAR_ERROR_${_s}_FOREGROUND=$_err
+  done
+
+  # Success/failure mark — cyan block on success (dark text), red block on error.
+  # Elapsed time on the ink block (mint text), only for slow commands.
+  typeset -g POWERLEVEL9K_STATUS_OK_BACKGROUND=$_cyan
+  typeset -g POWERLEVEL9K_STATUS_OK_FOREGROUND=$_ink
+  typeset -g POWERLEVEL9K_STATUS_ERROR_BACKGROUND=$_err
+  typeset -g POWERLEVEL9K_STATUS_ERROR_FOREGROUND=$_mint
+  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_BACKGROUND=$_ink
+  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND=$_mint
 
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
