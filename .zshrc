@@ -1,7 +1,7 @@
 # ============================================================================
 #  SSH agent
 # ============================================================================
-# Loads the passphrase-protected key into a persistent agent (keychain reuses
+# Loads the passphrase-protected keys into a persistent agent (keychain reuses
 # one agent across shells, so only the first shell after a boot prompts). This
 # MUST run before the instant-prompt block below: it reads the passphrase from
 # the terminal, and p10k's instant prompt would otherwise contend for the tty
@@ -11,7 +11,7 @@
 # it fails with "Problem adding; giving up". Guarded to a real interactive tty
 # so non-interactive shells (scp, `zsh -c`, VS Code tasks) never block on it.
 if [[ -o interactive && -t 1 ]] && command -v keychain &>/dev/null; then
-  eval "$(SSH_ASKPASS_REQUIRE=never keychain --quiet --eval --agents ssh ~/.ssh/nunes.lfa)"
+  eval "$(SSH_ASKPASS_REQUIRE=never keychain --quiet --eval --agents ssh ~/.ssh/nunes@domo ~/.ssh/nunes.lfa)"
 fi
 
 # ============================================================================
