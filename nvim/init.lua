@@ -66,6 +66,12 @@ map("n", "<leader>nh", ":nohlsearch<CR>", { desc = "clear search highlight" })
 -- 'jk' to leave insert mode without reaching for Esc (try it!)
 map("i", "jk", "<Esc>", { desc = "exit insert mode" })
 
+-- Deleting shouldn't clobber the clipboard: x and c go to the black hole
+-- register, so whatever you yanked last stays available to paste.
+map("n", "x", '"_x', { desc = "delete char (no clipboard)" })
+map("n", "c", '"_c', { desc = "change (no clipboard)" })
+map("x", "c", '"_c', { desc = "change selection (no clipboard)" })
+
 -- ---------------------------------------------------------------------
 --  Plugins (lazy.nvim)
 -- ---------------------------------------------------------------------
