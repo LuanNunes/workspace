@@ -1,0 +1,147 @@
+# AeroSpace — symlinked to ~/.config/aerospace/aerospace.toml
+#
+# i3-like tiling for macOS, without disabling SIP. Reload after editing:
+#   aerospace reload-config
+# Full command reference: https://nikitabobko.github.io/AeroSpace/commands
+#
+# NOTE ON `alt`: AeroSpace grabs its bindings system-wide, BEFORE the focused
+# app sees them. So every `alt-<key>` below is permanently unavailable to zsh,
+# Neovim and fzf. That's why `alt-c` is deliberately NOT bound — fzf's cd-widget
+# owns it. Check this file before adding a binding.
+
+start-at-login = true
+
+# macOS "Displays have separate Spaces" fights any tiler: it gives each display
+# its own animated Space and re-parents windows behind the WM's back. Turn it
+# off in System Settings → Desktop & Dock → Mission Control, then log out.
+after-login-command = []
+
+# A colored outline on the focused window — the only way to tell focus apart in
+# a gapless tile. Colors are Rosé Pine (iris / overlay), matching Ghostty.
+after-startup-command = [
+    'exec-and-forget borders active_color=0xffc4a7e7 inactive_color=0xff26233a width=6.0',
+]
+
+# ===========================================================================
+#  Layout
+# ===========================================================================
+# 'auto' splits along the longer edge — horizontal on a wide display, vertical
+# on the built-in one. Beats hardcoding a direction on a laptop + monitor setup.
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+
+# How much of a stacked window peeks out in accordion layout.
+accordion-padding = 30
+
+# Mouse follows focus, so the cursor is always over the window you just jumped
+# to — otherwise hover-sensitive UI (and scrolling) targets the wrong window.
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+[gaps]
+inner.horizontal = 8
+inner.vertical = 8
+outer.left = 8
+outer.right = 8
+outer.bottom = 8
+outer.top = 8
+
+[key-mapping]
+preset = 'qwerty'
+
+# ===========================================================================
+#  Floating rules
+# ===========================================================================
+# Anything that is a dialog, a palette or a preferences pane is worse when
+# tiled. Find an app's id with: `aerospace list-apps`
+on-window-detected = [
+    { if.app-id = 'com.apple.systempreferences', run = 'layout floating' },
+    { if.app-id = 'com.apple.finder',            run = 'layout floating' },
+    { if.app-id = 'com.apple.ActivityMonitor',   run = 'layout floating' },
+    { if.app-id = 'com.apple.AddressBook',       run = 'layout floating' },
+    { if.app-id = 'com.apple.iCal',              run = 'layout floating' },
+    { if.app-id = 'com.raycast.macos',           run = 'layout floating' },
+    { if.app-id = 'com.jetbrains.toolbox',       run = 'layout floating' },
+    { if.app-id = 'dev.orbstack.OrbStack',       run = 'layout floating' },
+    { if.app-id = 'org.pqrs.Karabiner-Elements.Settings', run = 'layout floating' },
+
+    # Send apps straight to a fixed workspace so the layout is the same every
+    # boot: 1 = terminal, 2 = editor/IDE, 3 = browser, 4 = chat.
+    { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1' },
+    { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2' },
+    { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 3' },
+    { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 4' },
+]
+
+# ===========================================================================
+#  Main mode
+# ===========================================================================
+[mode.main.binding]
+
+# --- launch -----------------------------------------------------------------
+alt-enter = 'exec-and-forget open -na Ghostty'
+
+# --- focus / move (i3 hjkl) -------------------------------------------------
+alt-h = 'focus left'
+alt-j = 'focus down'
+alt-k = 'focus up'
+alt-l = 'focus right'
+
+alt-shift-h = 'move left'
+alt-shift-j = 'move down'
+alt-shift-k = 'move up'
+alt-shift-l = 'move right'
+
+# --- layout -----------------------------------------------------------------
+alt-slash = 'layout tiles horizontal vertical'      # toggle split direction
+alt-comma = 'layout accordion horizontal vertical'  # stack them instead
+alt-f = 'fullscreen'
+alt-shift-f = 'layout floating tiling'              # pop this window out
+
+# --- resize -----------------------------------------------------------------
+alt-minus = 'resize smart -50'
+alt-equal = 'resize smart +50'
+
+# --- workspaces -------------------------------------------------------------
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+alt-3 = 'workspace 3'
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
+alt-8 = 'workspace 8'
+alt-9 = 'workspace 9'
+
+alt-shift-1 = 'move-node-to-workspace 1 --focus-follows-window'
+alt-shift-2 = 'move-node-to-workspace 2 --focus-follows-window'
+alt-shift-3 = 'move-node-to-workspace 3 --focus-follows-window'
+alt-shift-4 = 'move-node-to-workspace 4 --focus-follows-window'
+alt-shift-5 = 'move-node-to-workspace 5 --focus-follows-window'
+alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
+alt-shift-7 = 'move-node-to-workspace 7 --focus-follows-window'
+alt-shift-8 = 'move-node-to-workspace 8 --focus-follows-window'
+alt-shift-9 = 'move-node-to-workspace 9 --focus-follows-window'
+
+# Jump back to the previous workspace — the Alt-Tab you actually want.
+# If you also installed the AltTab app, move ITS hotkey to cmd-tab so the two
+# don't fight over this chord.
+alt-tab = 'workspace-back-and-forth'
+alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+
+# --- sub-modes --------------------------------------------------------------
+alt-shift-semicolon = 'mode service'
+
+# ===========================================================================
+#  Service mode  (alt-shift-; then a key, Esc to leave)
+# ===========================================================================
+[mode.service.binding]
+esc = ['reload-config', 'mode main']
+r = ['flatten-workspace-tree', 'mode main']   # reset a layout you've mangled
+f = ['layout floating tiling', 'mode main']
+backspace = ['close-all-windows-but-current', 'mode main']
+
+# Join this window into its neighbour's container.
+alt-shift-h = ['join-with left',  'mode main']
+alt-shift-j = ['join-with down',  'mode main']
+alt-shift-k = ['join-with up',    'mode main']
+alt-shift-l = ['join-with right', 'mode main']

@@ -1,12 +1,14 @@
 # dotfiles
 
-Personal workstation configuration (WSL2 / Ubuntu / zsh).
+Personal workstation configuration for two machines that share one shell:
+**WSL2 / Ubuntu** on the Windows laptop, and **macOS** (Apple Silicon) on the
+MacBook Pro.
 
 ## Layout
 
 ```
 dotfiles/
-├── .zshrc                  # zsh config  → symlinked to ~/.zshrc
+├── .zshrc                  # zsh config  → symlinked to ~/.zshrc on BOTH machines
 ├── .p10k.zsh               # Powerlevel10k prompt → symlinked to ~/.p10k.zsh
 ├── .zshrc.secrets.example  # template for API keys (real file is git-ignored)
 ├── .ideavimrc              # IdeaVim config → symlinked to ~/.ideavimrc (all JetBrains IDEs)
@@ -15,6 +17,13 @@ dotfiles/
 │   └── lazy-lock.json      # pinned plugin versions → ~/.config/nvim/lazy-lock.json
 │                           # the same two files also feed the Windows Neovim,
 │                           # copied to %LOCALAPPDATA%\nvim by windows/sync.sh
+├── macos/                  # macOS side — SYMLINKED, like the WSL files
+│   ├── bootstrap.sh        # one-shot machine setup (idempotent)
+│   ├── defaults.sh         # `defaults write` system prefs — the registry tweaks
+│   ├── Brewfile            # every package, for `brew bundle`
+│   ├── ghostty/config      # terminal → ~/.config/ghostty/config
+│   ├── aerospace/          # tiling WM → ~/.config/aerospace/aerospace.toml
+│   └── README.md           # setup, Apple Silicon notes, gotchas
 ├── windows/                # SNAPSHOTS of the Windows side (see note below)
 │   ├── sync.sh             # copies these files to/from Windows
 │   ├── powershell/         # PowerShell profile (prompt, PSReadLine, aliases)
@@ -28,11 +37,26 @@ dotfiles/
 │   └── desktop-customization.md  # Windhawk, TranslucentTB, Flow Launcher, Bibata cursor
 ├── vim-cheatsheet.md       # Vim grammar + all our <leader> mappings (PT-BR)
 ├── shell-cheatsheet.md     # every CLI tool in both shells, and how to use it (PT-BR)
+├── macos-cheatsheet.md     # Windows/WSL → macOS day-to-day reference (PT-BR)
+├── macos-setup-passo-a-passo.md  # guided setup: macOS concepts + every step
+│                           # explained, with how to verify and undo (PT-BR)
 └── README.md
 ```
 
-Everything under WSL is tracked here and **symlinked** into place, so edits to
-the repo are live immediately and the machine stays reproducible.
+Everything under WSL and macOS is tracked here and **symlinked** into place, so
+edits to the repo are live immediately and both machines stay reproducible.
+
+### One `.zshrc`, two operating systems
+
+`.zshrc`, `.p10k.zsh`, `.ideavimrc` and `nvim/` are shared verbatim — around 90 %
+of the shell config is identical, so it is not forked. The blocks that genuinely
+differ (SSH agent, `DISPLAY`/X410, Homebrew prefix, `ANDROID_HOME`, keyboard
+layout, the fastfetch boot marker, GUI-app aliases) sit behind
+`[[ "$OSTYPE" == darwin* ]]`. See the table in [`macos/README.md`](macos/README.md).
+
+`nvim/init.lua` needed no change at all: its `clip.exe` clipboard bridge is
+already gated on `vim.fn.has("wsl")`, so macOS falls through to native
+`pbcopy`/`pbpaste`.
 
 > **Windows note:** everything under `windows/` is a **snapshot**, not a symlink.
 > Those files live on NTFS, the apps that own them rewrite the file wholesale
@@ -77,6 +101,14 @@ the repo are live immediately and the machine stays reproducible.
   retints the whole prompt automatically. The WSL and PowerShell profiles still
   use **different** schemes on purpose, so a glance tells you which shell you're in.
 
+- **macOS host** (`macos/`): **Ghostty** as the terminal (Rosé Pine, MonaspiceNe NF,
+  native Tahoe glass blur, `macos-option-as-alt = left` so the left Option is a
+  real Alt for fzf/readline while the right one still types `á`/`ç`/`ã`);
+  **AeroSpace** for i3-like tiling without touching SIP; **Raycast** (launcher),
+  **Maccy** (clipboard history), **AltTab**, **LinearMouse** and **OrbStack**
+  instead of Docker Desktop. System preferences are code, not clicks — see
+  `macos/defaults.sh`.
+
 ### Temas por máquina (Windows Terminal)
 
 `windows/windows-terminal/` is a small per-machine theming system, so one shared
@@ -104,7 +136,40 @@ repo can dress each laptop differently without one clobbering the other:
 > (*Tokyo Night* + Kanagawa). `MonaspiceNe NF` must be installed on the machine
 > (Monaspace from the Nerd Fonts release).
 
-## Setup on a new machine
+## Setup on a new Mac
+
+`bootstrap.sh` is step-based rather than one-shot: each step prints what it does
+and why before doing it, and runs on its own, so bringing the machine up doubles
+as learning the OS.
+
+```sh
+git clone git@github-luan:LuanNunes/workspace.git ~/projects/resolveprogramming/workspace
+cd ~/projects/resolveprogramming/workspace
+
+./macos/bootstrap.sh --list           # the 10 steps
+./macos/bootstrap.sh --dry-run all    # print every command, change nothing
+./macos/bootstrap.sh clt              # one at a time…
+./macos/bootstrap.sh all              # …or all at once
+./macos/defaults.sh                   # system preferences (read it first)
+```
+
+Three documents, by purpose:
+
+| Document | For |
+|---|---|
+| [`macos-setup-passo-a-passo.md`](macos-setup-passo-a-passo.md) | **setting the machine up** — the macOS concepts (bundles, `~/Library`, `defaults`/`cfprefsd`, launchd, SIP, TCC, Gatekeeper, Rosetta, APFS) and every step with how to verify and undo it |
+| [`macos-cheatsheet.md`](macos-cheatsheet.md) | **daily use** — shortcut conversion table, accents, AeroSpace bindings, Windows→macOS equivalences |
+| [`macos/README.md`](macos/README.md) | **the repo side** — layout, what's shared with WSL, Apple Silicon caveats |
+
+Both scripts are idempotent. Afterwards: log out and back in, then grant
+**Accessibility** permission to AeroSpace, Raycast, AltTab and Karabiner — macOS
+gives those apps no error when it is missing, they just silently do nothing.
+
+SSH keys are **not** generated by the script — copy the existing ones over, since
+`nunes@domo` is registered with the org. See the migration checklist at the top
+of `macos-cheatsheet.md`.
+
+## Setup on a new machine (WSL2 / Ubuntu)
 
 ```sh
 git clone git@github.com:LuanNunes/workspace.git ~/projects/resolve-programming/workspace
