@@ -32,12 +32,47 @@ and open Ghostty — Zinit and lazy.nvim finish their first-run installs there.
 Every step is idempotent: re-running one that is already done is a no-op, and any
 real file about to be replaced by a symlink is backed up to `<file>.bak.<ts>`.
 
+## Taking stock: `audit.sh`
+
+`audit.sh` writes nothing — it only reads. It exists because deciding what to
+strip off a Mac from a blog post's list of `defaults write` lines is guesswork;
+this prints what *this* machine actually has.
+
+```sh
+./macos/audit.sh --list                     # the 11 sections
+./macos/audit.sh                            # all of them
+./macos/audit.sh managed apps login-items   # the three that matter first
+AUDIT_SUDO=1 ./macos/audit.sh login-items   # + the Background Task Management dump
+```
+
+Start with `managed`: if a configuration profile (MDM) is installed, some
+settings are re-applied behind your back and no amount of `defaults write` will
+hold. Know that before fighting one.
+
+### Three layers of clutter, and only two are removable
+
+| Layer | Where | Removable? |
+|---|---|---|
+| Apple's system apps | `/System/Applications` | **No.** Sealed System Volume (SSV) since Catalina. Not even with SIP disabled — breaking the seal costs you OTA updates. |
+| Everything else installed | `/Applications`, `~/Applications` | Yes — `rm -rf`, `brew uninstall`, or drag to Trash |
+| Configuration & chrome | Dock, menu bar, Spotlight, Siri, widgets, launchd agents | Yes — `defaults`, `launchctl`, all reversible |
+
+So TV.app and Stocks.app do not leave the disk. They leave the Dock, the
+Spotlight index and Launchpad, which is what "clean" actually means here.
+
+The `login-items` and `agents` sections cover what the Windows Startup folder
+covers, except macOS splits it across three places: classic login items, the
+Background Task Management database (`sfltool dumpbtm`, the one that catches
+helpers surviving a Quit), and `LaunchAgents`/`LaunchDaemons` in `~/Library` and
+`/Library`.
+
 ## Layout
 
 ```
 macos/
 ├── bootstrap.sh              # one-shot machine setup (idempotent)
 ├── defaults.sh               # `defaults write` system prefs — the registry tweaks
+├── audit.sh                  # read-only inventory of what the machine runs
 ├── Brewfile                  # every package, for `brew bundle`
 ├── ghostty/config            # → ~/.config/ghostty/config
 └── aerospace/aerospace.toml  # → ~/.config/aerospace/aerospace.toml
