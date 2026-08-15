@@ -75,7 +75,7 @@ brew "pinentry-mac"  # lets gpg ask for the passphrase via the macOS Keychain
 # ===========================================================================
 #  Window management & desktop
 # ===========================================================================
-brew "nikitabobko/tap/aerospace"    # i3-like tiler, no SIP changes needed
+cask "nikitabobko/tap/aerospace"    # i3-like tiler, no SIP changes needed
 brew "FelixKratz/formulae/borders"  # colored outline on the focused window
 
 cask "raycast"           # Spotlight replacement — the Flow Launcher of macOS
@@ -111,6 +111,6 @@ cask "firefox@developer-edition"
 # ===========================================================================
 #  Fonts — the prompt needs a Nerd Font with powerline glyphs
 # ===========================================================================
-cask "font-monaspace-nerd-font"        # MonaspiceNe NF — the WSL box's font
-cask "font-ubuntu-sans-mono-nerd-font"
+cask "font-monaspace-nf"               # MonaspiceNe NF — the WSL box's font
+cask "font-ubuntu-mono-nerd-font"
 cask "font-symbols-only-nerd-font"     # glyph fallback for non-patched fonts

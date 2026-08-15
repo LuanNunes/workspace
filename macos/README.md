@@ -32,6 +32,40 @@ and open Ghostty — Zinit and lazy.nvim finish their first-run installs there.
 Every step is idempotent: re-running one that is already done is a no-op, and any
 real file about to be replaced by a symlink is backed up to `<file>.bak.<ts>`.
 
+### Two things the `packages` step cannot do for you
+
+**Third-party taps need `brew trust` first.** Homebrew now refuses to load a
+formula or cask from a tap you have not explicitly trusted — installing runs that
+tap's Ruby on your machine, so it wants a decision. `brew bundle` resolves all
+packages *before* downloading anything, so one untrusted tap aborts the whole
+batch and leaves nothing installed:
+
+```sh
+brew trust nikitabobko/tap      # AeroSpace
+brew trust felixkratz/formulae  # borders
+```
+
+Undo with `brew untrust <tap>`. Same all-or-nothing rule applies to a typo in a
+package name — validate the whole Brewfile in one pass before a long run:
+
+```sh
+for c in $(grep '^cask ' macos/Brewfile | sed 's/^cask "//; s/".*//'); do
+  brew info --cask "$c" >/dev/null 2>&1 || echo "✗ $c"
+done
+```
+
+**`karabiner-elements` needs a real terminal.** Its `.pkg` installs a DriverKit
+keyboard driver as root, and `sudo` refuses to read a password without a TTY — so
+it fails under any automation, including an agent's shell. Install it by hand
+from Ghostty or Terminal.app:
+
+```sh
+brew install --cask karabiner-elements
+```
+
+Then approve the system extension in System Settings → Privacy & Security.
+Without that approval it installs and silently remaps nothing.
+
 ## Taking stock: `audit.sh`
 
 `audit.sh` writes nothing — it only reads. It exists because deciding what to

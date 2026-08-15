@@ -237,7 +237,9 @@ section_disk() {
   du -sh "$HOME/Library/Application Support"/* 2>/dev/null | sort -rh | head -10
 
   sub "Caches"
-  du -sh "$HOME/Library/Caches" 2>/dev/null
+  # du exits non-zero on the subdirectories SIP keeps us out of, even though it
+  # printed a perfectly good total. Without this the section is reported failed.
+  du -sh "$HOME/Library/Caches" 2>/dev/null || true
 }
 
 # ---------------------------------------------------------------------------
