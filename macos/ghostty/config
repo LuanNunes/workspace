@@ -9,11 +9,17 @@
 # ===========================================================================
 # Same palette as the WSL box (windows/windows-terminal/themes.json → rose-pine).
 # macOS auto-switches appearance at sunset; follow it instead of forcing dark.
-theme = dark:rose-pine,light:rose-pine-dawn
+# Theme names are matched against the file names in
+# Ghostty.app/Contents/Resources/ghostty/themes — exactly, spaces and capitals
+# included. `ghostty +list-themes` prints them; a wrong name is a startup error.
+theme = dark:Rose Pine,light:Rose Pine Dawn
 
 font-family = "MonaspiceNe Nerd Font"
 font-size = 14
-font-thicken = true          # macOS renders thinner than Windows/Linux at 14pt
+# macOS renders thinner than Windows/Linux at 14pt.
+# NOTE: Ghostty has no inline comments — a trailing `# …` becomes part of the
+# value. Every comment in this file has to sit on its own line.
+font-thicken = true
 
 # The TranslucentTB successor. macOS 26 (Tahoe) exposes the real system glass
 # material to apps — `macos-glass-regular` is the tinted one, `macos-glass-clear`
