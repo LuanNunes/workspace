@@ -8,11 +8,22 @@
 #  Look
 # ===========================================================================
 # Same palette as the WSL box (windows/windows-terminal/themes.json → rose-pine).
-# macOS auto-switches appearance at sunset; follow it instead of forcing dark.
 # Theme names are matched against the file names in
 # Ghostty.app/Contents/Resources/ghostty/themes — exactly, spaces and capitals
 # included. `ghostty +list-themes` prints them; a wrong name is a startup error.
-theme = dark:Rose Pine,light:Rose Pine Dawn
+# Run that command in a real terminal and it is a live-preview browser instead;
+# with the output piped it degrades to a plain list.
+#
+# Deliberately NOT the `dark:…,light:…` form that follows the system appearance.
+# macOS does switch at sunset, but a pale background stacks three problems here:
+# light palettes are pastel by design, so syntax highlighting collapses into
+# shades of beige; the transparency below leaks the wallpaper through a pale
+# background instead of a dark one; and `font-thicken` exists to fatten
+# light-on-dark text, so it only smears dark-on-light. The prompt settles it —
+# .p10k.zsh hardcodes the Rose Pine *dark* hex values (they have to be literals,
+# since the git formatter colours its own text) and cannot follow the system.
+# Dark, always.
+theme = Rose Pine
 
 font-family = "MonaspiceNe Nerd Font"
 font-size = 14
