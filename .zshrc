@@ -123,6 +123,13 @@ fi
 
 export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/.dotnet/tools"
 
+# Codex CLI — ships inside the ChatGPT desktop app rather than as its own
+# package, so it is not in the Brewfile. Re-added by hand after the app wrote
+# this same export to ~/.zshrc and replaced the entire file doing it: ~/.zshrc
+# is a symlink into this repo, so the damage was committed-file-shaped and only
+# `git diff` caught it. If you reinstall it, check `git diff .zshrc` afterwards.
+export PATH="/Applications/ChatGPT.app/Contents/Resources:$PATH"
+
 # Android SDK — Studio installs it under ~/Library on macOS.
 if [[ "$OSTYPE" == darwin* ]]; then
   export ANDROID_HOME="$HOME/Library/Android/sdk"

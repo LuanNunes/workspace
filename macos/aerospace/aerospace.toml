@@ -9,7 +9,18 @@
 # Neovim and fzf. That's why `alt-c` is deliberately NOT bound — fzf's cd-widget
 # owns it. Check this file before adding a binding.
 
+# Schema version of this file. Without it AeroSpace assumes 1 and warns on every
+# start. https://nikitabobko.github.io/AeroSpace/guide#config-version
+config-version = 2
+
 start-at-login = true
+
+# Version 2's one breaking change: v1 inferred which workspaces survive an empty
+# screen from the keybindings below, so alt-1…alt-9 persisted for free. In v2 the
+# fallback is an empty array and this list is the source of truth — without it,
+# a workspace would vanish the moment its last window closes. Keep it in sync
+# with the `alt-<n> = 'workspace <n>'` bindings further down.
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 # macOS "Displays have separate Spaces" fights any tiler: it gives each display
 # its own animated Space and re-parents windows behind the WM's back. Turn it
@@ -37,22 +48,17 @@ accordion-padding = 30
 # to — otherwise hover-sensitive UI (and scrolling) targets the wrong window.
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
-[gaps]
-inner.horizontal = 8
-inner.vertical = 8
-outer.left = 8
-outer.right = 8
-outer.bottom = 8
-outer.top = 8
-
-[key-mapping]
-preset = 'qwerty'
-
 # ===========================================================================
 #  Floating rules
 # ===========================================================================
 # Anything that is a dialog, a palette or a preferences pane is worse when
 # tiled. Find an app's id with: `aerospace list-apps`
+#
+# THIS BLOCK MUST STAY ABOVE EVERY `[section]` HEADER. `on-window-detected` is a
+# root-level key, and in TOML every key after a header belongs to that header's
+# table until the next one. Sitting below `[key-mapping]` it was read as
+# `key-mapping.on-window-detected` — "Unknown key", and the whole config failed
+# to parse, so none of these rules ever ran.
 on-window-detected = [
     { if.app-id = 'com.apple.systempreferences', run = 'layout floating' },
     { if.app-id = 'com.apple.finder',            run = 'layout floating' },
@@ -71,6 +77,21 @@ on-window-detected = [
     { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 3' },
     { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 4' },
 ]
+
+# ===========================================================================
+#  Sections — everything below here is inside a table, so no root-level key
+#  (`on-window-detected`, `start-at-login`, …) may be added past this point.
+# ===========================================================================
+[gaps]
+inner.horizontal = 8
+inner.vertical = 8
+outer.left = 8
+outer.right = 8
+outer.bottom = 8
+outer.top = 8
+
+[key-mapping]
+preset = 'qwerty'
 
 # ===========================================================================
 #  Main mode
