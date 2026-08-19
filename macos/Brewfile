@@ -95,6 +95,15 @@ cask "jetbrains-toolbox" # installs/updates IntelliJ, WebStorm, Rider, DataGripâ
 cask "android-studio"
 
 # ===========================================================================
+#  API clients
+# ===========================================================================
+# The es repo standardises on Hoppscotch: opus-app/CLAUDE.md documents a shared
+# Opus.json collection and ships a hoppscotch-collection-builder agent that
+# writes to it. Postman is here for everything outside that workflow.
+cask "hoppscotch"
+cask "postman"
+
+# ===========================================================================
 #  Containers
 # ===========================================================================
 # OrbStack instead of Docker Desktop: same `docker`/`docker compose` CLI, but
