@@ -362,6 +362,34 @@ alias domo-admin="cd \$HOME/projects/domo/admin-console && ./initDatabase.sh rig
 alias tug="tug-eks"
 alias tug-feature="tug set feature -f forms; tug set feature -f workflows; tug set feature -f code-engine-v2; tug set feature -f hopper; tug set feature -f data-app; tug set feature -f forms-widget; tug set feature -f wf_person; tug set feature -f forms-singleton; tug set feature -f domo-wide; tug set feature -f wf_group; tug set feature -f wf_accounts; tug set feature -f wf_templates; tug set feature -f wf-tasks-identifiers; tug set feature -f ce-run-with-defined-object; tug set feature -f ce-example-tab; tug set feature -f wf-form-starts-v2; tug set feature -f forms-question-rail; tug set feature -f gp-admin; tug set feature -f workflow-start-widget; tug set feature -f embed-card-public; tug set feature -f embed-card-view; tug set feature -f embed-card; tug set feature -f private-embed-v2; tug set feature -f story-embed-v2; tug set feature -f story-embed-export; tug set feature -f relational-appdb;"
 
+# GlobalProtect: leave the "Allow in the Background" toggle ON in System
+# Settings. That switch kills the whole Palo Alto group, and the group includes
+# pangps — which *is* the VPN: PanGPS is setuid root, so the agent alone brings
+# the tunnel up, no LaunchDaemon involved (pangpsd ships but never loads here).
+# Disabling the group leaves only pangpa, the UI, which is just a PanGPS client:
+# the app opens and cannot connect. So autostart is controlled here instead —
+# `launchctl disable` blocks RunAtLoad at login, `vpn-on` bootstraps on demand.
+if [[ "$OSTYPE" == darwin* ]]; then
+  # PanGPS is setuid root, so bootstrapping it needs sudo — as your own user
+  # launchd answers "Bootstrap failed: 5: Input/output error".
+  vpn-on() {
+    local job
+    for job in pangps pangpa; do          # service first, UI second
+      sudo launchctl enable "gui/$UID/com.paloaltonetworks.gp.$job"
+      sudo launchctl bootstrap "gui/$UID" \
+        "/Library/LaunchAgents/com.paloaltonetworks.gp.$job.plist"
+    done
+  }
+
+  vpn-off() {
+    local job
+    for job in pangpa pangps; do
+      launchctl bootout "gui/$UID/com.paloaltonetworks.gp.$job" 2>/dev/null
+      sudo launchctl disable "gui/$UID/com.paloaltonetworks.gp.$job"
+    done
+  }
+fi
+
 # ============================================================================
 #  Powerlevel10k config
 # ============================================================================
