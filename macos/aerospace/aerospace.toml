@@ -59,6 +59,12 @@ on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 # table until the next one. Sitting below `[key-mapping]` it was read as
 # `key-mapping.on-window-detected` — "Unknown key", and the whole config failed
 # to parse, so none of these rules ever ran.
+#
+# Every id below was read off the installed .app with
+# `mdls -name kMDItemCFBundleIdentifier -raw /Applications/<name>.app`. Do the
+# same for anything you add — AeroSpace does NOT warn about an id that matches
+# no app, the rule just silently never fires. That is what made the browser and
+# chat rules below look broken for months.
 on-window-detected = [
     { if.app-id = 'com.apple.systempreferences', run = 'layout floating' },
     { if.app-id = 'com.apple.finder',            run = 'layout floating' },
@@ -70,12 +76,35 @@ on-window-detected = [
     { if.app-id = 'dev.orbstack.OrbStack',       run = 'layout floating' },
     { if.app-id = 'org.pqrs.Karabiner-Elements.Settings', run = 'layout floating' },
 
+    # Popups and one-shot panels. Tiling these steals half the screen from real
+    # work every time they appear.
+    { if.app-id = 'com.bitwarden.desktop',       run = 'layout floating' },
+    { if.app-id = 'org.p0deje.Maccy',            run = 'layout floating' },
+    { if.app-id = 'com.lujjjh.LinearMouse',      run = 'layout floating' },
+    { if.app-id = 'com.ookla.speedtest-macos',   run = 'layout floating' },
+    { if.app-id = 'eu.exelban.Stats',            run = 'layout floating' },
+    { if.app-id = 'com.apple.UserNotificationCenter', run = 'layout floating' },
+
     # Send apps straight to a fixed workspace so the layout is the same every
-    # boot: 1 = terminal, 2 = editor/IDE, 3 = browser, 4 = chat.
+    # boot: 1 = terminal, 2 = editor/IDE, 3 = browser, 4 = chat, 5 = media.
+    # Each slot lists EVERY app you actually open for that job — a slot with one
+    # app in it is the same as having no rule the day you switch tools.
     { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1' },
+
     { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2' },
+    { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2' },
+    { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2' },
+
+    { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 3' },
+    { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 3' },
     { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 3' },
+
     { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 4' },
+    { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 4' },
+    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4' },
+    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4' },
+
+    { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5' },
 ]
 
 # ===========================================================================
@@ -83,12 +112,18 @@ on-window-detected = [
 #  (`on-window-detected`, `start-at-login`, …) may be added past this point.
 # ===========================================================================
 [gaps]
+# `inner` separates tiled windows from each other — keep it, otherwise two
+# windows share a hairline and you can't tell where one ends.
+# `outer` is the margin against the screen edge, and it's 0 on purpose: with one
+# window per workspace (the way this setup is meant to be used) the window then
+# fills the display exactly like macOS native fullscreen, minus the native Space
+# that breaks every alt-<n> binding.
 inner.horizontal = 8
 inner.vertical = 8
-outer.left = 8
-outer.right = 8
-outer.bottom = 8
-outer.top = 8
+outer.left = 0
+outer.right = 0
+outer.bottom = 0
+outer.top = 0
 
 [key-mapping]
 preset = 'qwerty'
@@ -112,6 +147,12 @@ alt-shift-j = 'move down'
 alt-shift-k = 'move up'
 alt-shift-l = 'move right'
 
+# Alternate between the last two WINDOWS. `alt-tab` below does the same for
+# workspaces; this one is what you want when two apps share a workspace.
+# Costs zsh its `alt-a` (unbound by default, so nothing real is lost) — see the
+# note at the top of this file before adding any other alt-<key>.
+alt-a = 'focus-back-and-forth'
+
 # --- layout -----------------------------------------------------------------
 alt-slash = 'layout tiles horizontal vertical'      # toggle split direction
 alt-comma = 'layout accordion horizontal vertical'  # stack them instead
@@ -119,8 +160,11 @@ alt-f = 'fullscreen'
 alt-shift-f = 'layout floating tiling'              # pop this window out
 
 # --- resize -----------------------------------------------------------------
-alt-minus = 'resize smart -50'
-alt-equal = 'resize smart +50'
+# 150px per press, not 50. The step is in real pixels, so on a display this wide
+# a 50px step needs ~10 presses before the split visibly moves — which reads as
+# "the binding is broken".
+alt-minus = 'resize smart -150'
+alt-equal = 'resize smart +150'
 
 # --- workspaces -------------------------------------------------------------
 alt-1 = 'workspace 1'

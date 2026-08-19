@@ -224,25 +224,46 @@ Aqui `alt` = **Option**.
 | `Alt+Enter` | novo Ghostty |
 | `Alt+H/J/K/L` | mover **foco** |
 | `Alt+Shift+H/J/K/L` | mover a **janela** |
+| `Alt+A` | voltar à janela anterior (dentro do mesmo workspace) |
 | `Alt+1..9` | ir para workspace |
 | `Alt+Shift+1..9` | mandar janela para workspace |
 | `Alt+Tab` | voltar ao workspace anterior |
+| `Alt+Shift+Tab` | jogar o workspace para o outro monitor |
 | `Alt+/` | alternar split horizontal/vertical |
 | `Alt+,` | virar accordion (empilhar) |
 | `Alt+F` | fullscreen |
 | `Alt+Shift+F` | soltar a janela (floating) |
-| `Alt+-` / `Alt+=` | redimensionar |
-| `Alt+Shift+;` | modo service (`r` = resetar layout, `Esc` = sair) |
+| `Alt+-` / `Alt+=` | redimensionar (150px por toque) |
+| `Alt+Shift+;` | entrar no modo service (tabela abaixo) |
 
-Workspaces fixos por app: **1** terminal, **2** editor, **3** browser, **4** chat.
+`Alt+Tab` é entre **workspaces**, `Alt+A` é entre **janelas** — é o que você quer
+quando dois apps dividem o mesmo workspace.
+
+**Modo service** — `Alt+Shift+;` e depois **uma** tecla; toda opção já volta
+sozinha para o modo main:
+
+| Tecla | Ação |
+|---|---|
+| `Esc` | recarrega a config e sai |
+| `R` | resetar o layout que você embaralhou |
+| `F` | alternar floating/tiling |
+| `Backspace` | fechar todas as janelas menos a atual |
+| `Alt+Shift+H/J/K/L` | juntar esta janela no container do vizinho |
+
+Workspaces fixos por app: **1** terminal, **2** editor/IDE, **3** browser,
+**4** chat, **5** música.
+
+A regra só dispara quando a janela **nasce** — app já aberto não se muda sozinho
+depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 
 > ⚠️ **O AeroSpace captura `Alt+<tecla>` globalmente**, antes do app em foco. Por
 > isso `Alt+C` **não** está mapeado — é do fzf. Confira o arquivo antes de
 > adicionar binding novo.
 
-> ⚠️ Desligue **System Settings → Desktop & Dock → "Displays have separate
-> Spaces"** e faça logout. Com isso ligado, o macOS reposiciona janelas por conta
-> própria e briga com qualquer tiler.
+> ⚠️ **"Displays have separate Spaces"** precisa estar desligado — com ele ligado
+> o macOS reposiciona janelas por conta própria e briga com qualquer tiler. O
+> `defaults.sh` já escreve isso (`com.apple.spaces spans-displays`), mas só vale
+> depois de um **logout**; a chave é lida no login.
 
 ---
 

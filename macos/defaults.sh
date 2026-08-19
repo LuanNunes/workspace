@@ -67,6 +67,13 @@ defaults write com.apple.dock mru-spaces -bool false
 # Don't auto-shuffle windows into Spaces based on the app they belong to.
 defaults write NSGlobalDomain AppleSpacesSwitchOnActivate -bool false
 
+# "Displays have separate Spaces" OFF (spans-displays = true means one Space
+# spans every display). Left on, macOS gives each display its own animated Space
+# and re-parents windows behind AeroSpace's back — the tiler and the OS then
+# disagree about where a window lives. Costs nothing on a single screen; the
+# damage only shows up the day an external monitor is plugged in.
+defaults write com.apple.spaces spans-displays -bool true
+
 # Hot corners off — they fire constantly while you're aiming for a window edge.
 # (0 = no-op; tl/tr/bl/br = top-left, top-right, bottom-left, bottom-right)
 defaults write com.apple.dock wvous-tl-corner -int 0
