@@ -392,6 +392,14 @@ if [[ "$OSTYPE" == darwin* ]]; then
       launchctl bootout "gui/$UID/com.paloaltonetworks.gp.$job" 2>/dev/null
       sudo launchctl disable "gui/$UID/com.paloaltonetworks.gp.$job"
     done
+    # bootout only reaches the UI launchd owns. Open the app from Finder or
+    # Spotlight and it registers with LaunchServices instead — a different job,
+    # which bootout above does not touch — so it outlives PanGPS and leaves a
+    # disconnected window sitting there. pangpa is out by now, so its
+    # KeepAlive cannot respawn what this kills. Matches only the UI: PanGPS
+    # lives under Contents/Resources, not Contents/MacOS.
+    pkill -f "GlobalProtect.app/Contents/MacOS/GlobalProtect" 2>/dev/null
+    return 0
   }
 fi
 
