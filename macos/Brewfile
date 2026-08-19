@@ -65,6 +65,7 @@ brew "kubernetes-cli"
 brew "k9s"           # TUI over kubectl — far nicer than raw kubectl on a laptop
 brew "helm"
 brew "awscli"        # tug targets EKS
+brew "mysql-client"  # keg-only; startLease.sh pipes SQL into the rig
 
 # ===========================================================================
 #  Security

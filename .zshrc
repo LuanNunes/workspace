@@ -123,6 +123,12 @@ fi
 
 export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/.dotnet/tools"
 
+# mysql-client is keg-only — Homebrew refuses to symlink it into the prefix
+# because it collides with the mysql server's own client libraries. The Domo
+# lease scripts (DomoExecutor/tug-script/startLease.sh) shell out to `mysql`.
+[[ -d "$HOMEBREW_PREFIX/opt/mysql-client/bin" ]] &&
+  export PATH="$HOMEBREW_PREFIX/opt/mysql-client/bin:$PATH"
+
 # Codex CLI — ships inside the ChatGPT desktop app rather than as its own
 # package, so it is not in the Brewfile. Re-added by hand after the app wrote
 # this same export to ~/.zshrc and replaced the entire file doing it: ~/.zshrc
