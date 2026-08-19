@@ -64,6 +64,14 @@ macos-option-as-alt = left
 
 copy-on-select = clipboard
 window-save-state = always
+
+# Ghostty defaults to opening a new window in the working directory of the
+# previously focused one. Always start at $HOME instead — `working-directory`
+# is what the fallback lands on, and it is only consulted once the inherit
+# above is off. Note this is one knob, not two: new tabs and splits stop
+# inheriting as well, so `cd` before a split no longer carries over.
+window-inherit-working-directory = false
+working-directory = home
 quit-after-last-window-closed = false
 confirm-close-surface = false
 
