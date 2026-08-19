@@ -378,6 +378,11 @@ if [[ "$OSTYPE" == darwin* ]]; then
       sudo launchctl enable "gui/$UID/com.paloaltonetworks.gp.$job"
       sudo launchctl bootstrap "gui/$UID" \
         "/Library/LaunchAgents/com.paloaltonetworks.gp.$job.plist"
+      # Re-disable once bootstrapped: the job stays up for this session, but
+      # RunAtLoad no longer fires at the next login. `enable` persists across
+      # boots, so without this a single vpn-on silently rearms the autostart
+      # this whole block exists to prevent.
+      sudo launchctl disable "gui/$UID/com.paloaltonetworks.gp.$job"
     done
   }
 
