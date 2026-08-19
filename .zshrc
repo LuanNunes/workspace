@@ -375,6 +375,17 @@ if [[ "$OSTYPE" == darwin* ]]; then
   vpn-on() {
     local job
     for job in pangps pangpa; do          # service first, UI second
+      # GlobalProtect refuses to start a second UI — "Detected another
+      # instance" — and exits. pangpa is KeepAlive => true, so launchd walks
+      # it straight back into that wall, forever. Open the app from Finder
+      # before remembering this command and that is the loop you get. Leave
+      # pangpa alone when a UI is already up: the running instance is the one
+      # PanGPS talks to, and skipping it also keeps autostart disabled.
+      if [[ $job == pangpa ]] &&
+         pgrep -f "GlobalProtect.app/Contents/MacOS/GlobalProtect" >/dev/null; then
+        echo "vpn-on: GlobalProtect UI already running, leaving pangpa alone"
+        continue
+      fi
       sudo launchctl enable "gui/$UID/com.paloaltonetworks.gp.$job"
       sudo launchctl bootstrap "gui/$UID" \
         "/Library/LaunchAgents/com.paloaltonetworks.gp.$job.plist"
