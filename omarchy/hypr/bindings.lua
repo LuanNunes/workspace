@@ -61,9 +61,27 @@ o.bind("SUPER + J", "Focus on below window", hl.dsp.focus({ direction = "d" }))
 o.bind("SUPER + K", "Focus on above window", hl.dsp.focus({ direction = "u" }))
 o.bind("SUPER + L", "Focus on right window", hl.dsp.focus({ direction = "r" }))
 
--- The three displaced defaults, re-homed. SUPER + ALT + K was unavailable
--- (Tmux keybindings), which is why Keybindings lands on SHIFT instead of
--- keeping the group together on ALT.
+-- The three displaced defaults, re-homed. Keybindings keeps the "K means
+-- keybindings" mnemonic Omarchy already uses (SUPER+ALT+K is Tmux keybindings,
+-- SUPER+CTRL+K is Herdr keybindings) — both of which were taken, and SHIFT+K
+-- now belongs to the swap layer below, so the general menu takes the one
+-- remaining K. A three-modifier chord is the right place for it: it is a
+-- look-things-up menu, not a key pressed in the middle of doing something.
 o.bind("SUPER + ALT + J", "Toggle window split", hl.dsp.layout("togglesplit"))
 o.bind("SUPER + ALT + L", "Toggle workspace layout", "omarchy-hyprland-workspace-layout-toggle")
-o.bind("SUPER + SHIFT + K", "Keybindings", "omarchy-menu-keybindings")
+o.bind("SUPER + SHIFT + ALT + K", "Keybindings", "omarchy-menu-keybindings")
+
+-- ===========================================================================
+--  hjkl window swap
+-- ===========================================================================
+-- The companion layer to the focus bindings above, mirroring Omarchy's
+-- SUPER + SHIFT + arrows exactly as those mirror SUPER + arrows: same
+-- modifier, same meaning, vim spelling. Commands from the same tiling.lua.
+--
+-- No unbinds here — all four keys were free, once Keybindings moved off
+-- SHIFT+K just above.
+
+o.bind("SUPER + SHIFT + H", "Swap window to the left", hl.dsp.window.swap({ direction = "l" }))
+o.bind("SUPER + SHIFT + J", "Swap window down", hl.dsp.window.swap({ direction = "d" }))
+o.bind("SUPER + SHIFT + K", "Swap window up", hl.dsp.window.swap({ direction = "u" }))
+o.bind("SUPER + SHIFT + L", "Swap window to the right", hl.dsp.window.swap({ direction = "r" }))
