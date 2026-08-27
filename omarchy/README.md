@@ -144,7 +144,8 @@ that care is not universal, so verify instead of trusting it.
 
 It checks every symlink against the repo (catching the `sed -i` detach above),
 `OMARCHY_PATH`, every package in `packages.txt`, `ssh-agent.socket`, every tool
-in `mise-tools.txt`, and whether asdf has appeared. Anything it finds is repaired
+in `mise-tools.txt`, whether `~/.bashrc.secrets` still holds template
+placeholders, and whether asdf has appeared. Anything it finds is repaired
 by re-running the step that owns it, which it tells you.
 
 It also watches for a subtler kind of drift. `omarchy/bashrc` opens with a
@@ -228,6 +229,7 @@ it, then `ssh -T git@github.com` once.
 | An Omarchy alias (`n`, `cx`, `t`…) stopped working | `~/.bashrc` no longer sources `$OMARCHY_PATH/default/bash/rc`. `doctor` compares the whole preamble against `/etc/skel/.bashrc`. |
 | Passphrase asked on every push | `ssh-agent.socket` not enabled, or you have not logged out since `bootstrap.sh ssh`. |
 | Ctrl-R is plain bash history | atuin needs `bash-preexec` sourced first — bash has no native preexec hook. Both are in `packages.txt`. |
+| `claude` or `codex` fails to authenticate | `~/.bashrc.secrets` still exports the `REPLACE_ME` template values, and an invalid `ANTHROPIC_API_KEY` overrides subscription auth. Fill it in or `rm` it; `doctor` flags it. |
 | `node --version` disagrees with a project | asdf got installed alongside mise. Pick one; here it is mise. |
 | Hyprland comes up unstyled after an edit | A Lua error. `hyprctl configerrors` — always run it after touching `hypr/`. |
 | `omarchy` has no tab-completion | You are not in bash. The completion is bash-only, by construction. |

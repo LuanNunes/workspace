@@ -383,6 +383,25 @@ re-seeds /etc/skel, an app that rewrites its own config file. Run it after every
     warn "$skel unreadable — cannot check the preamble for drift"
   fi
 
+  # --- secrets ---
+  # The 'secrets' step seeds this file from a template, and a template that is
+  # never filled in is worse than no file: omarchy/bashrc exports it into every
+  # interactive shell, and claude and codex run here through mise. An invalid
+  # ANTHROPIC_API_KEY overrides subscription auth and fails somewhere that points
+  # nowhere near a dotfile. Self-clearing: filling it in or removing it both make
+  # this go quiet.
+  echo; printf '   \033[1mSecrets\033[0m\n'
+  local secrets="$HOME/.bashrc.secrets"
+  if [[ ! -f $secrets ]]; then
+    skip "no ~/.bashrc.secrets — omarchy/bashrc sources it only when present"
+  elif grep -q REPLACE_ME "$secrets"; then
+    bad "~/.bashrc.secrets still holds template placeholders"
+    explain "   Fill in the real keys, or rm the file."
+    issues=$(( issues + 1 ))
+  else
+    ok "~/.bashrc.secrets has no leftover placeholders"
+  fi
+
   # --- packages ---
   echo; printf '   \033[1mPackages\033[0m\n'
   local missing=() p
