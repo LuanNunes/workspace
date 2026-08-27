@@ -1,0 +1,84 @@
+# packages.txt — every Arch package this machine installs.
+#
+#   ./omarchy/bootstrap.sh pkgs
+#
+# Comments and blank lines are stripped; the rest is handed to
+# `pacman -S --needed`, so re-running is a no-op for what is already there.
+#
+# Everything here is in an official repo or in Omarchy's own — there is no AUR
+# list, on purpose. An AUR package is a build recipe compiled on this machine at
+# install and at every update, and it can be orphaned by its maintainer at any
+# time. Nothing this machine needs is worth that.
+#
+# Most of this list is ALREADY installed as a dependency of an Omarchy package.
+# It is listed anyway: `--needed` skips it, and naming it explicitly is what
+# promotes it from "pulled in by something else" to "wanted here" — which is the
+# difference between surviving `pacman -Rns $(pacman -Qdtq)` and not, and it is
+# what makes `pacman -Qeq` a real inventory.
+#
+# To see what drifted from this file:
+#   comm -13 <(sed -e 's/#.*//' -e '/^\s*$/d' omarchy/packages.txt | sort) \
+#            <(pacman -Qeq | sort)
+
+# ===========================================================================
+#  Shell — bash, as Omarchy ships it
+# ===========================================================================
+# This machine does NOT run zsh; see the header of omarchy/bashrc for why.
+bash-completion
+starship             # the prompt; Powerlevel10k stays on the other two machines
+
+# bash has no native preexec/precmd hooks — this shim adds them, and atuin
+# below needs it to see a command before it runs.
+bash-preexec
+
+# ===========================================================================
+#  Version manager
+# ===========================================================================
+# mise, from Omarchy's own repo. It is what `omarchy update` maintains, what
+# Omarchy's bash init activates, and what the `mup` alias updates. asdf, which
+# the Mac and the WSL box use, is deliberately NOT installed here — two managers
+# racing over the same runtime on PATH is not a trade worth making for a
+# uniformity this machine gave up elsewhere anyway.
+mise-bin
+
+# ===========================================================================
+#  Core CLI — the shared toolbox (see shell-cheatsheet.md)
+#  The Mac's equivalent list is macos/Brewfile.
+# ===========================================================================
+neovim
+git
+git-delta            # side-by-side git diffs, themed like bat
+fzf
+zoxide
+eza
+bat
+fd
+ripgrep
+jq
+wget
+tree
+htop
+less
+fastfetch
+lazygit
+tmux
+man-db
+
+# The one tool in the shared toolbox Omarchy does not ship: SQLite-backed shell
+# history on Ctrl-R. Wired up at the bottom of omarchy/bashrc.
+atuin
+
+# ===========================================================================
+#  Build toolchain
+# ===========================================================================
+# The Arch equivalent of Debian's build-essential and of the Xcode Command Line
+# Tools. mise installs precompiled runtimes by default, so unlike the Mac's
+# asdf setup there is no list of openssl/readline/libffi headers to keep here —
+# but treesitter still compiles its parsers on first `nvim`, and that needs a
+# compiler.
+base-devel
+
+# ===========================================================================
+#  Security
+# ===========================================================================
+gnupg
