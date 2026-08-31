@@ -149,7 +149,11 @@ Configure via the **system-tray icon** (right-click).
 #### Recommended setup (dark mode, uniform look)
 
 1. **Desktop** → pick your effect (Acrylic works well in dark mode).
-2. Set a **Color** — e.g. `#CC1a1a1a` (dark grey, 80 % opacity).
+2. Set a **Color** — e.g. `#CC1a1a1a` (dark grey, 80 % opacity). Keep a real
+   tint here: with **Clear** (or a very low alpha) the thin running-app
+   indicator under each open icon has nothing to sit against and its contrast
+   swings with whatever the wallpaper is doing, making it hard to tell open apps
+   from pinned ones. Acrylic with ~80 % opacity fixes it.
 3. Set **Visible Window / Maximized Window / Start Menu / Search / Task View**
    all to **disabled** so the Desktop effect applies everywhere.
 4. Enable **Open at boot**.
@@ -190,6 +194,66 @@ Both live in `UserData\Settings\Settings.json` (kept under `scoop\persist`, so
 reinstalls don't lose it) as `StartFlowLauncherOnSystemStartup` and
 `UseLogonTaskForStartup` — both default to `false` on a fresh install, which is
 why a first reboot comes up without the launcher.
+
+### GlazeWM + Zebar
+
+`scoop install extras/glazewm extras/zebar`. The WM reads
+`%USERPROFILE%\.glzr\glazewm\config.yaml`; the bar reads
+`%USERPROFILE%\.glzr\zebar\settings.json` and pulls its widget packs into
+`%APPDATA%\zebar\downloads`.
+
+#### Start with Windows
+
+GlazeWM starts from an `HKCU:\...\CurrentVersion\Run` entry, like Ditto and Flow
+Launcher. It needs no elevation and no delay — it re-tiles whenever the display
+topology changes, so starting early costs nothing.
+
+Zebar is the part that cannot start early, and it is **not** launched from the
+WM's `startup_commands` for that reason. On a cold boot or a resume from sleep
+the external monitors attach a beat after the primary. Launched in lockstep with
+the WM, Zebar enumerates an incomplete monitor set, never applies the
+`monitorSelection: all` preset from its pack's `zpack.json`, and leaves a single
+800×600 default window instead of one 40 px bar per screen. Nothing visibly
+crashes — `errors.log` stays empty and the process list looks healthy — but
+`outer_gap.top` still reserves the strip, so you get a blank band where the bar
+should be.
+
+A `Run` key can't express a delay, so Zebar gets its own scheduled task. No
+elevation needed, so a normal PowerShell will do:
+
+```powershell
+$action    = New-ScheduledTaskAction -Execute "$env:USERPROFILE\scoop\shims\zebar.exe"
+$trigger   = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+$trigger.Delay = 'PT30S'
+$principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" `
+                                        -LogonType Interactive -RunLevel Limited
+$settings  = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
+                                          -ExecutionTimeLimit 0 -StartWhenAvailable
+
+Register-ScheduledTask -TaskName 'Zebar' -Action $action -Trigger $trigger `
+                       -Principal $principal -Settings $settings -Force
+```
+
+`PT30S` is a guess that holds on this machine, not a measured constant — raise it
+if the bar still comes up blank after a real boot.
+
+Test without rebooting: `Start-ScheduledTask -TaskName Zebar`.
+Remove: `Unregister-ScheduledTask -TaskName Zebar -Confirm:$false`.
+
+The WM's `shutdown_commands` still kills Zebar when GlazeWM exits, which is what
+you want — a bar with no WM behind it is dead weight. The cost is that manually
+restarting GlazeWM no longer brings the bar back; run
+`Start-ScheduledTask -TaskName Zebar` after it. A config *reload* is unaffected,
+since that fires `config_reload_commands`, not `shutdown_commands`.
+
+To check the bars actually landed, compare their geometry against the monitors —
+three bars, each as wide as its screen and 40 px tall:
+
+```powershell
+Get-Process zebar | ForEach-Object { $_.MainWindowTitle }
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.Screen]::AllScreens | Select-Object DeviceName, Bounds
+```
 
 ---
 

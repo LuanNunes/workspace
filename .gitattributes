@@ -1,0 +1,15 @@
+# core.autocrlf is true on this machine, so without a rule here every text file
+# comes back from a checkout with CRLF. Nothing in this repo wants that.
+#
+# windows/sync.sh is run by WSL's bash, where the CR becomes part of the token
+# and line 12 dies with "set: pipefail: invalid option name".
+#
+# The files in sync.sh's PAIRS are compared byte-for-byte (`diff -q`) against
+# their Windows-side copies, and every app that owns one of those copies — VS
+# Code, PowerShell, oh-my-posh, GlazeWM — writes LF; both sides measure zero CR
+# bytes. A CRLF working tree would therefore make every pair report DIFFERS on
+# every run, burying the one signal that flags real drift.
+#
+# So: LF everywhere. `text=auto` still lets git detect binaries and leave them
+# alone.
+* text=auto eol=lf

@@ -16,6 +16,8 @@
     "editor.fontSize": 12,
 
     // ===== Vim (vscodevim) — mirrors ~/.ideavimrc and Neovim =====
+    "vim.disableExtension": false,
+
     "editor.lineNumbers": "relative",
     "vim.leader": " ",
     "vim.useSystemClipboard": true,

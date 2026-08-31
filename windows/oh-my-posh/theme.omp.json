@@ -4,7 +4,7 @@
   "final_space": false,
   "console_title_template": "{{ .Folder }}{{ if .Root }} (admin){{ end }}",
 
-  "//": "Estilo 'powerline discreto': blocos cinza-escuro (chrome/chrome2 alternando p/ os separadores aparecerem), UM acento no caminho, texto claro. Tudo em cores ANSI, então segue o esquema do Windows Terminal. Git colore só o TEXTO conforme o status, sem virar arco-íris de fundos.",
+  "//": "'Subdued powerline' style: dark grey blocks (chrome/chrome2 alternate so the separators show), ONE accent on the path, light text. All ANSI colors, so it follows the Windows Terminal scheme. Git colors only the TEXT by status, instead of a rainbow of block backgrounds.",
   "palette": {
     "accent":  "blue",
     "chrome":  "darkGray",
