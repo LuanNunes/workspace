@@ -1,0 +1,19 @@
+# core.autocrlf is true on the Windows machine, so text files land in the
+# working tree with CRLF. For shell scripts that is not cosmetic: they are run
+# by WSL's bash, where the CR becomes part of the token and `set -euo pipefail`
+# dies with "set: pipefail: invalid option name" on line 12 of windows/sync.sh.
+# Pin them to LF so the same checkout works from both sides.
+*.sh text eol=lf
+
+# Same reasoning, different owner: nothing but sync.sh ever writes the GlazeWM
+# config — the WM only reads it — so both sides can be held at LF, which is how
+# the file was authored and how the running copy looks. Without this the CRLF
+# checkout would make the pair report DIFFERS until the next push.
+windows/glazewm/config.yaml text eol=lf
+
+# Deliberately NOT `* text=auto eol=lf`. The rest of windows/sync.sh's PAIRS are
+# compared byte-for-byte (`diff -q`) against copies owned by Windows apps, which
+# rewrite them with CRLF whenever you edit through their UI. A LF working tree
+# would therefore make those pairs report DIFFERS on every run, turning the one
+# signal that flags real drift into constant noise. They keep the platform
+# default on purpose.
