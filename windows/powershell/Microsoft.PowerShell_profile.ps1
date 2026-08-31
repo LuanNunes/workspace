@@ -41,11 +41,10 @@ Set-PSReadLineOption -HistoryNoDuplicates
 Set-PSReadLineOption -MaximumHistoryCount 20000
 Set-PSReadLineOption -BellStyle None
 Set-PSReadLineOption -ShowToolTips
-# Cores seguindo o ANSI do terminal (nomes ConsoleColor mapeiam para as 16 cores
-# do esquema ativo no Windows Terminal). Assim, ao trocar o tema do terminal, o
-# realce do PSReadLine se ajusta sozinho — sem hex por tema. O esquema do
-# PowerShell (Rosé Pine Moon aqui) difere do WSL (Rosé Pine), então ainda dá pra
-# saber num relance em qual shell você está.
+# Colors follow the terminal's ANSI palette (ConsoleColor names map to the 16
+# colors of the active Windows Terminal scheme). So changing the terminal theme
+# retints PSReadLine automatically — no per-theme hex. The PowerShell scheme
+# differs from WSL on purpose, so a glance tells you which shell you're in.
 Set-PSReadLineOption -Colors @{
     Command                = 'Cyan'
     Parameter              = 'Magenta'
@@ -124,9 +123,9 @@ if (Get-Command zoxide -ErrorAction SilentlyContinue) {
 #  bat — pager colorido
 # ------------------------------------------------------------
 if (Get-Command bat -ErrorAction SilentlyContinue) {
-    # bat não traz um tema Rosé Pine. 'ansi' usa as 16 cores do terminal, ou
-    # seja, segue o esquema do perfil automaticamente — se o esquema mudar, o
-    # bat acompanha sem precisar editar nada aqui.
+    # bat ships no Rosé Pine theme. 'ansi' uses the terminal's 16 colors, i.e. it
+    # follows the profile's scheme automatically — if the scheme changes, bat
+    # follows without editing anything here.
     $env:BAT_THEME = 'ansi'
     Set-Alias -Name cat -Value bat -Option AllScope -Force
     function less { $input | bat --paging=always }
