@@ -1,0 +1,111 @@
+# Ghostty — symlinked to ~/.config/ghostty/config
+#
+# Reload without restarting: Cmd+Shift+, (or `Ghostty > Reload Configuration`).
+# Every valid key: `ghostty +show-config --default --docs | less`
+# Every bundled theme: `ghostty +list-themes` (live preview, ~250 of them).
+
+# ===========================================================================
+#  Look
+# ===========================================================================
+# Same palette as the WSL box (windows/windows-terminal/themes.json → rose-pine).
+# Theme names are matched against the file names in
+# Ghostty.app/Contents/Resources/ghostty/themes — exactly, spaces and capitals
+# included. `ghostty +list-themes` prints them; a wrong name is a startup error.
+# Run that command in a real terminal and it is a live-preview browser instead;
+# with the output piped it degrades to a plain list.
+#
+# Deliberately NOT the `dark:…,light:…` form that follows the system appearance.
+# macOS does switch at sunset, but a pale background stacks three problems here:
+# light palettes are pastel by design, so syntax highlighting collapses into
+# shades of beige; the transparency below leaks the wallpaper through a pale
+# background instead of a dark one; and `font-thicken` exists to fatten
+# light-on-dark text, so it only smears dark-on-light. The prompt settles it —
+# .p10k.zsh hardcodes the Rose Pine *dark* hex values (they have to be literals,
+# since the git formatter colours its own text) and cannot follow the system.
+# Dark, always.
+theme = Rose Pine
+
+font-family = "MonaspiceNe Nerd Font"
+font-size = 14
+# macOS renders thinner than Windows/Linux at 14pt.
+# NOTE: Ghostty has no inline comments — a trailing `# …` becomes part of the
+# value. Every comment in this file has to sit on its own line.
+font-thicken = true
+
+# The TranslucentTB successor. macOS 26 (Tahoe) exposes the real system glass
+# material to apps — `macos-glass-regular` is the tinted one, `macos-glass-clear`
+# is much more transparent. On anything older than Tahoe use a number instead
+# (e.g. `background-blur = 20`), which is the portable form.
+background-opacity = 0.92
+background-blur = macos-glass-regular
+
+window-padding-x = 14
+window-padding-y = 10
+window-padding-balance = true
+
+# `tabs` folds the tab bar into the titlebar — the Windows Terminal look.
+# Using AeroSpace and want an edge-to-edge tile? Switch to `hidden`.
+macos-titlebar-style = tabs
+macos-icon = glass
+
+cursor-style = block
+cursor-style-blink = false
+mouse-hide-while-typing = true
+
+# ===========================================================================
+#  Behaviour
+# ===========================================================================
+# THE setting that matters on a Brazilian keyboard: the LEFT Option key becomes
+# a real Alt (so Alt-C for fzf's cd-widget, Alt-B/Alt-F word motions and the
+# zsh/readline Alt bindings all work), while the RIGHT Option stays a macOS
+# compose key — so ⌥e→á, ⌥c→ç, ⌥n→ã still type accents. Setting this to `true`
+# would give you Alt everywhere and cost you every accented character.
+macos-option-as-alt = left
+
+copy-on-select = clipboard
+window-save-state = always
+
+# Ghostty defaults to opening a new window in the working directory of the
+# previously focused one. Always start at $HOME instead — `working-directory`
+# is what the fallback lands on, and it is only consulted once the inherit
+# above is off. Note this is one knob, not two: new tabs and splits stop
+# inheriting as well, so `cd` before a split no longer carries over.
+window-inherit-working-directory = false
+working-directory = home
+quit-after-last-window-closed = false
+confirm-close-surface = false
+
+# `cursor` reports the shell's cursor position for better selection/scrollback,
+# `sudo` keeps the terminfo working under sudo, `title` lets zsh set the tab name.
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+
+scrollback-limit = 100000
+
+# ===========================================================================
+#  Keybindings
+# ===========================================================================
+# Splits — Cmd based, so they never collide with anything zsh, tmux or Neovim
+# wants. Ghostty already ships Cmd+D / Cmd+Shift+D; these add movement.
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
+keybind = cmd+shift+w=close_surface
+keybind = cmd+alt+left=goto_split:left
+keybind = cmd+alt+right=goto_split:right
+keybind = cmd+alt+up=goto_split:up
+keybind = cmd+alt+down=goto_split:down
+# Same movement on hjkl, for when your hands are already home. Not alt+hjkl,
+# which would match AeroSpace's focus bindings: AeroSpace grabs those
+# system-wide and Ghostty would never see them (see aerospace.toml). Not
+# cmd+alt+h either — that is Hide Others, and it sits in Ghostty's own menu.
+keybind = cmd+shift+h=goto_split:left
+keybind = cmd+shift+j=goto_split:down
+keybind = cmd+shift+k=goto_split:up
+keybind = cmd+shift+l=goto_split:right
+keybind = cmd+shift+enter=toggle_split_zoom
+
+# Quick terminal — a drop-down console over whatever app is focused, like Guake
+# or the Quake console. Bound in AeroSpace too; this is the in-app half.
+keybind = global:cmd+grave_accent=toggle_quick_terminal
+
+keybind = cmd+shift+comma=reload_config

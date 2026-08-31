@@ -1,0 +1,126 @@
+# Brewfile — every package this Mac installs from Homebrew.
+#
+#   brew bundle --file=macos/Brewfile
+#
+# Idempotent: already-installed entries are skipped, so re-run it after every
+# `git pull`. To find what drifted from this file:
+#
+#   brew bundle check --file=macos/Brewfile --verbose
+#   brew bundle cleanup --file=macos/Brewfile          # list what's NOT here
+#   brew bundle dump   --file=macos/Brewfile --force   # snapshot the machine
+
+tap "nikitabobko/tap"      # AeroSpace
+tap "FelixKratz/formulae"  # borders (focused-window highlight)
+
+# ===========================================================================
+#  Core CLI — the same toolbox as the WSL box (see shell-cheatsheet.md)
+# ===========================================================================
+brew "neovim"
+brew "fzf"
+brew "zoxide"
+brew "atuin"
+brew "eza"
+brew "bat"
+brew "fd"
+brew "ripgrep"       # required by telescope's live_grep (<leader>fg)
+brew "fastfetch"
+brew "git"           # newer than the Xcode CLT one
+brew "gh"
+brew "git-delta"     # side-by-side git diffs, themed like bat
+brew "jq"
+brew "wget"
+brew "tree"
+brew "htop"
+brew "watch"
+
+# GNU userland. macOS ships BSD coreutils, whose flags differ from Linux
+# (`ls --color`, `sed -i` with no arg, `date -d`…). These install as g-prefixed
+# binaries (gsed, gawk…); bootstrap.sh does NOT put them ahead of the system
+# ones — scripts that assume BSD would break. Call them as `gsed`, `gdate`, etc.
+brew "coreutils"
+brew "gnu-sed"
+brew "gawk"
+brew "grep"
+
+# ===========================================================================
+#  Version manager & build deps
+# ===========================================================================
+# asdf 0.16+ is a Go binary — no asdf.sh to source, the shims on PATH are enough.
+brew "asdf"
+
+# Headers/libs that asdf's python & ruby builds link against. Without these,
+# `asdf install python <ver>` fails with cryptic missing-header errors.
+brew "openssl@3"
+brew "readline"
+brew "sqlite3"
+brew "xz"
+brew "zlib"
+brew "libffi"
+brew "libyaml"
+
+# ===========================================================================
+#  Work stack (Domo)
+# ===========================================================================
+brew "kubernetes-cli"
+brew "k9s"           # TUI over kubectl — far nicer than raw kubectl on a laptop
+brew "helm"
+brew "awscli"        # tug targets EKS
+brew "mysql-client"  # keg-only; startLease.sh pipes SQL into the rig
+
+# ===========================================================================
+#  Security
+# ===========================================================================
+brew "gnupg"
+brew "pinentry-mac"  # lets gpg ask for the passphrase via the macOS Keychain
+
+# ===========================================================================
+#  Window management & desktop
+# ===========================================================================
+cask "nikitabobko/tap/aerospace"    # i3-like tiler, no SIP changes needed
+brew "FelixKratz/formulae/borders"  # colored outline on the focused window
+
+cask "raycast"           # Spotlight replacement — the Flow Launcher of macOS
+cask "maccy"             # clipboard history — the Ditto of macOS
+cask "alt-tab"           # real per-WINDOW Alt-Tab (macOS's Cmd-Tab is per-APP)
+cask "karabiner-elements" # key remapping when System Settings isn't enough
+cask "linearmouse"       # per-device scroll direction + accel for external mice
+cask "stats"             # menu-bar CPU/RAM/net/temp readout
+
+# ===========================================================================
+#  Terminal & editors
+# ===========================================================================
+cask "ghostty"
+cask "visual-studio-code"
+cask "jetbrains-toolbox" # installs/updates IntelliJ, WebStorm, Rider, DataGrip…
+cask "android-studio"
+
+# ===========================================================================
+#  API clients
+# ===========================================================================
+# The es repo standardises on Hoppscotch: opus-app/CLAUDE.md documents a shared
+# Opus.json collection and ships a hoppscotch-collection-builder agent that
+# writes to it. Postman is here for everything outside that workflow.
+cask "hoppscotch"
+cask "postman"
+
+# ===========================================================================
+#  Containers
+# ===========================================================================
+# OrbStack instead of Docker Desktop: same `docker`/`docker compose` CLI, but
+# starts in ~2s, idles near zero CPU, and its Rosetta-backed amd64 emulation is
+# much faster than Docker Desktop's QEMU path — which matters because most work
+# images are linux/amd64. It also ships a one-click k8s cluster.
+# If a work policy mandates Docker Desktop, swap this for `cask "docker-desktop"`.
+cask "orbstack"
+
+# ===========================================================================
+#  Browsers
+# ===========================================================================
+cask "firefox@developer-edition"
+
+# ===========================================================================
+#  Fonts — the prompt needs a Nerd Font with powerline glyphs
+# ===========================================================================
+cask "font-monaspace-nf"               # MonaspiceNe NF — the WSL box's font
+cask "font-ubuntu-mono-nerd-font"
+cask "font-symbols-only-nerd-font"     # glyph fallback for non-patched fonts

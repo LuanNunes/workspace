@@ -1,0 +1,91 @@
+# ~/.bashrc — tracked in the dotfiles repo as omarchy/bashrc, symlinked here.
+#
+# WHY THIS MACHINE RUNS BASH WHILE THE OTHER TWO RUN ZSH
+#
+# Omarchy ships no zsh support at all: /usr/share/omarchy/default/ has an
+# alacritty/, a ghostty/, a hypr/ and a bash/ — and nothing for zsh. That bash/
+# directory is not a courtesy either, it is 780 lines and a real part of the
+# distro: ~45 aliases and functions (`n`, `cx`, `t`, `hdl`, `ff`, `zd`, `rsw`,
+# `iso2sd`, the worktree and ssh-reconnect helpers), tab-completion for the
+# `omarchy` dispatcher, EDITOR/BROWSER wired to omarchy-launch-*, mise
+# activation, and the `try` scratch-workspace hook.
+#
+# None of it ports cleanly. The completion is 129 lines of COMPREPLY/compgen
+# with no zsh equivalent, and two files index arrays from 0 — which zsh, indexing
+# from 1, would run without complaint and get wrong. Porting it would also mean
+# re-porting after every `omarchy update`.
+#
+# So this machine stays on bash and the repo's .zshrc keeps serving the Mac and
+# the WSL box. The trade is deliberate: uniformity loses to the distro here,
+# because the distro is the thing that keeps getting updates.
+#
+# The first three lines below are Omarchy's stock ~/.bashrc, from /etc/skel,
+# unchanged. Everything personal goes underneath — which is where the stock
+# file's own comment invites it.
+
+# Omarchy environment (OMARCHY_PATH + PATH), needed even for non-interactive shells
+[[ -r /usr/share/omarchy/default/bash/env-bootstrap ]] && source /usr/share/omarchy/default/bash/env-bootstrap
+
+# If not running interactively, don't do anything else (leave this above the rc source)
+[[ $- != *i* ]] && return
+
+# All the default Omarchy aliases and functions
+# (don't mess with these directly, just overwrite them here!)
+source "$OMARCHY_PATH/default/bash/rc"
+
+# ============================================================================
+#  Personal layer
+# ============================================================================
+# Everything below is additive. Nothing here redefines an Omarchy alias — check
+# with `alias | grep '^alias X='` before adding one, and prefer a new name to
+# shadowing a default, or `omarchy update` improvements stop reaching you.
+
+# ----------------------------------------------------------------------------
+#  Secrets
+# ----------------------------------------------------------------------------
+# API keys, git-ignored, chmod 600. Same template as the other two machines
+# (.zshrc.secrets.example) — it is only `export` lines, so it is shell-agnostic;
+# the file is named for the shell that sources it.
+[[ -f "$HOME/.bashrc.secrets" ]] && source "$HOME/.bashrc.secrets"
+
+# ----------------------------------------------------------------------------
+#  Aliases — additions only
+# ----------------------------------------------------------------------------
+# Omarchy already defines ls, lsa, lt and lta over eza. It has no long-listing
+# `ll` or plain `la`, which is muscle memory from the other two machines.
+if command -v eza &>/dev/null; then
+  alias ll="eza -lah --group-directories-first --icons"
+  alias la="eza -a --group-directories-first --icons"
+fi
+
+# Omarchy's `n` opens nvim (and `n` with no argument opens the cwd). These are
+# the muscle-memory spellings from the WSL box and the Mac.
+alias vim="nvim"
+alias vi="nvim"
+alias v="nvim"
+
+# Omarchy exports BAT_THEME and routes man pages through bat, but leaves `cat`
+# alone. --paging=never keeps it a drop-in replacement inside pipes.
+command -v bat &>/dev/null && alias cat="bat --paging=never"
+
+# Omarchy has `d` for docker; compose gets its own two.
+alias dcu="docker compose up"
+alias dcd="docker compose down"
+
+# Parity with zshconfig/zshreload on the other machines.
+alias bashconfig="nvim ~/.bashrc"
+alias bashreload="source ~/.bashrc"
+
+# ----------------------------------------------------------------------------
+#  atuin — shell history in SQLite (Ctrl-R)
+# ----------------------------------------------------------------------------
+# The one tool from the shared toolbox that Omarchy does not ship. It needs
+# bash-preexec, because bash has no native preexec/precmd hooks the way zsh does
+# — that shim is what lets atuin see a command before it runs. It MUST be
+# sourced before `atuin init`, and last in this file, since bash-preexec wraps
+# PROMPT_COMMAND and starship (loaded by Omarchy's rc above) sets it.
+if command -v atuin &>/dev/null; then
+  [[ -r /usr/share/bash-preexec/bash-preexec.sh ]] &&
+    source /usr/share/bash-preexec/bash-preexec.sh
+  eval "$(atuin init bash)"
+fi

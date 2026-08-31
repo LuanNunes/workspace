@@ -1,17 +1,25 @@
 # ============================================================================
 #  SSH agent
 # ============================================================================
-# Loads the passphrase-protected keys into a persistent agent (keychain reuses
-# one agent across shells, so only the first shell after a boot prompts). This
-# MUST run before the instant-prompt block below: it reads the passphrase from
-# the terminal, and p10k's instant prompt would otherwise contend for the tty
-# and swallow the prompt. SSH_ASKPASS_REQUIRE=never forces the prompt onto this
-# terminal instead of a graphical askpass helper — without it the exported
-# DISPLAY makes ssh-add reach for an askpass program that isn't installed, and
-# it fails with "Problem adding; giving up". Guarded to a real interactive tty
-# so non-interactive shells (scp, `zsh -c`, VS Code tasks) never block on it.
-if [[ -o interactive && -t 1 ]] && command -v keychain &>/dev/null; then
-  eval "$(SSH_ASKPASS_REQUIRE=never keychain --quiet --eval --agents ssh ~/.ssh/nunes@domo ~/.ssh/nunes.lfa)"
+# Linux/WSL: loads the passphrase-protected keys into a persistent agent
+# (keychain reuses one agent across shells, so only the first shell after a boot
+# prompts). This MUST run before the instant-prompt block below: it reads the
+# passphrase from the terminal, and p10k's instant prompt would otherwise contend
+# for the tty and swallow the prompt. SSH_ASKPASS_REQUIRE=never forces the prompt
+# onto this terminal instead of a graphical askpass helper — without it the
+# exported DISPLAY makes ssh-add reach for an askpass program that isn't
+# installed, and it fails with "Problem adding; giving up". Guarded to a real
+# interactive tty so non-interactive shells (scp, `zsh -c`, VS Code tasks) never
+# block on it.
+#
+# macOS needs none of this and must NOT run it: ~/.ssh/config sets
+# AddKeysToAgent + UseKeychain, so launchd's own agent loads each key on first
+# use and reads the passphrase from the login Keychain. No prompt, no agent to
+# wrangle, and nothing here that could block the instant prompt.
+if [[ "$OSTYPE" != darwin* ]]; then
+  if [[ -o interactive && -t 1 ]] && command -v keychain &>/dev/null; then
+    eval "$(SSH_ASKPASS_REQUIRE=never keychain --quiet --eval --agents ssh ~/.ssh/nunes@domo ~/.ssh/nunes.lfa)"
+  fi
 fi
 
 # ============================================================================
@@ -24,13 +32,38 @@ fi
 # after. So gate it on a marker (created by the banner block below): while the
 # marker is absent (first shell) instant prompt stays OFF so the banner
 # survives; once it exists (later shells, no banner) instant prompt is ON.
-# The marker lives in XDG_RUNTIME_DIR (tmpfs, wiped on reboot), so the banner
-# comes back on the first shell after each restart.
+# The marker has to be invalidated by a reboot. On Linux/WSL it lives in
+# XDG_RUNTIME_DIR — a tmpfs the kernel wipes on boot — so its mere existence is
+# the whole answer. macOS has no equivalent directory ($TMPDIR survives reboots),
+# so there we keep the marker in $TMPDIR and compare its mtime against
+# kern.boottime instead; a marker older than the current boot means "not shown
+# yet this session".
 # Nothing below here may print to stdout or read from stdin — the only thing
 # allowed above is the SSH agent block, which owns the tty for its passphrase
 # prompt before instant prompt starts.
-_p9k_banner_marker="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/fastfetch-shown"
-if [[ -e "$_p9k_banner_marker" ]]; then
+if [[ "$OSTYPE" == darwin* ]]; then
+  _p9k_banner_marker="${TMPDIR:-/tmp}/fastfetch-shown"
+else
+  _p9k_banner_marker="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/fastfetch-shown"
+fi
+
+_p9k_banner_shown() {
+  [[ -e "$_p9k_banner_marker" ]] || return 1
+  [[ "$OSTYPE" == darwin* ]] || return 0
+  local boot mtime
+  # kern.boottime prints `{ sec = 1755100000, usec = 123456 } Wed Aug 13 …`.
+  # Match the FIRST digit run: a greedy `.*sec` would match the "sec" inside
+  # "usec" and capture the microseconds instead, which is always smaller than any
+  # mtime — the banner would then never print.
+  boot=$(sysctl -n kern.boottime 2>/dev/null | sed -n 's/^[^0-9]*\([0-9][0-9]*\).*$/\1/p')
+  mtime=$(stat -f %m "$_p9k_banner_marker" 2>/dev/null)
+  # If either probe fails, treat the marker as valid rather than re-printing the
+  # banner (and killing instant prompt) on every single shell.
+  [[ -n "$boot" && -n "$mtime" ]] || return 0
+  (( mtime > boot ))
+}
+
+if _p9k_banner_shown; then
   typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
   if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
     source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -50,9 +83,14 @@ fi
 # 192.168.50.1), not the Windows host, so the derived DISPLAY pointed at nothing
 # and every GUI app (IDEs, etc.) died with "Can't connect to X11 window server".
 # On Windows: X410 with "Allow Public Access", or the connection is refused.
-unset WAYLAND_DISPLAY
-export DISPLAY=0.0.0.0:0
-export LIBGL_ALWAYS_INDIRECT=1
+#
+# macOS draws GUI apps natively — there is no X server, and exporting DISPLAY
+# there would make ssh-add and other tools reach for a nonexistent askpass.
+if [[ "$OSTYPE" != darwin* ]]; then
+  unset WAYLAND_DISPLAY
+  export DISPLAY=0.0.0.0:0
+  export LIBGL_ALWAYS_INDIRECT=1
+fi
 
 # Locale
 export LANG=en_US.UTF-8
@@ -60,7 +98,7 @@ export LANGUAGE="en_US:en"
 export LC_ALL="en_US.UTF-8"
 
 # App/tooling env
-export ANTHROPIC_MODEL=claude-opus-4-8
+export ANTHROPIC_MODEL=claude-opus-5
 export AI_ASSISTANT_ENABLED=true
 
 # Default editor: Neovim (used by git commits, `kubectl edit`, etc.)
@@ -73,11 +111,37 @@ export VISUAL="nvim"
 # ============================================================================
 #  PATH
 # ============================================================================
-export BREW_HOME="/home/linuxbrew/.linuxbrew/bin"
-export PATH="$PATH:$BREW_HOME:$HOME/bin:$HOME/.local/bin:$HOME/.dotnet/tools"
+# Homebrew lives in a different prefix per platform — /opt/homebrew on Apple
+# Silicon, /home/linuxbrew/.linuxbrew on Linux (and /usr/local on Intel Macs).
+# `brew shellenv` emits the right PATH, MANPATH, INFOPATH and HOMEBREW_PREFIX for
+# whichever one is actually installed, so we never hardcode it.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
 
-# Android SDK
-export ANDROID_HOME="$HOME/Android/Sdk"
+export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/.dotnet/tools"
+
+# mysql-client is keg-only — Homebrew refuses to symlink it into the prefix
+# because it collides with the mysql server's own client libraries. The Domo
+# lease scripts (DomoExecutor/tug-script/startLease.sh) shell out to `mysql`.
+[[ -d "$HOMEBREW_PREFIX/opt/mysql-client/bin" ]] &&
+  export PATH="$HOMEBREW_PREFIX/opt/mysql-client/bin:$PATH"
+
+# Codex CLI — ships inside the ChatGPT desktop app rather than as its own
+# package, so it is not in the Brewfile. Re-added by hand after the app wrote
+# this same export to ~/.zshrc and replaced the entire file doing it: ~/.zshrc
+# is a symlink into this repo, so the damage was committed-file-shaped and only
+# `git diff` caught it. If you reinstall it, check `git diff .zshrc` afterwards.
+export PATH="/Applications/ChatGPT.app/Contents/Resources:$PATH"
+
+# Android SDK — Studio installs it under ~/Library on macOS.
+if [[ "$OSTYPE" == darwin* ]]; then
+  export ANDROID_HOME="$HOME/Library/Android/sdk"
+else
+  export ANDROID_HOME="$HOME/Android/Sdk"
+fi
 export PATH="$PATH:$ANDROID_HOME/platform-tools"
 
 # ============================================================================
@@ -153,6 +217,12 @@ fi
 # Gerar uma vez com:
 #   mkdir -p "$ASDF_DATA_DIR/completions" && asdf completion zsh > "$ASDF_DATA_DIR/completions/_asdf"
 fpath=("$ASDF_DATA_DIR/completions" $fpath)
+
+# Homebrew drops completions (gh, kubectl, helm…) into its own site-functions
+# directory. compinit only finds them if that path is on fpath BEFORE it runs.
+[[ -n "$HOMEBREW_PREFIX" && -d "$HOMEBREW_PREFIX/share/zsh/site-functions" ]] \
+  && fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
+
 autoload -Uz compinit && compinit
 
 # Interactive completion menu: Tab highlights an entry; a second Tab enters
@@ -218,7 +288,10 @@ command -v bat &>/dev/null && alias cat="bat --paging=never"
 # would block the whole startup (and delay the banner below) until the X
 # connection times out. Detach it — the layout still applies once X is up.
 # (SSH key loading lives in the SSH agent block at the top of this file.)
-command -v setxkbmap &>/dev/null && setxkbmap -layout us -variant intl 2>/dev/null &!
+# (macOS has no X server; its keyboard layout lives in System Settings → Keyboard.)
+if [[ "$OSTYPE" != darwin* ]] && command -v setxkbmap &>/dev/null; then
+  setxkbmap -layout us -variant intl 2>/dev/null &!
+fi
 
 # System banner, only for a real interactive terminal (skips VS Code tasks,
 # `zsh -c`, scp/rsync sessions and anything else without a tty), and only on the
@@ -226,26 +299,39 @@ command -v setxkbmap &>/dev/null && setxkbmap -layout us -variant intl 2>/dev/nu
 # Dropping the marker also flips the instant-prompt block at the top ON for every
 # later shell (see there). The marker is in tmpfs, so it resets on reboot.
 if [[ -o interactive && -t 1 ]] && command -v fastfetch &>/dev/null; then
-  if [[ ! -e "$_p9k_banner_marker" ]]; then
+  if ! _p9k_banner_shown; then
     fastfetch
     : > "$_p9k_banner_marker"
   fi
 fi
 unset _p9k_banner_marker
+unfunction _p9k_banner_shown
 
 # ============================================================================
 #  Aliases
 # ============================================================================
-# JetBrains IDEs (launch detached)
-alias idea="/opt/idea/bin/idea </dev/null &>/dev/null &"
-alias webstorm="/opt/webstorm/bin/webstorm </dev/null &>/dev/null &"
-alias pycharm="/opt/pycharm/bin/pycharm </dev/null &>/dev/null &"
-alias rider="/opt/rider/bin/rider </dev/null &>/dev/null &"
-alias datagrip="/opt/datagrip/bin/datagrip </dev/null &>/dev/null &"
-alias android="/opt/android-studio/bin/studio </dev/null &>/dev/null &"
+# GUI apps. On macOS `open -na` launches a NEW instance, detached from the
+# shell, and returns immediately — the native equivalent of the `&` dance the
+# Linux side needs. The app names are the ones JetBrains Toolbox installs into
+# /Applications, so `open` resolves them without a full path.
+if [[ "$OSTYPE" == darwin* ]]; then
+  alias idea="open -na 'IntelliJ IDEA'"
+  alias webstorm="open -na WebStorm"
+  alias pycharm="open -na PyCharm"
+  alias rider="open -na Rider"
+  alias datagrip="open -na DataGrip"
+  alias android="open -na 'Android Studio'"
+  alias firefox="open -na 'Firefox Developer Edition'"
+else
+  alias idea="/opt/idea/bin/idea </dev/null &>/dev/null &"
+  alias webstorm="/opt/webstorm/bin/webstorm </dev/null &>/dev/null &"
+  alias pycharm="/opt/pycharm/bin/pycharm </dev/null &>/dev/null &"
+  alias rider="/opt/rider/bin/rider </dev/null &>/dev/null &"
+  alias datagrip="/opt/datagrip/bin/datagrip </dev/null &>/dev/null &"
+  alias android="/opt/android-studio/bin/studio </dev/null &>/dev/null &"
+  alias firefox="firefox-dev >/tmp/firefox-dev.log 2>&1 & disown"
+fi
 
-# Apps
-alias firefox="firefox-dev >/tmp/firefox-dev.log 2>&1 & disown"
 alias dcu="docker compose up"
 alias dcd="docker compose down"
 
@@ -259,9 +345,74 @@ alias zshconfig="nvim ~/.zshrc"
 alias zshreload="source ~/.zshrc"
 
 # Domo
-alias domo-admin="cd /home/nunes/projects/domo/admin-console && ./initDatabase.sh rig && ./runLocal.sh rig"
+# The personal account is the gh default, but it can't see the domo org. Bind the
+# work account to domo-development remotes; `auth` is excluded so `gh auth status`
+# and `gh auth switch` still report the real config rather than the injected token.
+gh() {
+  if [[ "$(command git remote get-url origin 2>/dev/null)" == *domo-development* \
+     && "$1" != "auth" ]]; then
+    GH_TOKEN="$(command gh auth token -u luan-nunes_domo)" command gh "$@"
+    return
+  fi
+  command gh "$@"
+}
+
+# $HOME, not /home/nunes — the home directory is /Users/<name> on macOS.
+alias domo-admin="cd \$HOME/projects/domo/admin-console && ./initDatabase.sh rig && ./runLocal.sh rig"
 alias tug="tug-eks"
 alias tug-feature="tug set feature -f forms; tug set feature -f workflows; tug set feature -f code-engine-v2; tug set feature -f hopper; tug set feature -f data-app; tug set feature -f forms-widget; tug set feature -f wf_person; tug set feature -f forms-singleton; tug set feature -f domo-wide; tug set feature -f wf_group; tug set feature -f wf_accounts; tug set feature -f wf_templates; tug set feature -f wf-tasks-identifiers; tug set feature -f ce-run-with-defined-object; tug set feature -f ce-example-tab; tug set feature -f wf-form-starts-v2; tug set feature -f forms-question-rail; tug set feature -f gp-admin; tug set feature -f workflow-start-widget; tug set feature -f embed-card-public; tug set feature -f embed-card-view; tug set feature -f embed-card; tug set feature -f private-embed-v2; tug set feature -f story-embed-v2; tug set feature -f story-embed-export; tug set feature -f relational-appdb;"
+
+# GlobalProtect: leave the "Allow in the Background" toggle ON in System
+# Settings. That switch kills the whole Palo Alto group, and the group includes
+# pangps — which *is* the VPN: PanGPS is setuid root, so the agent alone brings
+# the tunnel up, no LaunchDaemon involved (pangpsd ships but never loads here).
+# Disabling the group leaves only pangpa, the UI, which is just a PanGPS client:
+# the app opens and cannot connect. So autostart is controlled here instead —
+# `launchctl disable` blocks RunAtLoad at login, `vpn-on` bootstraps on demand.
+if [[ "$OSTYPE" == darwin* ]]; then
+  # PanGPS is setuid root, so bootstrapping it needs sudo — as your own user
+  # launchd answers "Bootstrap failed: 5: Input/output error".
+  vpn-on() {
+    local job
+    for job in pangps pangpa; do          # service first, UI second
+      # GlobalProtect refuses to start a second UI — "Detected another
+      # instance" — and exits. pangpa is KeepAlive => true, so launchd walks
+      # it straight back into that wall, forever. Open the app from Finder
+      # before remembering this command and that is the loop you get. Leave
+      # pangpa alone when a UI is already up: the running instance is the one
+      # PanGPS talks to, and skipping it also keeps autostart disabled.
+      if [[ $job == pangpa ]] &&
+         pgrep -f "GlobalProtect.app/Contents/MacOS/GlobalProtect" >/dev/null; then
+        echo "vpn-on: GlobalProtect UI already running, leaving pangpa alone"
+        continue
+      fi
+      sudo launchctl enable "gui/$UID/com.paloaltonetworks.gp.$job"
+      sudo launchctl bootstrap "gui/$UID" \
+        "/Library/LaunchAgents/com.paloaltonetworks.gp.$job.plist"
+      # Re-disable once bootstrapped: the job stays up for this session, but
+      # RunAtLoad no longer fires at the next login. `enable` persists across
+      # boots, so without this a single vpn-on silently rearms the autostart
+      # this whole block exists to prevent.
+      sudo launchctl disable "gui/$UID/com.paloaltonetworks.gp.$job"
+    done
+  }
+
+  vpn-off() {
+    local job
+    for job in pangpa pangps; do
+      launchctl bootout "gui/$UID/com.paloaltonetworks.gp.$job" 2>/dev/null
+      sudo launchctl disable "gui/$UID/com.paloaltonetworks.gp.$job"
+    done
+    # bootout only reaches the UI launchd owns. Open the app from Finder or
+    # Spotlight and it registers with LaunchServices instead — a different job,
+    # which bootout above does not touch — so it outlives PanGPS and leaves a
+    # disconnected window sitting there. pangpa is out by now, so its
+    # KeepAlive cannot respawn what this kills. Matches only the UI: PanGPS
+    # lives under Contents/Resources, not Contents/MacOS.
+    pkill -f "GlobalProtect.app/Contents/MacOS/GlobalProtect" 2>/dev/null
+    return 0
+  }
+fi
 
 # ============================================================================
 #  Powerlevel10k config

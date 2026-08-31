@@ -1,0 +1,212 @@
+# AeroSpace — symlinked to ~/.config/aerospace/aerospace.toml
+#
+# i3-like tiling for macOS, without disabling SIP. Reload after editing:
+#   aerospace reload-config
+# Full command reference: https://nikitabobko.github.io/AeroSpace/commands
+#
+# NOTE ON `alt`: AeroSpace grabs its bindings system-wide, BEFORE the focused
+# app sees them. So every `alt-<key>` below is permanently unavailable to zsh,
+# Neovim and fzf. That's why `alt-c` is deliberately NOT bound — fzf's cd-widget
+# owns it. Check this file before adding a binding.
+
+# Schema version of this file. Without it AeroSpace assumes 1 and warns on every
+# start. https://nikitabobko.github.io/AeroSpace/guide#config-version
+config-version = 2
+
+start-at-login = true
+
+# Version 2's one breaking change: v1 inferred which workspaces survive an empty
+# screen from the keybindings below, so alt-1…alt-9 persisted for free. In v2 the
+# fallback is an empty array and this list is the source of truth — without it,
+# a workspace would vanish the moment its last window closes. Keep it in sync
+# with the `alt-<n> = 'workspace <n>'` bindings further down.
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+# macOS "Displays have separate Spaces" fights any tiler: it gives each display
+# its own animated Space and re-parents windows behind the WM's back. Turn it
+# off in System Settings → Desktop & Dock → Mission Control, then log out.
+after-login-command = []
+
+# A colored outline on the focused window — the only way to tell focus apart in
+# a gapless tile. Colors are Rosé Pine (iris / overlay), matching Ghostty.
+after-startup-command = [
+    'exec-and-forget borders active_color=0xffc4a7e7 inactive_color=0xff26233a width=6.0',
+]
+
+# ===========================================================================
+#  Layout
+# ===========================================================================
+# 'auto' splits along the longer edge — horizontal on a wide display, vertical
+# on the built-in one. Beats hardcoding a direction on a laptop + monitor setup.
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+
+# How much of a stacked window peeks out in accordion layout.
+accordion-padding = 30
+
+# Mouse follows focus, so the cursor is always over the window you just jumped
+# to — otherwise hover-sensitive UI (and scrolling) targets the wrong window.
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# ===========================================================================
+#  Floating rules
+# ===========================================================================
+# Anything that is a dialog, a palette or a preferences pane is worse when
+# tiled. Find an app's id with: `aerospace list-apps`
+#
+# THIS BLOCK MUST STAY ABOVE EVERY `[section]` HEADER. `on-window-detected` is a
+# root-level key, and in TOML every key after a header belongs to that header's
+# table until the next one. Sitting below `[key-mapping]` it was read as
+# `key-mapping.on-window-detected` — "Unknown key", and the whole config failed
+# to parse, so none of these rules ever ran.
+#
+# Every id below was read off the installed .app with
+# `mdls -name kMDItemCFBundleIdentifier -raw /Applications/<name>.app`. Do the
+# same for anything you add — AeroSpace does NOT warn about an id that matches
+# no app, the rule just silently never fires. That is what made the browser and
+# chat rules below look broken for months.
+on-window-detected = [
+    { if.app-id = 'com.apple.systempreferences', run = 'layout floating' },
+    { if.app-id = 'com.apple.finder',            run = 'layout floating' },
+    { if.app-id = 'com.apple.ActivityMonitor',   run = 'layout floating' },
+    { if.app-id = 'com.apple.AddressBook',       run = 'layout floating' },
+    { if.app-id = 'com.apple.iCal',              run = 'layout floating' },
+    { if.app-id = 'com.raycast.macos',           run = 'layout floating' },
+    { if.app-id = 'com.jetbrains.toolbox',       run = 'layout floating' },
+    { if.app-id = 'dev.orbstack.OrbStack',       run = 'layout floating' },
+    { if.app-id = 'org.pqrs.Karabiner-Elements.Settings', run = 'layout floating' },
+
+    # Popups and one-shot panels. Tiling these steals half the screen from real
+    # work every time they appear.
+    { if.app-id = 'com.bitwarden.desktop',       run = 'layout floating' },
+    { if.app-id = 'org.p0deje.Maccy',            run = 'layout floating' },
+    { if.app-id = 'com.lujjjh.LinearMouse',      run = 'layout floating' },
+    { if.app-id = 'com.ookla.speedtest-macos',   run = 'layout floating' },
+    { if.app-id = 'eu.exelban.Stats',            run = 'layout floating' },
+    { if.app-id = 'com.apple.UserNotificationCenter', run = 'layout floating' },
+
+    # Send apps straight to a fixed workspace so the layout is the same every
+    # boot: 1 = terminal, 2 = editor/IDE, 3 = browser, 4 = chat, 5 = media.
+    # Each slot lists EVERY app you actually open for that job — a slot with one
+    # app in it is the same as having no rule the day you switch tools.
+    { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1' },
+
+    { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2' },
+    { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2' },
+    { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2' },
+
+    { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 3' },
+    { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 3' },
+    { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 3' },
+
+    { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 4' },
+    { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 4' },
+    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4' },
+    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4' },
+
+    { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5' },
+]
+
+# ===========================================================================
+#  Sections — everything below here is inside a table, so no root-level key
+#  (`on-window-detected`, `start-at-login`, …) may be added past this point.
+# ===========================================================================
+[gaps]
+# `inner` separates tiled windows from each other — keep it, otherwise two
+# windows share a hairline and you can't tell where one ends.
+# `outer` is the margin against the screen edge, and it's 0 on purpose: with one
+# window per workspace (the way this setup is meant to be used) the window then
+# fills the display exactly like macOS native fullscreen, minus the native Space
+# that breaks every alt-<n> binding.
+inner.horizontal = 8
+inner.vertical = 8
+outer.left = 0
+outer.right = 0
+outer.bottom = 0
+outer.top = 0
+
+[key-mapping]
+preset = 'qwerty'
+
+# ===========================================================================
+#  Main mode
+# ===========================================================================
+[mode.main.binding]
+
+# --- launch -----------------------------------------------------------------
+alt-enter = 'exec-and-forget open -na Ghostty'
+
+# --- focus / move (i3 hjkl) -------------------------------------------------
+alt-h = 'focus left'
+alt-j = 'focus down'
+alt-k = 'focus up'
+alt-l = 'focus right'
+
+alt-shift-h = 'move left'
+alt-shift-j = 'move down'
+alt-shift-k = 'move up'
+alt-shift-l = 'move right'
+
+# Alternate between the last two WINDOWS. `alt-tab` below does the same for
+# workspaces; this one is what you want when two apps share a workspace.
+# Costs zsh its `alt-a` (unbound by default, so nothing real is lost) — see the
+# note at the top of this file before adding any other alt-<key>.
+alt-a = 'focus-back-and-forth'
+
+# --- layout -----------------------------------------------------------------
+alt-slash = 'layout tiles horizontal vertical'      # toggle split direction
+alt-comma = 'layout accordion horizontal vertical'  # stack them instead
+alt-f = 'fullscreen'
+alt-shift-f = 'layout floating tiling'              # pop this window out
+
+# --- resize -----------------------------------------------------------------
+# 150px per press, not 50. The step is in real pixels, so on a display this wide
+# a 50px step needs ~10 presses before the split visibly moves — which reads as
+# "the binding is broken".
+alt-minus = 'resize smart -150'
+alt-equal = 'resize smart +150'
+
+# --- workspaces -------------------------------------------------------------
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+alt-3 = 'workspace 3'
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
+alt-8 = 'workspace 8'
+alt-9 = 'workspace 9'
+
+alt-shift-1 = 'move-node-to-workspace 1 --focus-follows-window'
+alt-shift-2 = 'move-node-to-workspace 2 --focus-follows-window'
+alt-shift-3 = 'move-node-to-workspace 3 --focus-follows-window'
+alt-shift-4 = 'move-node-to-workspace 4 --focus-follows-window'
+alt-shift-5 = 'move-node-to-workspace 5 --focus-follows-window'
+alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
+alt-shift-7 = 'move-node-to-workspace 7 --focus-follows-window'
+alt-shift-8 = 'move-node-to-workspace 8 --focus-follows-window'
+alt-shift-9 = 'move-node-to-workspace 9 --focus-follows-window'
+
+# Jump back to the previous workspace — the Alt-Tab you actually want.
+# If you also installed the AltTab app, move ITS hotkey to cmd-tab so the two
+# don't fight over this chord.
+alt-tab = 'workspace-back-and-forth'
+alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+
+# --- sub-modes --------------------------------------------------------------
+alt-shift-semicolon = 'mode service'
+
+# ===========================================================================
+#  Service mode  (alt-shift-; then a key, Esc to leave)
+# ===========================================================================
+[mode.service.binding]
+esc = ['reload-config', 'mode main']
+r = ['flatten-workspace-tree', 'mode main']   # reset a layout you've mangled
+f = ['layout floating tiling', 'mode main']
+backspace = ['close-all-windows-but-current', 'mode main']
+
+# Join this window into its neighbour's container.
+alt-shift-h = ['join-with left',  'mode main']
+alt-shift-j = ['join-with down',  'mode main']
+alt-shift-k = ['join-with up',    'mode main']
+alt-shift-l = ['join-with right', 'mode main']

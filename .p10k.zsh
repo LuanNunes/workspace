@@ -384,11 +384,20 @@
     fi
 
     # Styling for different parts of Git status.
-    local       meta='%7F' # white foreground
-    local      clean='%0F' # black foreground
-    local   modified='%0F' # black foreground
-    local  untracked='%0F' # black foreground
-    local conflicted='%1F' # red foreground
+    #
+    # These win over POWERLEVEL9K_VCS_*_FOREGROUND — the segment foreground only
+    # applies to text this function does not colour itself. So the Rose Pine
+    # palette has to be repeated here; the block near the end of this file is
+    # the reference for what each colour means.
+    #
+    # The template shipped `%0F` (black) here, which only worked because the git
+    # segment used to be a bright block. On the dark overlay background it would
+    # be black-on-near-black, i.e. invisible.
+    local       meta='%F{#908caa}' # subtle  — the ':' '#' '@' glue characters
+    local      clean='%F{#9ccfd8}' # foam    — branch name, ahead/behind, stashes
+    local   modified='%F{#f6c177}' # gold    — staged/unstaged counts, 'wip'
+    local  untracked='%F{#ebbcba}' # rose    — untracked count
+    local conflicted='%F{#eb6f92}' # love    — conflicts and in-progress merges
 
     local res
 
@@ -1825,77 +1834,95 @@
   typeset -g POWERLEVEL9K_DISABLE_HOT_RELOAD=true
 
   # ==========================================================================
-  #  Powerline "blocks" override — the colourful style the user prefers, on a
-  #  fixed 4-colour palette (see the block below). Each segment is a solid block:
-  #  slate username, cyan path (the accent), git coloured by state, cyan/red
-  #  status. Keeps the stock powerline separators set earlier in this file — we
-  #  deliberately do NOT clear them. Placed just before the reload below, like
-  #  the stock config.
+  #  Powerline override — Rose Pine, matching the Ghostty theme
+  #  (macos/ghostty/config) and the WSL box (windows/windows-terminal/themes.json).
+  #  Placed just before the reload below, like the stock config.
+  #
+  #  The old version painted each segment a different bright block (slate user,
+  #  neon cyan path). Here EVERY left segment shares one dark background, so the
+  #  stock separators do the work: p10k automatically draws the thin ``
+  #  between same-coloured segments and the solid `` only at the very end.
+  #  Result is one continuous bar with hairline dividers instead of four slabs —
+  #  and colour is freed up to mean something. Nothing is cleared; the separators
+  #  set earlier in this file are what produce the effect.
   # ==========================================================================
-  # Colourful powerline recoloured to a fixed 4-colour palette (24-bit hex, so it
-  # does NOT retint with the scheme). Darkest -> lightest:
-  #   _ink   #321E48  dark purple — dark text on bright blocks, exec-time block
-  #   _slate #43637E  slate blue  — the muted block (username, dirty git)
-  #   _cyan  #65DCD5  bright cyan — the accent block (path, clean git, OK status)
-  #   _mint  #D9FFF4  pale mint   — light text on dark blocks
-  # ONE out-of-palette exception: ANSI red (_err) for genuine error/conflict
-  # states (failed command, git conflict, root shell), so failures stay obvious.
-  local _ink='#321E48' _slate='#43637E' _cyan='#65DCD5' _mint='#D9FFF4' _err=1 _s
+  # Rose Pine (dark), 24-bit hex so it does NOT retint with the terminal scheme.
+  #   _base    #191724  the terminal background itself — text on bright blocks
+  #   _overlay #26233a  the one background every segment uses
+  #   _muted   #6e6a86  deliberately dim: username, elided path parts
+  #   _subtle  #908caa  readable but quiet: the path
+  #   _text    #e0def4  full-strength foreground
+  #   _iris    #c4a7e7  the path accent (current directory)
+  #   _foam    #9ccfd8  clean git, OK status
+  #   _gold    #f6c177  modified/staged, elapsed time, remote shell
+  #   _rose    #ebbcba  untracked, the prompt arrow
+  #   _love    #eb6f92  errors: failed command, conflicts, root shell
+  # _foam stands in for Rose Pine's `pine` on the git segment: pine (#31748f) is
+  # a dark teal that only clears 2.9:1 against _overlay, so it fails as text.
+  # _foam is the same hue at a readable weight.
+  local _base='#191724' _overlay='#26233a' _muted='#6e6a86' _subtle='#908caa'
+  local _text='#e0def4' _iris='#c4a7e7' _foam='#9ccfd8' _gold='#f6c177'
+  local _rose='#ebbcba' _love='#eb6f92' _s
 
   # Left: username, path, git, prompt char. Right: elapsed time (slow commands
   # only), success/failure mark, username.
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(context dir vcs prompt_char)
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(command_execution_time status context)
 
-  # Context — username (%n) on a SLATE block, both sides, with mint text. Remote
-  # shows %n@%m on an ink block; root turns the block red to flag an elevated shell.
+  # Context — username (%n) in _muted: it never changes, so it should recede.
+  # Remote shows %n@%m in gold; root turns the whole block _love, the one case
+  # where a segment gets its own background, because an elevated shell must shout.
   typeset -g POWERLEVEL9K_CONTEXT_TEMPLATE='%n'
   for _s in DEFAULT SUDO ROOT REMOTE REMOTE_SUDO DISCONNECTED; do
-    typeset -g POWERLEVEL9K_CONTEXT_${_s}_BACKGROUND=$_slate
-    typeset -g POWERLEVEL9K_CONTEXT_${_s}_FOREGROUND=$_mint
+    typeset -g POWERLEVEL9K_CONTEXT_${_s}_BACKGROUND=$_overlay
+    typeset -g POWERLEVEL9K_CONTEXT_${_s}_FOREGROUND=$_muted
   done
   typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_TEMPLATE='%n@%m'
-  typeset -g POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND=$_err
-  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_BACKGROUND=$_ink
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_FOREGROUND=$_gold
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND=$_love
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND=$_base
 
-  # Directory — the CYAN accent block, folder icon, dark ink text, last part bold.
-  typeset -g POWERLEVEL9K_DIR_BACKGROUND=$_cyan
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND=$_ink
-  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=$_ink
-  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=$_ink
+  # Directory — quiet _subtle path, elided parts dimmer still, and the current
+  # directory in bold _iris. Anchors are the dirs that hold a project marker
+  # (.git and friends, see POWERLEVEL9K_SHORTEN_FOLDER_MARKER above), so the
+  # accent lands on the folder you actually care about.
+  typeset -g POWERLEVEL9K_DIR_BACKGROUND=$_overlay
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND=$_subtle
+  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=$_muted
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=$_iris
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=true
 
-  # Git — clean is the bright cyan block (dark text); dirty (modified/untracked)
-  # is the muted slate block (mint text); conflict is the red warning block.
-  typeset -g POWERLEVEL9K_VCS_CLEAN_BACKGROUND=$_cyan
-  typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=$_ink
-  typeset -g POWERLEVEL9K_VCS_MODIFIED_BACKGROUND=$_slate
-  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=$_mint
-  typeset -g POWERLEVEL9K_VCS_UNTRACKED_BACKGROUND=$_slate
-  typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=$_mint
-  typeset -g POWERLEVEL9K_VCS_CONFLICTED_BACKGROUND=$_err
-  typeset -g POWERLEVEL9K_VCS_CONFLICTED_FOREGROUND=$_mint
-  typeset -g POWERLEVEL9K_VCS_LOADING_BACKGROUND=$_ink
-  typeset -g POWERLEVEL9K_VCS_LOADING_FOREGROUND=$_mint
+  # Git — same background as everything else; the STATE is the colour. These set
+  # the icon and any text my_git_formatter leaves uncoloured; the branch name and
+  # counters are coloured inside that function, which has to agree with this.
+  typeset -g POWERLEVEL9K_VCS_{CLEAN,MODIFIED,UNTRACKED,CONFLICTED,LOADING}_BACKGROUND=$_overlay
+  typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=$_foam
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=$_gold
+  typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=$_rose
+  typeset -g POWERLEVEL9K_VCS_CONFLICTED_FOREGROUND=$_love
+  typeset -g POWERLEVEL9K_VCS_LOADING_FOREGROUND=$_muted
   # GitHub octocat as the git icon (forced on the generic icon too, since the
   # remote is an SSH alias git@github-luan: that p10k can't match to github.com).
   typeset -g POWERLEVEL9K_VCS_GIT_ICON=$''
   typeset -g POWERLEVEL9K_VCS_GIT_GITHUB_ICON=$''
 
-  # Prompt char — cyan arrow on success, red on error.
+  # Prompt char — it has no background (set near the top of this file), so it
+  # floats on the terminal itself: rose arrow on success, love on error.
   for _s in VIINS VICMD VIVIS VIOWR; do
-    typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_${_s}_FOREGROUND=$_cyan
-    typeset -g POWERLEVEL9K_PROMPT_CHAR_ERROR_${_s}_FOREGROUND=$_err
+    typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_${_s}_FOREGROUND=$_rose
+    typeset -g POWERLEVEL9K_PROMPT_CHAR_ERROR_${_s}_FOREGROUND=$_love
   done
 
-  # Success/failure mark — cyan block on success (dark text), red block on error.
-  # Elapsed time on the ink block (mint text), only for slow commands.
-  typeset -g POWERLEVEL9K_STATUS_OK_BACKGROUND=$_cyan
-  typeset -g POWERLEVEL9K_STATUS_OK_FOREGROUND=$_ink
-  typeset -g POWERLEVEL9K_STATUS_ERROR_BACKGROUND=$_err
-  typeset -g POWERLEVEL9K_STATUS_ERROR_FOREGROUND=$_mint
-  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_BACKGROUND=$_ink
-  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND=$_mint
+  # Right side — elapsed time (slow commands only) in gold, then the status mark.
+  # Success is a foam tick on the shared background so it stays unobtrusive;
+  # failure is the second and last solid block in the whole prompt, because a
+  # non-zero exit is the one thing worth interrupting the bar for.
+  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_BACKGROUND=$_overlay
+  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND=$_gold
+  typeset -g POWERLEVEL9K_STATUS_OK_BACKGROUND=$_overlay
+  typeset -g POWERLEVEL9K_STATUS_OK_FOREGROUND=$_foam
+  typeset -g POWERLEVEL9K_STATUS_ERROR_BACKGROUND=$_love
+  typeset -g POWERLEVEL9K_STATUS_ERROR_FOREGROUND=$_base
 
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.

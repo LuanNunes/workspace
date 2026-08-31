@@ -1,12 +1,17 @@
 # dotfiles
 
-Personal workstation configuration (WSL2 / Ubuntu / zsh).
+Personal workstation configuration for three machines. Two of them share one
+shell — **WSL2 / Ubuntu** on the Windows laptop and **macOS** (Apple Silicon) on
+the MacBook Pro — and the third, **Omarchy** (Arch + Hyprland) on the Galaxy
+Book, deliberately does not: it keeps the distro's own bash, editor and version
+manager, and the repo extends them instead of replacing them. See
+[`omarchy/README.md`](omarchy/README.md).
 
 ## Layout
 
 ```
 dotfiles/
-├── .zshrc                  # zsh config  → symlinked to ~/.zshrc
+├── .zshrc                  # zsh config  → symlinked to ~/.zshrc on BOTH machines
 ├── .p10k.zsh               # Powerlevel10k prompt → symlinked to ~/.p10k.zsh
 ├── .zshrc.secrets.example  # template for API keys (real file is git-ignored)
 ├── .ideavimrc              # IdeaVim config → symlinked to ~/.ideavimrc (all JetBrains IDEs)
@@ -15,6 +20,22 @@ dotfiles/
 │   └── lazy-lock.json      # pinned plugin versions → ~/.config/nvim/lazy-lock.json
 │                           # the same two files also feed the Windows Neovim,
 │                           # copied to %LOCALAPPDATA%\nvim by windows/sync.sh
+├── omarchy/                # Omarchy side — SYMLINKED, but EXTENDS the distro
+│   ├── bootstrap.sh        # one-shot machine setup (idempotent) + `doctor`
+│   ├── packages.txt        # every pacman package
+│   ├── mise-tools.txt      # the globally-pinned mise tools
+│   ├── bashrc              # → ~/.bashrc — Omarchy's rc + a personal layer
+│   ├── shell.json          # → ~/.config/omarchy/shell.json (bar, idle)
+│   ├── ghostty/config      # → ~/.config/ghostty/config
+│   ├── hypr/               # → ~/.config/hypr/*.lua (Hyprland overrides)
+│   └── README.md           # why bash and mise here, and the sed -i hazard
+├── macos/                  # macOS side — SYMLINKED, like the WSL files
+│   ├── bootstrap.sh        # one-shot machine setup (idempotent)
+│   ├── defaults.sh         # `defaults write` system prefs — the registry tweaks
+│   ├── Brewfile            # every package, for `brew bundle`
+│   ├── ghostty/config      # terminal → ~/.config/ghostty/config
+│   ├── aerospace/          # tiling WM → ~/.config/aerospace/aerospace.toml
+│   └── README.md           # setup, Apple Silicon notes, gotchas
 ├── windows/                # SNAPSHOTS of the Windows side (see note below)
 │   ├── sync.sh             # copies these files to/from Windows
 │   ├── powershell/         # PowerShell profile (prompt, PSReadLine, aliases)
@@ -28,11 +49,37 @@ dotfiles/
 │   └── desktop-customization.md  # Windhawk, TranslucentTB, Flow Launcher, Bibata cursor
 ├── vim-cheatsheet.md       # Vim grammar + all our <leader> mappings (PT-BR)
 ├── shell-cheatsheet.md     # every CLI tool in both shells, and how to use it (PT-BR)
+├── macos-cheatsheet.md     # Windows/WSL → macOS day-to-day reference (PT-BR)
+├── macos-setup-passo-a-passo.md  # guided setup: macOS concepts + every step
+│                           # explained, with how to verify and undo (PT-BR)
 └── README.md
 ```
 
-Everything under WSL is tracked here and **symlinked** into place, so edits to
-the repo are live immediately and the machine stays reproducible.
+Everything under WSL, macOS and Omarchy is tracked here and **symlinked** into
+place, so edits to the repo are live immediately and all three machines stay
+reproducible.
+
+### One `.zshrc`, two operating systems — and a third that opts out
+
+`.zshrc`, `.p10k.zsh`, `.ideavimrc` and `nvim/` are shared verbatim — around 90 %
+of the shell config is identical, so it is not forked. The blocks that genuinely
+differ (SSH agent, `DISPLAY`/X410, Homebrew prefix, `ANDROID_HOME`, keyboard
+layout, the fastfetch boot marker, GUI-app aliases) sit behind
+`[[ "$OSTYPE" == darwin* ]]`. See the table in [`macos/README.md`](macos/README.md).
+
+`nvim/init.lua` needed no change at all: its `clip.exe` clipboard bridge is
+already gated on `vim.fn.has("wsl")`, so macOS falls through to native
+`pbcopy`/`pbpaste`.
+
+**Omarchy is not in that arrangement, on purpose.** It ships no zsh support at
+all — `/usr/share/omarchy/default/` is bash-only — and that bash directory is
+780 lines of real distro: ~45 aliases and functions, tab-completion for the
+`omarchy` dispatcher, `EDITOR`/`BROWSER` wiring, mise activation. Two of its
+files index arrays from 0, which zsh (indexing from 1) would run without
+complaining and get wrong. Forcing zsh there would mean hand-porting all of it,
+then re-porting after every `omarchy update`. So that machine keeps bash,
+LazyVim and mise, and `omarchy/bashrc` extends Omarchy's rc chain rather than
+replacing it. Same reasoning applies to `nvim/` and asdf, which it does not use.
 
 > **Windows note:** everything under `windows/` is a **snapshot**, not a symlink.
 > Those files live on NTFS, the apps that own them rewrite the file wholesale
@@ -77,6 +124,14 @@ the repo are live immediately and the machine stays reproducible.
   retints the whole prompt automatically. The WSL and PowerShell profiles still
   use **different** schemes on purpose, so a glance tells you which shell you're in.
 
+- **macOS host** (`macos/`): **Ghostty** as the terminal (Rosé Pine, MonaspiceNe NF,
+  native Tahoe glass blur, `macos-option-as-alt = left` so the left Option is a
+  real Alt for fzf/readline while the right one still types `á`/`ç`/`ã`);
+  **AeroSpace** for i3-like tiling without touching SIP; **Raycast** (launcher),
+  **Maccy** (clipboard history), **AltTab**, **LinearMouse** and **OrbStack**
+  instead of Docker Desktop. System preferences are code, not clicks — see
+  `macos/defaults.sh`.
+
 ### Temas por máquina (Windows Terminal)
 
 `windows/windows-terminal/` is a small per-machine theming system, so one shared
@@ -104,7 +159,67 @@ repo can dress each laptop differently without one clobbering the other:
 > (*Tokyo Night* + Kanagawa). `MonaspiceNe NF` must be installed on the machine
 > (Monaspace from the Nerd Fonts release).
 
-## Setup on a new machine
+## Setup on a new Mac
+
+`bootstrap.sh` is step-based rather than one-shot: each step prints what it does
+and why before doing it, and runs on its own, so bringing the machine up doubles
+as learning the OS.
+
+```sh
+git clone git@github-luan:LuanNunes/workspace.git ~/projects/resolveprogramming/workspace
+cd ~/projects/resolveprogramming/workspace
+
+./macos/bootstrap.sh --list           # the 10 steps
+./macos/bootstrap.sh --dry-run all    # print every command, change nothing
+./macos/bootstrap.sh clt              # one at a time…
+./macos/bootstrap.sh all              # …or all at once
+./macos/defaults.sh                   # system preferences (read it first)
+```
+
+Three documents, by purpose:
+
+| Document | For |
+|---|---|
+| [`macos-setup-passo-a-passo.md`](macos-setup-passo-a-passo.md) | **setting the machine up** — the macOS concepts (bundles, `~/Library`, `defaults`/`cfprefsd`, launchd, SIP, TCC, Gatekeeper, Rosetta, APFS) and every step with how to verify and undo it |
+| [`macos-cheatsheet.md`](macos-cheatsheet.md) | **daily use** — shortcut conversion table, accents, AeroSpace bindings, Windows→macOS equivalences |
+| [`macos/README.md`](macos/README.md) | **the repo side** — layout, what's shared with WSL, Apple Silicon caveats |
+
+Both scripts are idempotent. Afterwards: log out and back in, then grant
+**Accessibility** permission to AeroSpace, Raycast, AltTab and Karabiner — macOS
+gives those apps no error when it is missing, they just silently do nothing.
+
+SSH keys are **not** generated by the script — copy the existing ones over, since
+`nunes@domo` is registered with the org. See the migration checklist at the top
+of `macos-cheatsheet.md`.
+
+## Setup on a new Omarchy machine
+
+Same shape as the Mac: step-based, idempotent, each step explaining itself first.
+Shorter, because Omarchy arrives configured — this adds a layer rather than
+building a machine.
+
+```sh
+git clone git@github.com:LuanNunes/workspace.git ~/Projects/resolverprogramming/workspace
+cd ~/Projects/resolverprogramming/workspace
+
+./omarchy/bootstrap.sh --list           # the 7 steps
+./omarchy/bootstrap.sh --dry-run all    # print every command, change nothing
+./omarchy/bootstrap.sh all              # …or all at once
+./omarchy/bootstrap.sh doctor           # read-only: what drifted from the repo?
+```
+
+Afterwards: log out and back in once (`SSH_AUTH_SOCK` comes from
+`~/.config/environment.d/`), then `hyprctl reload && hyprctl configerrors` to
+validate the Hyprland config.
+
+**Run `doctor` after every `omarchy update`.** Omarchy's migrations edit files
+under `~/.config`, and some use `sed -i`, which replaces a symlink with a regular
+file — the machine keeps working while silently detaching from the repo.
+
+Details, and what the repo deliberately does *not* take over there, are in
+[`omarchy/README.md`](omarchy/README.md).
+
+## Setup on a new machine (WSL2 / Ubuntu)
 
 ```sh
 git clone git@github.com:LuanNunes/workspace.git ~/projects/resolve-programming/workspace

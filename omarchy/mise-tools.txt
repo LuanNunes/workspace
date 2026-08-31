@@ -1,0 +1,22 @@
+# mise-tools.txt — the globally-pinned tools on this machine.
+#
+#   ./omarchy/bootstrap.sh mise
+#
+# One `tool@version` per line, applied with `mise use --global`. Comments and
+# blank lines are stripped.
+#
+# WHY A LIST AND NOT A SYMLINKED config.toml
+#
+# mise OWNS ~/.config/mise/config.toml: `mise use -g` rewrites it, and Omarchy's
+# installer writes to it too. Symlinking a file its own tool rewrites is a fight
+# you lose quietly — the same failure mode as the terminal configs a migration's
+# `sed -i` detaches. So the repo declares intent here and lets mise own the file,
+# exactly the way packages.txt declares intent and lets pacman own the database.
+#
+# To snapshot this machine back into the repo:
+#   mise ls --global 2>/dev/null | awk '{print $1 "@" $2}'
+
+claude@latest
+codex@latest
+gh@latest
+node@26.7.0

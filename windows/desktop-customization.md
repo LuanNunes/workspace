@@ -158,6 +158,22 @@ Configure via the **system-tray icon** (right-click).
    all to **disabled** so the Desktop effect applies everywhere.
 4. Enable **Open at boot**.
 
+#### Start with Windows
+
+The Scoop build is unpackaged, so the tray's **Open at boot** relies on the MSIX
+startup-task API and does nothing here — after a reboot the taskbar comes back
+opaque. It needs no elevation, so a shortcut in the Startup folder is enough:
+
+```powershell
+$startup = [Environment]::GetFolderPath('Startup')
+$target  = "$(scoop prefix translucenttb)\TranslucentTB.exe"
+
+$s = (New-Object -ComObject WScript.Shell).CreateShortcut("$startup\TranslucentTB.lnk")
+$s.TargetPath       = $target
+$s.WorkingDirectory = Split-Path $target
+$s.Save()
+```
+
 ### Flow Launcher
 
 1. Open via the Start Menu (first time) or your hotkey.
@@ -166,6 +182,18 @@ Configure via the **system-tray icon** (right-click).
    menu).
 3. Browse **Plugin Store** for extras (calculator, clipboard history, bookmarks,
    shell commands, etc.).
+
+#### Start with Windows
+
+**Settings → General** → tick **Start Flow Launcher on system startup**, and
+**Use logon task instead of registry entry** right below it. The plain registry
+entry breaks whenever Scoop updates the app (it points at the versioned
+`app-x.y.z` folder); the logon task survives it and skips the UAC prompt.
+
+Both live in `UserData\Settings\Settings.json` (kept under `scoop\persist`, so
+reinstalls don't lose it) as `StartFlowLauncherOnSystemStartup` and
+`UseLogonTaskForStartup` — both default to `false` on a fresh install, which is
+why a first reboot comes up without the launcher.
 
 ### GlazeWM + Zebar
 
