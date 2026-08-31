@@ -42,6 +42,12 @@ PAIRS=(
   "windows/powershell/Microsoft.PowerShell_profile.ps1:$WIN/Documents/PowerShell/Microsoft.PowerShell_profile.ps1"
   "windows/oh-my-posh/theme.omp.json:$WIN/.config/oh-my-posh/theme.omp.json"
   "windows/vscode/settings.json:$VSCODE_USER/settings.json"
+  "windows/glazewm/config.yaml:$WIN/.glzr/glazewm/config.yaml"
+  # NB: o Zebar (a barra) também NÃO entra aqui. Seu settings.json só aponta
+  # qual widget pack carregar, e os packs vivem em %APPDATA%\zebar\downloads,
+  # baixados do marketplace — não faz sentido versionar o ponteiro sem eles.
+  # O que importa do lado do Zebar é a scheduled task que o inicia, e essa está
+  # documentada em ./windows/desktop-customization.md.
   # NB: o Windows Terminal NÃO entra aqui. Seu settings.json é por máquina
   # (profiles/GUIDs diferentes), então ./windows/windows-terminal/apply-theme.py
   # MESCLA o tema no arquivo real em vez de copiá-lo por cima.
