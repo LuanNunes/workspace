@@ -43,14 +43,14 @@ PAIRS=(
   "windows/oh-my-posh/theme.omp.json:$WIN/.config/oh-my-posh/theme.omp.json"
   "windows/vscode/settings.json:$VSCODE_USER/settings.json"
   "windows/glazewm/config.yaml:$WIN/.glzr/glazewm/config.yaml"
-  # NB: o Zebar (a barra) também NÃO entra aqui. Seu settings.json só aponta
-  # qual widget pack carregar, e os packs vivem em %APPDATA%\zebar\downloads,
-  # baixados do marketplace — não faz sentido versionar o ponteiro sem eles.
-  # O que importa do lado do Zebar é a scheduled task que o inicia, e essa está
-  # documentada em ./windows/desktop-customization.md.
-  # NB: o Windows Terminal NÃO entra aqui. Seu settings.json é por máquina
-  # (profiles/GUIDs diferentes), então ./windows/windows-terminal/apply-theme.py
-  # MESCLA o tema no arquivo real em vez de copiá-lo por cima.
+  # NB: Zebar (the bar) is NOT here either. Its settings.json only names which
+  # widget pack to load, and the packs themselves live in %APPDATA%\zebar\
+  # downloads, pulled from the marketplace — versioning the pointer without the
+  # packs would only look reproducible. What matters on the Zebar side is the
+  # scheduled task that starts it, documented in ./windows/desktop-customization.md.
+  # NB: Windows Terminal is NOT here. Its settings.json is per-machine
+  # (different profiles/GUIDs), so ./windows/windows-terminal/apply-theme.py
+  # MERGES the theme into the real file instead of copying over it.
 )
 
 usage() { sed -n '2,9p' "${BASH_SOURCE[0]}" | sed 's/^# \?//'; exit 1; }
