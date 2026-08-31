@@ -280,6 +280,24 @@ window_rules:
       - window_process: { equals: 'ms-teams' }
       - window_process: { equals: 'Spotify' }
 
+  # ChatGPT gets the left screen of the same desktop rather than the centre,
+  # so it sits beside the chat instead of tiling with it.
+  #
+  # It needs a rule at all because without one the window would not stay put:
+  # moved to another workspace by hand, it kept reappearing on whichever one had
+  # focus. The likely reason is that a packaged Store app tears down and
+  # recreates its window, and a recreated window is a new window to GlazeWM,
+  # placed wherever you happen to be - but that was never confirmed against the
+  # WM's state. What is certain is that a rule re-applies on every creation, and
+  # that this fixed it.
+  #
+  # The process name really does contain a space. `ChatGPT Classic` and the
+  # Codex-based `ChatGPT` are two separate apps and both may be installed.
+  - commands: ['move --workspace 4']
+    match:
+      - window_process: { equals: 'ChatGPT Classic' }
+      - window_process: { equals: 'ChatGPT' }
+
   # Desktop 3 - browsers.
   - commands: ['move --workspace 8']
     match:
