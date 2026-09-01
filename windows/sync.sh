@@ -35,6 +35,11 @@ VSCODE_USER="$WIN/scoop/apps/vscode/current/data/user-data/User"
 # is already guarded by `if vim.fn.has("wsl")`.
 NVIM_USER="$WIN/AppData/Local/nvim"
 
+# GlazeWM and Zebar share one config root under %USERPROFILE%\.glzr. Neither is
+# created by the Scoop install — the apps write it on first launch — so `push`
+# skips these pairs until the directory exists.
+GLZR="$WIN/.glzr"
+
 # repo path (relative to the repo root) : path on the Windows side
 PAIRS=(
   "nvim/init.lua:$NVIM_USER/init.lua"
@@ -42,7 +47,7 @@ PAIRS=(
   "windows/powershell/Microsoft.PowerShell_profile.ps1:$WIN/Documents/PowerShell/Microsoft.PowerShell_profile.ps1"
   "windows/oh-my-posh/theme.omp.json:$WIN/.config/oh-my-posh/theme.omp.json"
   "windows/vscode/settings.json:$VSCODE_USER/settings.json"
-  "windows/glazewm/config.yaml:$WIN/.glzr/glazewm/config.yaml"
+  "windows/glazewm/config.yaml:$GLZR/glazewm/config.yaml"
   # NB: Zebar (the bar) is NOT here either. Its settings.json only names which
   # widget pack to load, and the packs themselves live in %APPDATA%\zebar\
   # downloads, pulled from the marketplace — versioning the pointer without the
