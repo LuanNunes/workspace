@@ -93,6 +93,8 @@ local plugins = {
   -- which-key: press a prefix (like <leader>) and it shows what comes next.
   -- The best learning plugin there is — makes the whole config discoverable.
   { "folke/which-key.nvim", event = "VeryLazy" },
+  -- vim-be-good: timed drills for motions/deletes/jumps. Launch: <leader>vg
+  { "ThePrimeagen/vim-be-good", cmd = "VimBeGood" },
 }
 require("lazy").setup(plugins, {})
 
@@ -117,6 +119,9 @@ map("n", "<leader>fb",  builtin.buffers,    { desc = "open buffers" })
 map("n", "<leader>fh",  builtin.help_tags,  { desc = "search help" })
 -- <leader>fk = browse ALL keybindings. Forgot a mapping? Look it up here.
 map("n", "<leader>fk",  builtin.keymaps,    { desc = "search keymaps" })
+
+-- <leader>vg = Vim practice. Opens the vim-be-good game menu.
+map("n", "<leader>vg",  ":VimBeGood<CR>",   { desc = "vim practice (vim-be-good)" })
 
 require("nvim-treesitter.configs").setup({
   ensure_installed = { "lua", "vim", "vimdoc", "javascript", "typescript",
