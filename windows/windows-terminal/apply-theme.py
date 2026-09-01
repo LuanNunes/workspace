@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""Aplica um tema do Windows Terminal a ESTA máquina, por %COMPUTERNAME%.
+"""Apply a Windows Terminal theme to THIS machine, keyed by %COMPUTERNAME%.
 
-Ao contrário de copiar o settings.json por cima (que quebraria o defaultProfile
-e apagaria profiles específicos da máquina — Ubuntu, Visual Studio, etc.), este
-script MESCLA:
+Instead of copying settings.json wholesale (which would break defaultProfile and
+drop machine-specific profiles like Ubuntu, Visual Studio, etc.), this script
+MERGES:
 
-  settings.base.json  (prefs compartilhadas: keybindings, defaults cosméticos)
-  + themes.json       (o tema escolhido: colorScheme do WSL/PowerShell, fonte, opacidade + todas as paletas)
-  + machines.json     (qual tema esta máquina usa, por COMPUTERNAME)
+  settings.base.json  (shared prefs: keybindings, cosmetic defaults)
+  + themes.json       (the chosen theme: WSL/PowerShell colorScheme, font, opacity + every palette)
+  + machines.json     (which theme this machine uses, by COMPUTERNAME)
 
-dentro do settings.json que o Windows Terminal realmente usa, preservando a
-lista de profiles (GUIDs) e o defaultProfile da máquina.
+into the settings.json that Windows Terminal actually uses, preserving the
+machine's own profile list (GUIDs) and defaultProfile.
 
-Uso:
-  ./apply-theme.py                 # tema da máquina atual (machines.json)
-  ./apply-theme.py rose-pine       # força um tema específico
-  ./apply-theme.py --dry-run       # mostra o que mudaria, sem gravar
-  ./apply-theme.py --list          # lista os temas disponíveis
+Usage:
+  ./apply-theme.py                 # theme for the current machine (machines.json)
+  ./apply-theme.py rose-pine       # force a specific theme
+  ./apply-theme.py --dry-run       # show what would change, write nothing
+  ./apply-theme.py --list          # list available themes
 """
 import argparse
 import json
@@ -30,13 +30,13 @@ HERE = Path(__file__).resolve().parent
 
 
 def load_json(path):
-    # tolera as chaves "//" de comentário e mantém a ordem
+    # tolerates the "//" comment keys and keeps insertion order
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
 def computername():
-    """%COMPUTERNAME% do Windows, visto de dentro do WSL."""
+    """Windows %COMPUTERNAME%, as seen from inside WSL."""
     env = os.environ.get("COMPUTERNAME")
     if env:
         return env
@@ -52,7 +52,7 @@ def computername():
 
 
 def win_settings_path():
-    """Caminho (WSL) do settings.json do Windows Terminal."""
+    """WSL path to the Windows Terminal settings.json."""
     override = os.environ.get("WT_SETTINGS")
     if override:
         return Path(override)
@@ -92,32 +92,40 @@ def upsert_schemes(settings, schemes):
 
 
 def apply(settings, base, theme):
-    # 1) prefs compartilhadas de topo (sem tocar em profiles/defaultProfile/schemes)
+    # 1) shared top-level prefs (leave profiles/defaultProfile/schemes untouched)
     for key in ("copyFormatting", "copyOnSelect", "keybindings",
                 "newTabMenu", "theme", "useAcrylicInTabRow"):
         if key in base:
             settings[key] = base[key]
 
-    # 2) defaults = cosméticos compartilhados + tema (colorScheme do WSL, fonte, opacidade)
+    # 2) defaults = shared cosmetics + theme (WSL colorScheme, font, opacity)
     defaults = settings.setdefault("profiles", {}).setdefault("defaults", {})
     defaults.update(base.get("defaults", {}))
     defaults["colorScheme"] = theme["wslScheme"]
     defaults["opacity"] = theme["opacity"]
     defaults["font"] = {"face": theme["font"], "size": theme["fontSize"]}
 
-    # 3) cada profile PowerShell recebe o esquema/fonte do shell
+    # 3) PowerShell profiles get the shell scheme/font; every other profile
+    #    (WSL, cmd, …) inherits the WSL theme from `defaults`. Drop any
+    #    per-profile colorScheme/font/opacity left over from a manual tweak —
+    #    a profile-level override wins over `defaults`, so otherwise the
+    #    machine's WSL scheme silently never shows (e.g. Ubuntu stuck on an old
+    #    scheme while defaults already switched).
     shell_font = theme.get("shellFont", theme["font"])
     for prof in settings.get("profiles", {}).get("list", []):
         if is_powershell(prof):
             prof["colorScheme"] = theme["shellScheme"]
             prof["font"] = {"face": shell_font, "size": theme["fontSize"]}
+        else:
+            for key in ("colorScheme", "font", "opacity"):
+                prof.pop(key, None)
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Aplica um tema do Windows Terminal por máquina.")
-    ap.add_argument("theme", nargs="?", help="Força um tema (senão usa machines.json).")
-    ap.add_argument("--dry-run", action="store_true", help="Mostra o resultado sem gravar.")
-    ap.add_argument("--list", action="store_true", help="Lista os temas disponíveis.")
+    ap = argparse.ArgumentParser(description="Apply a Windows Terminal theme per machine.")
+    ap.add_argument("theme", nargs="?", help="Force a theme (otherwise use machines.json).")
+    ap.add_argument("--dry-run", action="store_true", help="Show the result without writing.")
+    ap.add_argument("--list", action="store_true", help="List available themes.")
     args = ap.parse_args()
 
     themes_doc = load_json(HERE / "themes.json")
@@ -134,12 +142,12 @@ def main():
     host = computername()
     theme_name = args.theme or machines.get(host) or machines.get("default")
     if theme_name not in themes:
-        sys.exit(f"tema desconhecido: {theme_name!r} (veja --list)")
+        sys.exit(f"unknown theme: {theme_name!r} (see --list)")
     theme = themes[theme_name]
 
     settings_path = win_settings_path()
     if not settings_path.is_file():
-        sys.exit(f"settings.json do Windows Terminal não encontrado: {settings_path}")
+        sys.exit(f"Windows Terminal settings.json not found: {settings_path}")
 
     settings = load_json(settings_path)
 
@@ -148,21 +156,21 @@ def main():
 
     rendered = json.dumps(settings, indent=4, ensure_ascii=False)
 
-    print(f"máquina     : {host}")
-    print(f"tema        : {theme_name}")
-    print(f"WSL         : {theme['wslScheme']}  ·  fonte {theme['font']} {theme['fontSize']}  ·  opacidade {theme['opacity']}")
-    print(f"PowerShell  : {theme['shellScheme']}  ·  fonte {theme.get('shellFont', theme['font'])}")
+    print(f"machine     : {host}")
+    print(f"theme       : {theme_name}")
+    print(f"WSL         : {theme['wslScheme']}  ·  font {theme['font']} {theme['fontSize']}  ·  opacity {theme['opacity']}")
+    print(f"PowerShell  : {theme['shellScheme']}  ·  font {theme.get('shellFont', theme['font'])}")
     print(f"settings    : {settings_path}")
 
     if args.dry_run:
-        print("\n--dry-run: nada gravado.")
+        print("\n--dry-run: nothing written.")
         return
 
     backup = settings_path.with_suffix(".json.bak")
     shutil.copy2(settings_path, backup)
     settings_path.write_text(rendered + "\n", encoding="utf-8")
-    print(f"\n✓ aplicado. backup em {backup}")
-    print("  Reabra o Windows Terminal (ou uma nova aba) para ver.")
+    print(f"\n✓ applied. backup at {backup}")
+    print("  Reopen Windows Terminal (or a new tab) to see it.")
 
 
 if __name__ == "__main__":

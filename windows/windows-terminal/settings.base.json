@@ -1,5 +1,5 @@
 {
-    "//": "Preferências compartilhadas do Windows Terminal, independentes de tema e de máquina. O apply-theme.py mescla ESTE arquivo + o tema da máquina (themes.json, escolhido por machines.json) dentro do settings.json real, preservando a lista de profiles (GUIDs) de cada máquina. Não coloque aqui colorScheme/font/opacity (isso é do tema) nem a lista de profiles (isso é da máquina).",
+    "//": "Shared Windows Terminal preferences, independent of theme and machine. apply-theme.py merges THIS file + the machine's theme (themes.json, picked by machines.json) into the live settings.json, preserving each machine's own profile list (GUIDs). Do not put colorScheme/font/opacity here (that belongs to the theme) nor the profile list (that belongs to the machine).",
     "copyFormatting": "none",
     "copyOnSelect": false,
     "keybindings":

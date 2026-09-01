@@ -1,20 +1,21 @@
 {
-    "//": "Catálogo de temas do Windows Terminal. Cada tema define qual colorScheme o WSL e o PowerShell usam, a fonte e a opacidade. 'schemes' traz TODAS as paletas (todos os temas), que o apply-theme.py injeta no settings.json — assim trocar de tema é instantâneo. Qual tema cada máquina usa fica em machines.json. As cores do prompt (oh-my-posh/PSReadLine/fzf) seguem o ANSI do terminal, então não precisam ser repetidas aqui.",
+    "//": "Windows Terminal theme catalog. Each theme sets which colorScheme WSL and PowerShell use, plus font and opacity. 'schemes' holds EVERY palette (all themes), which apply-theme.py injects into settings.json — so switching themes is instant. Which theme each machine uses lives in machines.json. The prompt colors (oh-my-posh/PSReadLine/fzf) follow the terminal's ANSI palette, so they need not be repeated here.",
 
     "themes": {
         "rose-pine": {
             "wslScheme": "Rosé Pine",
             "shellScheme": "Catppuccin Mocha",
-            "font": "MonaspiceNe NF",
+            "font": "UbuntuMono Nerd Font Mono",
+            "shellFont": "MonaspiceNe NF",
             "fontSize": 12,
             "opacity": 88
         },
         "tokyo-night": {
-            "wslScheme": "Tokyo Night",
+            "wslScheme": "Tokyo Night Moon",
             "shellScheme": "Kanagawa",
-            "font": "UbuntuSansMono NF",
-            "shellFont": "JetBrainsMono NF",
-            "fontSize": 12,
+            "font": "UbuntuMono Nerd Font Mono",
+            "shellFont": "MonaspiceNe NF",
+            "fontSize": 14,
             "opacity": 92
         },
         "catppuccin": {
@@ -67,6 +68,15 @@
             "blue": "#7AA2F7", "purple": "#BB9AF7", "cyan": "#7DCFFF", "white": "#A9B1D6",
             "brightBlack": "#414868", "brightRed": "#F7768E", "brightGreen": "#9ECE6A", "brightYellow": "#E0AF68",
             "brightBlue": "#7AA2F7", "brightPurple": "#BB9AF7", "brightCyan": "#7DCFFF", "brightWhite": "#C0CAF5"
+        },
+        {
+            "name": "Tokyo Night Moon",
+            "background": "#222436", "foreground": "#C8D3F5",
+            "cursorColor": "#C8D3F5", "selectionBackground": "#2D3F76",
+            "black": "#1B1D2B", "red": "#FF757F", "green": "#C3E88D", "yellow": "#FFC777",
+            "blue": "#82AAFF", "purple": "#C099FF", "cyan": "#86E1FC", "white": "#828BB8",
+            "brightBlack": "#444A73", "brightRed": "#FF757F", "brightGreen": "#C3E88D", "brightYellow": "#FFC777",
+            "brightBlue": "#82AAFF", "brightPurple": "#FCA7EA", "brightCyan": "#86E1FC", "brightWhite": "#C8D3F5"
         },
         {
             "name": "Kanagawa",
