@@ -363,6 +363,23 @@ para compensar — que nunca segura, porque o `fullscreen` do AeroSpace signific
 para torná-lo persistente: conferi todas as chaves de configuração do binário do
 0.21.3. Uma janela por workspace é a resposta que o bloco `[gaps]` já assumia.
 
+> **O ARZOPA roda um modo que o macOS não oferece.** Nativo é 2560×1600, e o
+> macOS só expunha HiDPI até 1280×800 — menos área útil que o MacBook, apesar da
+> tela maior. O **BetterDisplay** (Pro, no Brewfile) revela os modos escondidos;
+> o escolhido é **1600×1000 HiDPI**, que renderiza em 3200×2000 e reduz para o
+> painel.
+>
+> A escolha foi por densidade: a 16", 1280×800 dá ~94 pontos por polegada contra
+> ~125 do MacBook — interface visivelmente maior de um lado. A 1600×1000 vai
+> para ~118 e as duas telas ficam parecidas, com 56% mais área. O 1920×1200
+> também existe, mas deixaria a interface menor que a do MacBook.
+>
+> Isso vive nas preferências do BetterDisplay, **não** no repo: o `defaults.sh`
+> não reproduz. Numa máquina nova, o `brew bundle` instala o app e o modo é
+> refeito à mão. Vale ligar *Protect resolution* no menu do app para o macOS não
+> reverter ao reconectar — o CLI 4.3.6 tem bug de leitura nessa chave e reporta
+> `false ? ON : OFF)`, então confirme pela interface.
+
 > **Qual tela é a principal decide onde o trabalho acontece**, porque a coluna B
 > é `main` e a A é `secondary`. Trocar o monitor principal inverte as duas
 > colunas automaticamente, sem editar nada — foi assim que o ARZOPA passou de
