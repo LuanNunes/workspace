@@ -178,6 +178,21 @@ O K2 em modo Mac se anuncia com o vendor ID da **Apple** (`1452`), produto
 esse par que o `karabiner.json` usa para deixar a fn row como F1–F12 só no K2,
 mantendo brilho/volume diretos no teclado do MacBook.
 
+#### `Page Down` vira `Del` (apagar para frente)
+
+O macOS chama de `delete` a tecla que apaga **para trás** — o Backspace do
+Windows. Apagar para frente (`⌦`, o `Del` do Windows) é `Fn`+`delete`, um chord
+para algo que no Windows era uma tecla só.
+
+O `karabiner.json` remapeia `page_down` → `delete_forward`, **só no K2**. Você
+não perde a função de página: `Fn`+`↓` é Page Down nativo no macOS, sem
+configuração nenhuma.
+
+Para identificar qualquer tecla deste teclado com certeza — as legendas são
+duplas e mudam de papel com a chavinha — abra o **Karabiner-EventViewer** e
+aperte a tecla. Ele mostra o nome que o macOS recebeu (`delete_or_backspace`
+para o Backspace, `delete_forward` para o Del).
+
 #### A fileira de baixo muda de ordem com a chavinha
 
 Esta é a pegadinha nº 1 de quem vem do Windows, e ela **parece** um bug de

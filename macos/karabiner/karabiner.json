@@ -151,6 +151,18 @@
                                 }
                             ]
                         }
+                    ],
+                    "simple_modifications": [
+                        {
+                            "from": {
+                                "key_code": "page_down"
+                            },
+                            "to": [
+                                {
+                                    "key_code": "delete_forward"
+                                }
+                            ]
+                        }
                     ]
                 }
             ],
