@@ -346,7 +346,7 @@ qualquer mesa sem edit:
 
 | Coluna | Workspaces | Onde cai |
 |---|---|---|
-| **A** — painel lateral | 1, 4, 7 | ARZOPA quando em viagem, senão o MacBook |
+| **A** — painel lateral | 1, 4, 7 | `secondary` — a tela que **não** é a principal, seja qual for |
 | **B** — principal | 2, 5, 8 | sempre `main` — a tela que você fez principal |
 | **C** — terceira | 3, 6, 9 | o terceiro painel na mesa completa; com menos monitores colapsa em `main` e vira workspace extra |
 
@@ -363,12 +363,17 @@ para compensar — que nunca segura, porque o `fullscreen` do AeroSpace signific
 para torná-lo persistente: conferi todas as chaves de configuração do binário do
 0.21.3. Uma janela por workspace é a resposta que o bloco `[gaps]` já assumia.
 
-> **Qual tela é a principal importa.** A coluna B é `main`, então "principal"
-> define onde o trabalho acontece. Na mesa completa é o monitor grande; em
-> viagem é o MacBook (1512×982 de área útil contra 1280×800 do ARZOPA). Se o
-> macOS eleger o portátil como principal, os nove workspaces vão todos para lá —
-> foi o que aconteceu ao plugá-lo pela primeira vez. Ajuste em System Settings →
-> Displays → **Arrange…**, arrastando a barra branca.
+> **Qual tela é a principal decide onde o trabalho acontece**, porque a coluna B
+> é `main` e a A é `secondary`. Trocar o monitor principal inverte as duas
+> colunas automaticamente, sem editar nada — foi assim que o ARZOPA passou de
+> painel lateral a tela de trabalho.
+>
+> Por isso a coluna A **não** nomeia um monitor: `^arzopa$` ali colidiria com a
+> coluna B no instante em que o ARZOPA virasse principal, e os nove workspaces
+> empilhariam numa tela só. Já aconteceu duas vezes.
+>
+> Troca-se o principal em System Settings → Displays → **Arrange…**, arrastando
+> a barra branca.
 
 > Verificado nas três configurações em 2026-09-08: três monitores, MacBook
 > sozinho, e o par portátil. Nenhuma exigiu mudar o arquivo.

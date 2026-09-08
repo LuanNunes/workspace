@@ -137,7 +137,7 @@ on-window-detected = [
 # nothing falls back to the main monitor. That is what lets one table serve
 # every desk with no edit when hardware changes:
 #
-#   column A (side)     ws 1,4,7   ARZOPA when travelling, else the MacBook
+#   column A (side)     ws 1,4,7   whichever screen is NOT the primary one
 #   column B (primary)  ws 2,5,8   always 'main' — whichever screen you made
 #                                  primary is where the work goes
 #   column C (third)    ws 3,6,9   the third panel on the full desk; with fewer
@@ -155,10 +155,16 @@ on-window-detected = [
 # keep_alive: without it an empty member of a desktop would be deactivated, and
 # the next alt-<n> would restore only the screens that still had a window.
 
-# column A — the side panel
-1 = ['^arzopa$', 'built-in']
-4 = ['^arzopa$', 'built-in']
-7 = ['^arzopa$', 'built-in']
+# column A — the side panel. 'secondary' is the non-main monitor, so this
+# follows whichever screen you did NOT make primary, in either direction: name
+# the ARZOPA main and the side panel becomes the MacBook, and the other way
+# round. Naming the monitor here instead would collide with column B the moment
+# that monitor became main, and pile all nine workspaces onto one screen.
+# 'built-in' is the fallback for the laptop on its own, where there is no
+# secondary at all.
+1 = ['secondary', 'built-in']
+4 = ['secondary', 'built-in']
+7 = ['secondary', 'built-in']
 
 # column B — the primary screen, wherever the menu bar is
 2 = 'main'
