@@ -283,6 +283,29 @@ num valor razoável — se estiver muito baixo, esse intervalo parece defeito.
 > `StageManagerHideWidgets`). Para remover só alguns em vez de todos, é
 > Control-clique na área de trabalho → *Edit Widgets*, e o menos em cada um.
 
+### Notificação travada na tela
+
+Banner que não sai no X nem passando o mouse:
+
+```sh
+killall NotificationCenter
+```
+
+O agente reinicia sozinho — é do sistema — e os banners na tela vão embora. Não
+apaga o histórico da Central de Notificações, só limpa o que está desenhado.
+
+> ⚠️ **Responda antes de matar.** Alguns banners são pedidos de decisão, não
+> avisos: os de *App Background Activity* (agentes e daemons pedindo para subir
+> no login) e os de permissão de notificação têm `Allow` / `Don't Allow`
+> aparecendo ao passar o mouse. Descartar sem responder deixa o pedido pendente
+> — e no caso dos daemons do Karabiner, isso significa o remap parar de
+> funcionar no próximo boot, sem erro nenhum.
+>
+> Aviso puramente informativo, como *"Login Item Added"*, pode matar à vontade.
+
+Se o banner **não** responde ao `killall`, provavelmente não é notificação: veja
+a nota sobre widgets de desktop acima.
+
 ---
 
 ## 5. Finder vs Explorer
