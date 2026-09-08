@@ -175,6 +175,10 @@ so everything stays in one place."
   link "$DOTFILES/nvim/init.lua"                   "$HOME/.config/nvim/init.lua"
   link "$DOTFILES/nvim/lazy-lock.json"             "$HOME/.config/nvim/lazy-lock.json"
   link "$DOTFILES/macos/ghostty/config"            "$HOME/.config/ghostty/config"
+  # aerospace.toml does not exist in a fresh clone — it is merged from
+  # aerospace.base.toml and a layout-*.toml fragment, because the config format
+  # has no `include` and two full copies would drift. Generate before linking.
+  run "$DOTFILES/macos/aerospace/apply-layout.py"
   link "$DOTFILES/macos/aerospace/aerospace.toml"  "$HOME/.config/aerospace/aerospace.toml"
   link "$DOTFILES/macos/aerospace/move-to-desktop.sh" "$HOME/.config/aerospace/move-to-desktop.sh"
 

@@ -335,26 +335,39 @@ sozinha para o modo main:
 | `Backspace` | fechar todas as janelas menos a atual |
 | `Alt+Shift+H/J/K/L` | juntar esta janela no container do vizinho |
 
-Os monitores se comportam como **uma tela só**: os nove workspaces são três
-"desktops" de três, e uma tecla reconfigura todas as telas ao mesmo tempo.
-Modelo portado do `windows/glazewm/config.yaml`.
+Os monitores se comportam como **uma tela só**: uma tecla troca todas as telas
+ao mesmo tempo. Ideia portada do `windows/glazewm/config.yaml`.
 
-As colunas são definidas por **papel**, não por monitor, e cada uma é uma
-**lista** de padrões — o AeroSpace usa o primeiro que casar, e o que não casa
-com nada cai no monitor principal. É isso que faz o mesmo arquivo servir
-qualquer mesa sem edit:
+Existem **dois layouts**, porque duas telas e três telas querem formas
+diferentes, e um arquivo só servindo aos dois deixava um terço dos workspaces
+escondido. O `macos/aerospace/apply-layout.py` mescla `aerospace.base.toml` com
+um fragmento e recarrega:
 
-| Coluna | Workspaces | Onde cai |
+```sh
+./macos/aerospace/apply-layout.py          # detecta as telas e aplica
+./macos/aerospace/apply-layout.py 3mon     # força um layout
+./macos/aerospace/apply-layout.py --dry-run
+```
+
+**Layout de duas telas** (`layout-2mon.toml`) — seis workspaces, desktops em par:
+
+| | Coluna A (secundária) | Coluna B (principal) |
 |---|---|---|
-| **A** — painel lateral | 1, 4, 7 | `secondary` — a tela que **não** é a principal, seja qual for |
-| **B** — principal | 2, 5, 8 | sempre `main` — a tela que você fez principal |
-| **C** — terceira | 3, 6, 9 | o terceiro painel na mesa completa; com menos monitores colapsa em `main` e vira workspace extra |
+| **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl | **ws 2** ← IntelliJ, VS Code |
+| **`Alt+2`** chat | ws 3 ← Claude, Codex | **ws 4** ← Slack, Teams, Spotify |
+| **`Alt+3`** browsers | ws 5 ← Hoppscotch | **ws 6** ← Chrome, Safari |
 
-| | Coluna A (lateral) | Coluna B (principal) |
-|---|---|---|
-| **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl | **ws 2** ← IntelliJ, VS Code, Android Studio |
-| **`Alt+2`** chat | ws 4 ← Claude, Codex | **ws 5** ← Slack, Teams, WhatsApp, Spotify |
-| **`Alt+3`** browsers | ws 7 | **ws 8** ← Chrome, Safari, Firefox |
+`Alt+4/5/6` mexem numa tela só. `Alt+7/8/9` ficam **sem binding** — seis
+workspaces precisam de seis teclas, e cada `Alt+<tecla>` não usado é uma tecla
+devolvida ao zsh e ao Neovim.
+
+**Layout de três telas** (`layout-3mon.toml`) — nove workspaces, desktops em
+trio, com uma terceira coluna: `Alt+1` = ws 1/2/3, `Alt+2` = 4/5/6, `Alt+3` =
+7/8/9, e `Alt+4..9` como saída de emergência.
+
+Em ambos, as colunas são por **papel**: a coluna A é `secondary` (a tela que não
+é a principal) e a B é `main`. Trocar qual monitor é o principal inverte as
+colunas sozinho.
 
 **O terminal e o IDE ficam em colunas diferentes de propósito.** Dividindo um
 workspace, o IDE ficava com um terço da tela, e o reflexo era apertar `Alt+F`

@@ -109,7 +109,13 @@ macos/
 ├── audit.sh                  # read-only inventory of what the machine runs
 ├── Brewfile                  # every package, for `brew bundle`
 ├── ghostty/config            # → ~/.config/ghostty/config
-├── aerospace/aerospace.toml  # → ~/.config/aerospace/aerospace.toml
+├── aerospace/
+│   ├── aerospace.base.toml   # everything independent of screen count
+│   ├── layout-2mon.toml      # two screens: pairs, six workspaces
+│   ├── layout-3mon.toml      # three screens: trios, nine workspaces
+│   ├── apply-layout.py       # merges base + fragment → aerospace.toml
+│   ├── move-to-desktop.sh    # alt-ctrl-<n>: same screen, other desktop
+│   └── aerospace.toml        # GENERATED, git-ignored → ~/.config/aerospace/
 ├── karabiner/                # → ~/.config/karabiner  (the whole DIRECTORY)
 │   └── karabiner.json        #   Caps Lock → Esc, and the Keychron K2 fn row
 └── linearmouse/              # → ~/.config/linearmouse  (also a DIRECTORY)
@@ -175,6 +181,7 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 | Windows land on random Spaces | `mru-spaces` still true, or "Displays have separate Spaces" is on. |
 | `.DS_Store` in every commit | `core.excludesfile` — written by `bootstrap.sh`. |
 | Repos ask for a passphrase every time | Key not in the Keychain: `ssh-add --apple-use-keychain ~/.ssh/<key>`. |
+| Edits to `aerospace.toml` vanish | It is generated. Edit `aerospace.base.toml` or a `layout-*.toml` and re-run `apply-layout.py`. |
 | A monitor pattern grabs the wrong panel | The patterns are regexes, not names. `MSI MAG271C` is a prefix of `MSI MAG271CQR`; anchor with `^…$`. |
 | Dropping `workspace-to-monitor-force-assignment` to get Hyprland-style fluid workspaces | It does not work — every workspace still has a monitor, just an undeclared one. Verified 2026-09-08. |
 | One `alt-<n>` moves only one screen | That is `alt-4`…`alt-9`, the escape hatch. The trio switches are `alt-1`, `alt-2`, `alt-3`. |

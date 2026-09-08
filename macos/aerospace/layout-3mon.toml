@@ -1,0 +1,130 @@
+# Layout fragment — THREE screens. Merged into aerospace.base.toml by
+# apply-layout.py. Section markers must stay exactly as written.
+
+# ---8<--- PERSISTENT_WORKSPACES
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+# ---8<--- MONITOR_ASSIGNMENT
+[workspace-to-monitor-force-assignment]
+# Nine workspaces in three "desktops" of three, so alt-1/2/3 below switch every
+# screen at once and the monitors behave as a single unit. Ported from
+# windows/glazewm/config.yaml, which solved this first.
+#
+#   desktop 1 = 1 2 3   terminal and editors
+#   desktop 2 = 4 5 6   chat and music
+#   desktop 3 = 7 8 9   browsers
+#
+# The columns are defined by ROLE, not by monitor, and each is a LIST of
+# patterns — AeroSpace takes the first that matches, and anything matching
+# nothing falls back to the main monitor. That is what lets one table serve
+# every desk with no edit when hardware changes:
+#
+#   column A (side)     ws 1,4,7   whichever screen is NOT the primary one
+#   column B (primary)  ws 2,5,8   always 'main' — whichever screen you made
+#                                  primary is where the work goes
+#   column C (third)    ws 3,6,9   the third panel on the full desk; with fewer
+#                                  monitors these collapse onto main and become
+#                                  extra scratch workspaces, reachable with
+#                                  alt-shift-<n>
+#
+# Verified across three configurations on 2026-09-08: three monitors, laptop
+# alone, and the portable pair. Nothing needed changing between them.
+#
+# Patterns are REGEXES matched against the monitor name (case-insensitive), not
+# literal names. Check what this machine reports with: aerospace list-monitors
+#
+# `persistent-workspaces` at the top of this file is what GlazeWM calls
+# keep_alive: without it an empty member of a desktop would be deactivated, and
+# the next alt-<n> would restore only the screens that still had a window.
+
+# column A — the side panel. 'secondary' is the non-main monitor, so this
+# follows whichever screen you did NOT make primary, in either direction: name
+# the ARZOPA main and the side panel becomes the MacBook, and the other way
+# round. Naming the monitor here instead would collide with column B the moment
+# that monitor became main, and pile all nine workspaces onto one screen.
+# 'built-in' is the fallback for the laptop on its own, where there is no
+# secondary at all.
+1 = ['secondary', 'built-in']
+4 = ['secondary', 'built-in']
+7 = ['secondary', 'built-in']
+
+# column B — the primary screen, wherever the menu bar is
+2 = 'main'
+5 = 'main'
+8 = 'main'
+
+# column C — the third panel. No pattern yet: the MSIs are gone and the
+# Alienware is not here. Add its name to the front of each list when it arrives.
+3 = 'main'
+6 = 'main'
+9 = 'main'
+
+# ---8<--- WORKSPACE_BINDINGS
+# Switch all three monitors at once — one keypress, one desktop, three screens.
+# Each binding focuses the whole trio: left, then right, then CENTRE. Centre
+# goes last on purpose, because focusing a workspace follows focus to its
+# monitor, so ending there leaves the keyboard on the main 1440p panel rather
+# than on whichever screen happened to be last in the list.
+alt-1 = ['workspace 1', 'workspace 3', 'workspace 2']   # terminal and editors
+alt-2 = ['workspace 4', 'workspace 6', 'workspace 5']   # chat and music
+alt-3 = ['workspace 7', 'workspace 9', 'workspace 8']   # browsers
+
+# Escape hatch: move ONE screen to one workspace, leaving the other two where
+# they are — for when you want the browser on the right panel while the editors
+# stay put. An alt-1/2/3 afterwards re-syncs all three.
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
+alt-8 = 'workspace 8'
+alt-9 = 'workspace 9'
+
+alt-shift-1 = 'move-node-to-workspace 1 --focus-follows-window'
+alt-shift-2 = 'move-node-to-workspace 2 --focus-follows-window'
+alt-shift-3 = 'move-node-to-workspace 3 --focus-follows-window'
+alt-shift-4 = 'move-node-to-workspace 4 --focus-follows-window'
+alt-shift-5 = 'move-node-to-workspace 5 --focus-follows-window'
+alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
+alt-shift-7 = 'move-node-to-workspace 7 --focus-follows-window'
+alt-shift-8 = 'move-node-to-workspace 8 --focus-follows-window'
+alt-shift-9 = 'move-node-to-workspace 9 --focus-follows-window'
+
+# ---8<--- APP_RULES
+    # Apps land on the column that suits them, not all on one screen.
+    # Column B (2/5/8) is the primary display and takes what you type into;
+    # column A (1/4/7) is the side panel and takes what you glance at.
+    #
+    # The terminal and the IDE are deliberately on DIFFERENT columns. Sharing
+    # one workspace meant an IDE with a third of a screen and reaching for
+    # alt-f to compensate — which never held, because AeroSpace fullscreen is
+    # "the focused window covers the workspace", not a maximised state, and
+    # 0.21.3 has no setting to make it persist (checked every config key in the
+    # binary). One window per workspace is the answer the [gaps] block below
+    # already assumes.
+    #
+    # Each slot lists EVERY app you actually open for that job — a slot with one
+    # app in it is the same as having no rule the day you switch tools.
+    { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1 --focus-follows-window' },
+    { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1 --focus-follows-window' },
+
+    { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2 --focus-follows-window' },
+    { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2 --focus-follows-window' },
+    { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2 --focus-follows-window' },
+
+    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4 --focus-follows-window' },
+    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4 --focus-follows-window' },
+
+    { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 5 --focus-follows-window' },
+    { if.app-id = 'com.microsoft.teams2',        run = 'move-node-to-workspace 5 --focus-follows-window' },
+    { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 5 --focus-follows-window' },
+    { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5 --focus-follows-window' },
+
+    # Hoppscotch on the side column of the browser desktop: it is read next to a
+    # browser, not instead of one. Without a rule it was born wherever focus
+    # happened to be, which on the portable pair meant column C — a workspace
+    # that shares a screen with column B and therefore hides behind it.
+    { if.app-id = 'io.hoppscotch.desktop',       run = 'move-node-to-workspace 7 --focus-follows-window' },
+
+    { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 8 --focus-follows-window' },
+    { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 8 --focus-follows-window' },
+    { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 8 --focus-follows-window' },

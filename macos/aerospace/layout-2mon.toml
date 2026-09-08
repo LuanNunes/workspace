@@ -1,0 +1,88 @@
+# Layout fragment — TWO screens (MacBook + a portable panel). Merged into
+# aerospace.base.toml by apply-layout.py. Section markers must stay as written.
+#
+# Two screens means two columns and six workspaces, and each desktop is a PAIR.
+# The three-column layout borrowed from GlazeWM does not survive the trip: with
+# only two panels its third column collapses onto the primary screen, so ws
+# 3/6/9 sit behind ws 2/5/8 and any window that lands there disappears. Six
+# workspaces and nothing hidden beats nine with a third of them invisible.
+
+# ---8<--- PERSISTENT_WORKSPACES
+persistent-workspaces = ['1', '2', '3', '4', '5', '6']
+
+# ---8<--- MONITOR_ASSIGNMENT
+[workspace-to-monitor-force-assignment]
+#   desktop 1 = 1 2     desktop 2 = 3 4     desktop 3 = 5 6
+#   odd  -> column A, whichever screen is NOT primary
+#   even -> column B, the primary screen
+#
+# 'secondary' is AeroSpace's name for the non-main monitor, so naming a display
+# primary in System Settings swaps the columns with no edit here. Naming the
+# monitor instead would collide with 'main' the moment that monitor became
+# primary, and pile every workspace onto one screen. 'built-in' is the fallback
+# for the laptop with nothing attached.
+1 = ['secondary', 'built-in']
+3 = ['secondary', 'built-in']
+5 = ['secondary', 'built-in']
+
+2 = 'main'
+4 = 'main'
+6 = 'main'
+
+# ---8<--- WORKSPACE_BINDINGS
+# Switch both screens at once — one keypress, one desktop, two screens. The
+# primary goes LAST, because focusing a workspace follows focus to its monitor
+# and ending there leaves the keyboard on the screen you work on.
+alt-1 = ['workspace 1', 'workspace 2']   # terminal and editors
+alt-2 = ['workspace 3', 'workspace 4']   # chat and music
+alt-3 = ['workspace 5', 'workspace 6']   # browsers
+
+# Escape hatch: move ONE screen, leaving the other where it is.
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+
+# alt-7/8/9 stay UNBOUND here. Six workspaces need six keys, and the note at the
+# top of the base file explains that every alt-<key> is taken from zsh, Neovim
+# and fzf system-wide. Three keys that would address nothing are three keys
+# given back.
+
+alt-shift-1 = 'move-node-to-workspace 1 --focus-follows-window'
+alt-shift-2 = 'move-node-to-workspace 2 --focus-follows-window'
+alt-shift-3 = 'move-node-to-workspace 3 --focus-follows-window'
+alt-shift-4 = 'move-node-to-workspace 4 --focus-follows-window'
+alt-shift-5 = 'move-node-to-workspace 5 --focus-follows-window'
+alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
+
+# ---8<--- APP_RULES
+    # Apps land on the column that suits them, not all on one screen.
+    # Column B (2/4/6) is the primary display and takes what you type into;
+    # column A (1/3/5) is the side panel and takes what you glance at.
+    #
+    # The terminal and the IDE are deliberately on different columns. Sharing
+    # one workspace meant an IDE with a third of a screen and reaching for
+    # alt-f to compensate — which never held, because AeroSpace fullscreen is
+    # "the focused window covers the workspace", not a maximised state.
+    #
+    # Each slot lists EVERY app you actually open for that job — a slot with one
+    # app in it is the same as having no rule the day you switch tools.
+    { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1 --focus-follows-window' },
+    { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1 --focus-follows-window' },
+
+    { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2 --focus-follows-window' },
+    { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2 --focus-follows-window' },
+    { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2 --focus-follows-window' },
+
+    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 3 --focus-follows-window' },
+    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 3 --focus-follows-window' },
+
+    { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 4 --focus-follows-window' },
+    { if.app-id = 'com.microsoft.teams2',        run = 'move-node-to-workspace 4 --focus-follows-window' },
+    { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 4 --focus-follows-window' },
+    { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 4 --focus-follows-window' },
+
+    { if.app-id = 'io.hoppscotch.desktop',       run = 'move-node-to-workspace 5 --focus-follows-window' },
+
+    { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 6 --focus-follows-window' },
+    { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 6 --focus-follows-window' },
+    { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 6 --focus-follows-window' },
