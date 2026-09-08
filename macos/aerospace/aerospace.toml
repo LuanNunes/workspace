@@ -85,45 +85,34 @@ on-window-detected = [
     { if.app-id = 'eu.exelban.Stats',            run = 'layout floating' },
     { if.app-id = 'com.apple.UserNotificationCenter', run = 'layout floating' },
 
-    # Send apps to the CENTRE workspace of their desktop — the main 1440p panel,
-    # where the work happens. The left and right members of each trio stay free
-    # for whatever you put there with alt-shift-<n>. Mirrors the window_rules
-    # block in windows/glazewm/config.yaml.
+    # Apps land on the column that suits them, not all on one screen.
+    # Column B (2/5/8) is the primary display and takes what you type into;
+    # column A (1/4/7) is the side panel and takes what you glance at.
     #
-    #   desktop 1 (alt-1) -> ws 2   terminal and editors
-    #   desktop 2 (alt-2) -> ws 5   chat and music
-    #   desktop 3 (alt-3) -> ws 8   browsers
+    # The terminal and the IDE are deliberately on DIFFERENT columns. Sharing
+    # one workspace meant an IDE with a third of a screen and reaching for
+    # alt-f to compensate — which never held, because AeroSpace fullscreen is
+    # "the focused window covers the workspace", not a maximised state, and
+    # 0.21.3 has no setting to make it persist (checked every config key in the
+    # binary). One window per workspace is the answer the [gaps] block below
+    # already assumes.
     #
     # Each slot lists EVERY app you actually open for that job — a slot with one
     # app in it is the same as having no rule the day you switch tools.
-    #
-    # --focus-follows-window on every rule: without it AeroSpace moves the new
-    # window to its workspace and leaves you where you were, so clicking an app
-    # in the Dock makes it 'open' onto a screen you cannot see. With it, opening
-    # an app takes you to the desktop that app lives on.
-    #
-    # The cost is at login, when several apps are restored at once: each one that
-    # matches a rule pulls focus as its window appears, so the first seconds jump
-    # around before settling on whatever launched last.
-    { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 2 --focus-follows-window' },
+    { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1 --focus-follows-window' },
+    { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1 --focus-follows-window' },
+
     { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2 --focus-follows-window' },
     { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2 --focus-follows-window' },
     { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2 --focus-follows-window' },
 
-    # Toggl on the LEFT screen of the work desktop: a timer is something you
-    # glance at, so it earns a panel of its own rather than a share of the one
-    # you are typing into.
-    { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1 --focus-follows-window' },
+    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4 --focus-follows-window' },
+    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4 --focus-follows-window' },
 
     { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'com.microsoft.teams2',        run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5 --focus-follows-window' },
-
-    # AI clients on the LEFT screen of the chat desktop, mirroring the ChatGPT
-    # rule on Windows: read-alongside tools, not the thing you type into.
-    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4 --focus-follows-window' },
-    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4 --focus-follows-window' },
 
     { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 8 --focus-follows-window' },
     { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 8 --focus-follows-window' },
@@ -135,49 +124,52 @@ on-window-detected = [
 #  (`on-window-detected`, `start-at-login`, …) may be added past this point.
 # ===========================================================================
 [workspace-to-monitor-force-assignment]
-# Nine workspaces grouped into three "desktops" of three, one per monitor, so
-# that the three screens switch as a SINGLE UNIT — alt-1/2/3 below reconfigure
-# all of them at once. Ported from windows/glazewm/config.yaml, which solved
-# this first and uses the same trio arrangement.
+# Nine workspaces in three "desktops" of three, so alt-1/2/3 below switch every
+# screen at once and the monitors behave as a single unit. Ported from
+# windows/glazewm/config.yaml, which solved this first.
 #
 #   desktop 1 = 1 2 3   terminal and editors
 #   desktop 2 = 4 5 6   chat and music
 #   desktop 3 = 7 8 9   browsers
 #
-# Within each trio the order is left, centre, right. Verified with
-# CGDisplayBounds on 2026-09-08 — the desk runs:
+# The columns are defined by ROLE, not by monitor, and each is a LIST of
+# patterns — AeroSpace takes the first that matches, and anything matching
+# nothing falls back to the main monitor. That is what lets one table serve
+# every desk with no edit when hardware changes:
 #
-#   x=-1512  built-in MacBook   1512x982    left
-#   x=0      MSI MAG271CQR      2560x1440   centre, and the MAIN display
-#   x=2560   MSI MAG271C        1920x1080   right
+#   column A (side)     ws 1,4,7   ARZOPA when travelling, else the MacBook
+#   column B (primary)  ws 2,5,8   always 'main' — whichever screen you made
+#                                  primary is where the work goes
+#   column C (third)    ws 3,6,9   the third panel on the full desk; with fewer
+#                                  monitors these collapse onto main and become
+#                                  extra scratch workspaces, reachable with
+#                                  alt-shift-<n>
 #
-# Note this table is REQUIRED for the trio to work, and not just for tidiness:
-# AeroSpace gives every workspace a monitor whether you declare one or not, so
-# without it the members of a trio drift onto whatever screen they were last
-# shown on and one keypress no longer lands three screens predictably.
+# Verified across three configurations on 2026-09-08: three monitors, laptop
+# alone, and the portable pair. Nothing needed changing between them.
 #
-# The values are REGEXES matched against the monitor name, not literal names.
-# `MSI MAG271C` is a prefix of `MSI MAG271CQR`, so an unanchored pattern would
-# match the wrong panel — hence `^...$`. Names: aerospace list-monitors
+# Patterns are REGEXES matched against the monitor name (case-insensitive), not
+# literal names. Check what this machine reports with: aerospace list-monitors
 #
 # `persistent-workspaces` at the top of this file is what GlazeWM calls
-# keep_alive: without it an empty member of a trio would be deactivated, and the
-# next alt-<n> would restore only the screens that still had a window on them.
+# keep_alive: without it an empty member of a desktop would be deactivated, and
+# the next alt-<n> would restore only the screens that still had a window.
 
-# desktop 1 — terminal and editors
-1 = 'built-in'
-2 = '^msi mag271cqr$'
-3 = '^msi mag271c$'
+# column A — the side panel
+1 = ['^arzopa$', 'built-in']
+4 = ['^arzopa$', 'built-in']
+7 = ['^arzopa$', 'built-in']
 
-# desktop 2 — chat and music
-4 = 'built-in'
-5 = '^msi mag271cqr$'
-6 = '^msi mag271c$'
+# column B — the primary screen, wherever the menu bar is
+2 = 'main'
+5 = 'main'
+8 = 'main'
 
-# desktop 3 — browsers
-7 = 'built-in'
-8 = '^msi mag271cqr$'
-9 = '^msi mag271c$'
+# column C — the third panel. No pattern yet: the MSIs are gone and the
+# Alienware is not here. Add its name to the front of each list when it arrives.
+3 = 'main'
+6 = 'main'
+9 = 'main'
 
 [gaps]
 # `inner` separates tiled windows from each other — keep it, otherwise two

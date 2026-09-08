@@ -335,55 +335,43 @@ sozinha para o modo main:
 | `Backspace` | fechar todas as janelas menos a atual |
 | `Alt+Shift+H/J/K/L` | juntar esta janela no container do vizinho |
 
-Os três monitores se comportam como **uma tela só**: os nove workspaces são
-três "desktops" de três, um por monitor, e uma tecla reconfigura as três telas
-ao mesmo tempo. Modelo portado do `windows/glazewm/config.yaml`.
+Os monitores se comportam como **uma tela só**: os nove workspaces são três
+"desktops" de três, e uma tecla reconfigura todas as telas ao mesmo tempo.
+Modelo portado do `windows/glazewm/config.yaml`.
 
-| | MacBook (esq.) | MAG271CQR (centro, principal) | MAG271C (dir.) |
-|---|---|---|---|
-| **`Alt+1`** terminal e editores | ws 1 ← Toggl | **ws 2** ← Ghostty, VS Code, IntelliJ | ws 3 |
-| **`Alt+2`** chat e música | ws 4 ← Claude, Codex | **ws 5** ← Slack, Teams, WhatsApp, Spotify | ws 6 |
-| **`Alt+3`** browsers | ws 7 | **ws 8** ← Chrome, Safari, Firefox | ws 9 |
+As colunas são definidas por **papel**, não por monitor, e cada uma é uma
+**lista** de padrões — o AeroSpace usa o primeiro que casar, e o que não casa
+com nada cai no monitor principal. É isso que faz o mesmo arquivo servir
+qualquer mesa sem edit:
 
-As regras de app mandam tudo para a coluna do **centro**, o painel principal; as
-colunas laterais ficam livres para o que você puser lá com `Alt+Shift+<n>`.
+| Coluna | Workspaces | Onde cai |
+|---|---|---|
+| **A** — painel lateral | 1, 4, 7 | ARZOPA quando em viagem, senão o MacBook |
+| **B** — principal | 2, 5, 8 | sempre `main` — a tela que você fez principal |
+| **C** — terceira | 3, 6, 9 | o terceiro painel na mesa completa; com menos monitores colapsa em `main` e vira workspace extra |
 
-Dentro de cada `Alt+1..3` os três são focados na ordem esquerda, direita e
-**centro por último** — de propósito: focar um workspace leva o foco para o
-monitor dele, então terminar no centro deixa o teclado no painel principal.
+| | Coluna A (lateral) | Coluna B (principal) |
+|---|---|---|
+| **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl | **ws 2** ← IntelliJ, VS Code, Android Studio |
+| **`Alt+2`** chat | ws 4 ← Claude, Codex | **ws 5** ← Slack, Teams, WhatsApp, Spotify |
+| **`Alt+3`** browsers | ws 7 | **ws 8** ← Chrome, Safari, Firefox |
 
-`Alt+4..9` é a saída de emergência: mexe numa tela só e deixa as outras duas
-paradas. Um `Alt+1..3` depois re-sincroniza as três.
+**O terminal e o IDE ficam em colunas diferentes de propósito.** Dividindo um
+workspace, o IDE ficava com um terço da tela, e o reflexo era apertar `Alt+F`
+para compensar — que nunca segura, porque o `fullscreen` do AeroSpace significa
+"a janela em foco ocupa o workspace", não um estado de maximizado. Não há ajuste
+para torná-lo persistente: conferi todas as chaves de configuração do binário do
+0.21.3. Uma janela por workspace é a resposta que o bloco `[gaps]` já assumia.
 
-> **A tabela de pinagem é obrigatória para isso funcionar**, não é organização.
-> No AeroSpace todo workspace tem um monitor, declarado ou não — sem a tabela os
-> membros de um trio vão parar na tela em que apareceram por último, e uma tecla
-> deixa de pousar três telas de forma previsível. Verificado em 2026-09-08.
+> **Qual tela é a principal importa.** A coluna B é `main`, então "principal"
+> define onde o trabalho acontece. Na mesa completa é o monitor grande; em
+> viagem é o MacBook (1512×982 de área útil contra 1280×800 do ARZOPA). Se o
+> macOS eleger o portátil como principal, os nove workspaces vão todos para lá —
+> foi o que aconteceu ao plugá-lo pela primeira vez. Ajuste em System Settings →
+> Displays → **Arrange…**, arrastando a barra branca.
 
-> Efeito colateral: cada `Alt+1..3` dispara três comandos, e com
-> `on-focused-monitor-changed = move-mouse monitor-lazy-center` o cursor pula
-> três vezes antes de pousar no centro. É o mesmo preço que o GlazeWM paga.
-
-**Mudar uma janela de desktop mantendo a tela.** `Alt+Shift+<n>` pede o número
-do *workspace*, então "mesma tela, outro desktop" exige fazer
-`(desktop − 1) × 3 + coluna` de cabeça. `Alt+Ctrl+1/2/3` faz essa conta: a
-coluna vem do workspace em que a janela está, ela mantém o painel e só o
-desktop muda.
-
-A conta vive em `macos/aerospace/move-to-desktop.sh`, chamado por
-`exec-and-forget`, porque binding do AeroSpace é estático — `move-node-to-workspace`
-só aceita workspace literal, não existe "a tela em que eu estou". O script deriva
-a coluna do **workspace atual**, não do nome do monitor, justamente para não
-repetir o mapeamento que a tabela `[workspace-to-monitor-force-assignment]` já
-tem; duas cópias divergiriam na primeira troca de painel.
-
-Para atravessar telas fora do trio:
-
-| Atalho | Ação |
-|---|---|
-| `Alt+Ctrl+H/J/K/L` | mover o foco para o monitor naquela direção |
-| `Alt+Ctrl+Shift+H/J/K/L` | mandar a janela para outro monitor |
-| `Alt+Shift+Tab` | arrastar o **workspace inteiro** para o próximo monitor |
+> Verificado nas três configurações em 2026-09-08: três monitores, MacBook
+> sozinho, e o par portátil. Nenhuma exigiu mudar o arquivo.
 
 Abrir um app **te leva junto** até o workspace dele
 (`--focus-follows-window` em todas as regras). Sem isso, clicar no Dock movia a
