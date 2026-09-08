@@ -179,6 +179,8 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 | Dropping `workspace-to-monitor-force-assignment` to get Hyprland-style fluid workspaces | It does not work — every workspace still has a monitor, just an undeclared one. Verified 2026-09-08. |
 | One `alt-<n>` moves only one screen | That is `alt-4`…`alt-9`, the escape hatch. The trio switches are `alt-1`, `alt-2`, `alt-3`. |
 | Karabiner changes nothing, no error | The driver extension was never approved. `systemextensionsctl list` printing `0 extension(s)` means it is inert. |
+| A display flickers under AeroSpace | `borders` drawing at non-retina resolution. Add `hidpi=on` to its invocation in `after-startup-command`. |
+| Editing `after-startup-command` appears to do nothing | It runs when the AeroSpace server starts, not on `reload-config`. Restart AeroSpace, or re-run the command by hand. |
 
 ## Keeping it in sync
 

@@ -29,8 +29,19 @@ after-login-command = []
 
 # A colored outline on the focused window — the only way to tell focus apart in
 # a gapless tile. Colors are Rosé Pine (iris / overlay), matching Ghostty.
+#
+# hidpi=on is not cosmetic. Without it borders draws at non-retina resolution,
+# and on a HiDPI panel that produced a visible flicker — traced on 2026-09-08 by
+# killing borders (flicker stopped) and restarting it with the flag (it did not
+# come back). Every display on this machine is HiDPI, so there is no case for
+# leaving it off.
+#
+# NOTE: this list runs when the AeroSpace SERVER starts, not on reload-config.
+# Changing it here does nothing until AeroSpace itself is restarted; to apply it
+# now, re-run the borders command by hand — a second invocation updates the
+# running process rather than starting another.
 after-startup-command = [
-    'exec-and-forget borders active_color=0xffc4a7e7 inactive_color=0xff26233a width=6.0',
+    'exec-and-forget borders active_color=0xffc4a7e7 inactive_color=0xff26233a width=6.0 hidpi=on',
 ]
 
 # ===========================================================================
