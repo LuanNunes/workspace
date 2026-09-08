@@ -301,6 +301,8 @@ Aqui `alt` = **Option**.
 | `Alt+,` | virar accordion (empilhar) |
 | `Alt+F` | fullscreen |
 | `Alt+Shift+F` | soltar a janela (floating) |
+| `Alt+W` | fechar a janela (o app continua vivo) |
+| `Alt+M` | minimizar para o Dock |
 | `Alt+-` / `Alt+=` | redimensionar (150px por toque) |
 | `Alt+Shift+;` | entrar no modo service (tabela abaixo) |
 
@@ -370,6 +372,20 @@ Para atravessar telas fora do trio:
 
 A regra só dispara quando a janela **nasce** — app já aberto não se muda sozinho
 depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
+
+> **`Alt+W` e `Alt+M` custaram duas teclas do zsh** — eram `kill-region` e
+> `copy-prev-shell-word`. É o preço descrito no aviso abaixo, pago de propósito
+> para casar com o `win+w`/`win+m` do GlazeWM. O `Alt+.` (inserir último
+> argumento), que é o realmente usado no dia a dia, continua intacto.
+
+> **Minimizar é porta de mão única num tiling WM.** A janela sai da árvore do
+> workspace e passa a viver no Dock, e **não há atalho do AeroSpace que a traga
+> de volta** — use o Dock ou o AltTab. Se a intenção era só tirar a janela da
+> frente, `Alt+Shift+F` (soltar como floating) costuma ser o que você queria.
+
+> `Alt+W` fecha a janela e deixa o app rodando, que é a convenção do macOS. Para
+> o comportamento do Windows — encerrar o app junto com a última janela — a
+> config aceita `close --quit-if-last-window`.
 
 > ⚠️ **O AeroSpace captura `Alt+<tecla>` globalmente**, antes do app em foco. Por
 > isso `Alt+C` **não** está mapeado — é do fzf. Confira o arquivo antes de

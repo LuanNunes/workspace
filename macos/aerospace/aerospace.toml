@@ -218,6 +218,26 @@ alt-comma = 'layout accordion horizontal vertical'  # stack them instead
 alt-f = 'fullscreen'
 alt-shift-f = 'layout floating tiling'              # pop this window out
 
+# --- window lifecycle -------------------------------------------------------
+# alt-w to close and alt-m to minimise, matching win+w and win+m in
+# windows/glazewm/config.yaml (and SUPER+W on Omarchy). macOS already has cmd+w,
+# but cmd+w is per-app and inconsistent — some apps close a tab with it.
+#
+# These two cost real zsh bindings, per the warning at the top of this file:
+# alt-w was `kill-region` and alt-m was `copy-prev-shell-word`. Neither is a
+# daily key here, but `alt-.` (insert-last-word) is untouched and remains the
+# one worth keeping.
+#
+# `close` leaves the app running when its last window goes, which is the macOS
+# convention. Add --quit-if-last-window for the Windows behaviour instead.
+alt-w = 'close'
+
+# Minimising in a tiling WM is a one-way door worth knowing about: the window
+# leaves the workspace tree entirely and lives in the Dock, and there is no
+# AeroSpace binding that brings it back. Use the Dock or AltTab (cmd-tab) to
+# restore it.
+alt-m = 'macos-native-minimize'
+
 # --- resize -----------------------------------------------------------------
 # 150px per press, not 50. The step is in real pixels, so on a display this wide
 # a 50px step needs ~10 presses before the split visibly moves — which reads as
