@@ -50,6 +50,17 @@ defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true
 defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true
 
+# Mouse tracking speed. This is NOT where the external mouse is tuned — the
+# Keychron M2 has pointer acceleration disabled in macos/linearmouse/, and with
+# acceleration off LinearMouse governs that device and this slider stops doing
+# much. Moving it and feeling nothing is the confusing part.
+#
+# It still matters as the FALLBACK: the window before login items have started,
+# and any time LinearMouse is not running. Left at an extreme, that window feels
+# like a broken mouse. 3.0 is macOS's own default, so the fallback is simply
+# "stock Mac" rather than a value tuned for a tool that is not loaded yet.
+defaults write NSGlobalDomain com.apple.mouse.scaling -float 3.0
+
 # ===========================================================================
 #  Dock & Mission Control
 # ===========================================================================
@@ -153,8 +164,9 @@ cat <<'EOF'
 
 Two things this script cannot do for you:
 
-  1. LOG OUT and back in. Key repeat, AppleKeyboardUIMode and the Spaces
-     settings are read at login — until then Neovim still won't repeat keys.
+  1. LOG OUT and back in. Key repeat, AppleKeyboardUIMode, the Spaces settings
+     and the mouse tracking speed are read at login — until then Neovim still
+     won't repeat keys.
 
   2. Grant Accessibility permission, in System Settings → Privacy & Security →
      Accessibility, to: AeroSpace, Raycast, AltTab, Karabiner-Elements.
