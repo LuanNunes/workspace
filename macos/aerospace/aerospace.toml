@@ -96,29 +96,38 @@ on-window-detected = [
     #
     # Each slot lists EVERY app you actually open for that job — a slot with one
     # app in it is the same as having no rule the day you switch tools.
-    { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 2' },
-    { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2' },
-    { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2' },
-    { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2' },
+    #
+    # --focus-follows-window on every rule: without it AeroSpace moves the new
+    # window to its workspace and leaves you where you were, so clicking an app
+    # in the Dock makes it 'open' onto a screen you cannot see. With it, opening
+    # an app takes you to the desktop that app lives on.
+    #
+    # The cost is at login, when several apps are restored at once: each one that
+    # matches a rule pulls focus as its window appears, so the first seconds jump
+    # around before settling on whatever launched last.
+    { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 2 --focus-follows-window' },
+    { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2 --focus-follows-window' },
+    { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2 --focus-follows-window' },
+    { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2 --focus-follows-window' },
 
     # Toggl on the LEFT screen of the work desktop: a timer is something you
     # glance at, so it earns a panel of its own rather than a share of the one
     # you are typing into.
-    { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1' },
+    { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1 --focus-follows-window' },
 
-    { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 5' },
-    { if.app-id = 'com.microsoft.teams2',        run = 'move-node-to-workspace 5' },
-    { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 5' },
-    { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5' },
+    { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 5 --focus-follows-window' },
+    { if.app-id = 'com.microsoft.teams2',        run = 'move-node-to-workspace 5 --focus-follows-window' },
+    { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 5 --focus-follows-window' },
+    { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5 --focus-follows-window' },
 
     # AI clients on the LEFT screen of the chat desktop, mirroring the ChatGPT
     # rule on Windows: read-alongside tools, not the thing you type into.
-    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4' },
-    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4' },
+    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4 --focus-follows-window' },
+    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4 --focus-follows-window' },
 
-    { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 8' },
-    { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 8' },
-    { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 8' },
+    { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 8 --focus-follows-window' },
+    { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 8 --focus-follows-window' },
+    { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 8 --focus-follows-window' },
 ]
 
 # ===========================================================================

@@ -385,6 +385,20 @@ Para atravessar telas fora do trio:
 | `Alt+Ctrl+Shift+H/J/K/L` | mandar a janela para outro monitor |
 | `Alt+Shift+Tab` | arrastar o **workspace inteiro** para o próximo monitor |
 
+Abrir um app **te leva junto** até o workspace dele
+(`--focus-follows-window` em todas as regras). Sem isso, clicar no Dock movia a
+janela para um workspace possivelmente invisível e você ficava olhando para a
+tela antiga achando que o app não abriu.
+
+Duas consequências disso, ambas esperadas:
+
+Abrir um app **quebra o trio** — só a tela daquele workspace muda, as outras
+duas ficam onde estavam. Um `Alt+1..3` depois re-sincroniza as três.
+
+No **login**, com vários apps restaurando de uma vez, cada um que casa com uma
+regra puxa o foco quando sua janela aparece. Os primeiros segundos pulam entre
+telas antes de assentar no último que subiu.
+
 A regra só dispara quando a janela **nasce** — app já aberto não se muda sozinho
 depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 

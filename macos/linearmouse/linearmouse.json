@@ -12,6 +12,14 @@
       },
       "pointer" : {
         "disableAcceleration" : true
+      },
+      "scrolling" : {
+        "acceleration" : {
+          "vertical" : 3.04
+        },
+        "speed" : {
+          "vertical" : 20.19
+        }
       }
     }
   ]
