@@ -2,3 +2,7 @@
 .zshrc.secrets
 *.bak
 *.bak.*
+
+# Karabiner rewrites its own config directory (which we symlink whole, see
+# bootstrap.sh) and drops a timestamped copy here on every GUI change.
+macos/karabiner/automatic_backups/

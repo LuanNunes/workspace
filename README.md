@@ -35,6 +35,7 @@ dotfiles/
 │   ├── Brewfile            # every package, for `brew bundle`
 │   ├── ghostty/config      # terminal → ~/.config/ghostty/config
 │   ├── aerospace/          # tiling WM → ~/.config/aerospace/aerospace.toml
+│   ├── karabiner/          # Caps→Esc + Keychron K2 fn row → ~/.config/karabiner
 │   └── README.md           # setup, Apple Silicon notes, gotchas
 ├── windows/                # SNAPSHOTS of the Windows side (see note below)
 │   ├── sync.sh             # copies these files to/from Windows

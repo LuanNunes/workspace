@@ -166,8 +166,8 @@ nothing is destroyed.
 
 Note the two config conventions on macOS: CLI tools follow the XDG habit and
 read ~/.config/<tool>, while native Mac apps use ~/Library/Application Support.
-Ghostty and AeroSpace both accept the ~/.config form, so everything stays in
-one place."
+Ghostty, AeroSpace and Karabiner all accept the ~/.config form, so everything
+stays in one place."
 
   link "$DOTFILES/.zshrc"                          "$HOME/.zshrc"
   link "$DOTFILES/.p10k.zsh"                       "$HOME/.p10k.zsh"
@@ -176,6 +176,14 @@ one place."
   link "$DOTFILES/nvim/lazy-lock.json"             "$HOME/.config/nvim/lazy-lock.json"
   link "$DOTFILES/macos/ghostty/config"            "$HOME/.config/ghostty/config"
   link "$DOTFILES/macos/aerospace/aerospace.toml"  "$HOME/.config/aerospace/aerospace.toml"
+  link "$DOTFILES/macos/aerospace/move-to-desktop.sh" "$HOME/.config/aerospace/move-to-desktop.sh"
+
+  # Karabiner is the one entry linked as a DIRECTORY rather than a file. It
+  # rewrites karabiner.json itself every time you touch its GUI, and it does so
+  # by writing a temp file and renaming it over the target — which replaces a
+  # file symlink with a real file and silently detaches the config from the repo.
+  # Linking the directory leaves the write inside the repo, where it belongs.
+  link "$DOTFILES/macos/karabiner"                 "$HOME/.config/karabiner"
 }
 
 # ===========================================================================

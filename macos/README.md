@@ -109,8 +109,16 @@ macos/
 ├── audit.sh                  # read-only inventory of what the machine runs
 ├── Brewfile                  # every package, for `brew bundle`
 ├── ghostty/config            # → ~/.config/ghostty/config
-└── aerospace/aerospace.toml  # → ~/.config/aerospace/aerospace.toml
+├── aerospace/aerospace.toml  # → ~/.config/aerospace/aerospace.toml
+└── karabiner/                # → ~/.config/karabiner  (the whole DIRECTORY)
+    └── karabiner.json        #   Caps Lock → Esc, and the Keychron K2 fn row
 ```
+
+Karabiner is the only entry symlinked as a directory. It rewrites
+`karabiner.json` itself whenever you touch its GUI, by writing a temp file and
+renaming it over the target — which replaces a *file* symlink with a real file
+and detaches the config from the repo without saying so. Linking the directory
+keeps that write inside the repo.
 
 Everything else is shared with the WSL box and lives at the repo root:
 `.zshrc`, `.p10k.zsh`, `.ideavimrc`, `nvim/`.
@@ -165,6 +173,10 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 | Windows land on random Spaces | `mru-spaces` still true, or "Displays have separate Spaces" is on. |
 | `.DS_Store` in every commit | `core.excludesfile` — written by `bootstrap.sh`. |
 | Repos ask for a passphrase every time | Key not in the Keychain: `ssh-add --apple-use-keychain ~/.ssh/<key>`. |
+| A monitor pattern grabs the wrong panel | The patterns are regexes, not names. `MSI MAG271C` is a prefix of `MSI MAG271CQR`; anchor with `^…$`. |
+| Dropping `workspace-to-monitor-force-assignment` to get Hyprland-style fluid workspaces | It does not work — every workspace still has a monitor, just an undeclared one. Verified 2026-09-08. |
+| One `alt-<n>` moves only one screen | That is `alt-4`…`alt-9`, the escape hatch. The trio switches are `alt-1`, `alt-2`, `alt-3`. |
+| Karabiner changes nothing, no error | The driver extension was never approved. `systemextensionsctl list` printing `0 extension(s)` means it is inert. |
 
 ## Keeping it in sync
 

@@ -161,10 +161,57 @@ Se preferir teclado dedicado, System Settings → Keyboard → Input Sources →
 
 | Ajuste | Onde |
 |---|---|
-| **Caps Lock → Esc** (ouro puro no Vim) | Keyboard → Keyboard Shortcuts → Modifier Keys |
+| **Caps Lock → Esc** (ouro puro no Vim) | `macos/karabiner/karabiner.json` — vale para **todo** teclado |
+| F1–F12 como função, não brilho/volume | idem, mas só no Keychron K2 |
 | Key repeat rápido | já feito pelo `defaults.sh` — exige **logout** |
-| F1–F12 como função, não brilho/volume | Keyboard → "Use F1, F2 as standard function keys" |
 | Tecla 🌐 (Globe) não fazer nada | Keyboard → Press 🌐 to → Do Nothing |
+
+### Keychron K2
+
+O ajuste de `Caps Lock` em System Settings → Keyboard → Keyboard Shortcuts →
+Modifier Keys é **por dispositivo**: configurado no K2, ele não vale no teclado
+interno, e some quando você pluga outro teclado. Por isso o remap mora no
+Karabiner, versionado no repo.
+
+O K2 em modo Mac se anuncia com o vendor ID da **Apple** (`1452`), produto
+`591` — o teclado interno é `1452`/`33028`, então os dois são distinguíveis. É
+esse par que o `karabiner.json` usa para deixar a fn row como F1–F12 só no K2,
+mantendo brilho/volume diretos no teclado do MacBook.
+
+#### A fileira de baixo muda de ordem com a chavinha
+
+Esta é a pegadinha nº 1 de quem vem do Windows, e ela **parece** um bug de
+config: "o Alt parou de funcionar".
+
+```
+Windows/Android:   Ctrl │  ⊞ Win   │   Alt     │ ␣
+Mac/iOS:           Ctrl │ ⌥ Option │ ⌘ Command │ ␣
+```
+
+A tecla colada no espaço era `Alt` e virou `⌘ Command`. O dedo vai no mesmo
+lugar e sai o modificador errado, então nenhum binding `alt-*` do AeroSpace
+dispara. O Option está **uma tecla à esquerda**.
+
+Teste em 5 segundos, sem ferramenta nenhuma: no Spotlight, digite algo, segure a
+tecla suspeita e aperte `A`. Selecionou tudo = é `Command`. Saiu `å` = é
+`Option`.
+
+Não vale a pena trocar Option↔Command para "devolver" o Alt ao polegar: `⌘` é a
+tecla mais usada do macOS, e o remap valeria só no K2 — o teclado interno
+continuaria no layout Apple, deixando as duas memórias musculares em conflito.
+
+Dois pré-requisitos físicos, antes de culpar a config:
+
+1. A chave lateral do K2 em **Mac/iOS**, não Windows/Android.
+2. O Karabiner precisa ter a **driver extension** aprovada. Sem isso ele fica
+   instalado e inerte, sem mensagem de erro nenhuma:
+
+```sh
+systemextensionsctl list      # "0 extension(s)" = inerte
+```
+
+Aprove em System Settings → General → Login Items & Extensions → Driver
+Extensions, e conceda Input Monitoring em Privacy & Security.
 
 > `defaults.sh` desliga `ApplePressAndHoldEnabled`. Sem isso, **segurar `j` no
 > Neovim não repete** — abre o seletor de acentos. É o item nº 1 de frustração de
@@ -225,10 +272,14 @@ Aqui `alt` = **Option**.
 | `Alt+H/J/K/L` | mover **foco** |
 | `Alt+Shift+H/J/K/L` | mover a **janela** |
 | `Alt+A` | voltar à janela anterior (dentro do mesmo workspace) |
-| `Alt+1..9` | ir para workspace |
+| `Alt+1/2/3` | trocar os **três monitores** de uma vez (desktop 1/2/3) |
+| `Alt+4..9` | mover **uma** tela só (quebra o trio de propósito) |
 | `Alt+Shift+1..9` | mandar janela para workspace |
+| `Alt+Ctrl+1/2/3` | mandar janela para outro **desktop**, na mesma tela |
 | `Alt+Tab` | voltar ao workspace anterior |
-| `Alt+Shift+Tab` | jogar o workspace para o outro monitor |
+| `Alt+Shift+Tab` | jogar o workspace para o próximo monitor |
+| `Alt+Ctrl+H/J/K/L` | mover o **foco** entre monitores |
+| `Alt+Ctrl+Shift+H/J/K/L` | mandar a janela para outro **monitor** |
 | `Alt+/` | alternar split horizontal/vertical |
 | `Alt+,` | virar accordion (empilhar) |
 | `Alt+F` | fullscreen |
@@ -250,8 +301,55 @@ sozinha para o modo main:
 | `Backspace` | fechar todas as janelas menos a atual |
 | `Alt+Shift+H/J/K/L` | juntar esta janela no container do vizinho |
 
-Workspaces fixos por app: **1** terminal, **2** editor/IDE, **3** browser,
-**4** chat, **5** música.
+Os três monitores se comportam como **uma tela só**: os nove workspaces são
+três "desktops" de três, um por monitor, e uma tecla reconfigura as três telas
+ao mesmo tempo. Modelo portado do `windows/glazewm/config.yaml`.
+
+| | MacBook (esq.) | MAG271CQR (centro, principal) | MAG271C (dir.) |
+|---|---|---|---|
+| **`Alt+1`** terminal e editores | ws 1 ← Toggl | **ws 2** ← Ghostty, VS Code, IntelliJ | ws 3 |
+| **`Alt+2`** chat e música | ws 4 ← Claude, Codex | **ws 5** ← Slack, Teams, WhatsApp, Spotify | ws 6 |
+| **`Alt+3`** browsers | ws 7 | **ws 8** ← Chrome, Safari, Firefox | ws 9 |
+
+As regras de app mandam tudo para a coluna do **centro**, o painel principal; as
+colunas laterais ficam livres para o que você puser lá com `Alt+Shift+<n>`.
+
+Dentro de cada `Alt+1..3` os três são focados na ordem esquerda, direita e
+**centro por último** — de propósito: focar um workspace leva o foco para o
+monitor dele, então terminar no centro deixa o teclado no painel principal.
+
+`Alt+4..9` é a saída de emergência: mexe numa tela só e deixa as outras duas
+paradas. Um `Alt+1..3` depois re-sincroniza as três.
+
+> **A tabela de pinagem é obrigatória para isso funcionar**, não é organização.
+> No AeroSpace todo workspace tem um monitor, declarado ou não — sem a tabela os
+> membros de um trio vão parar na tela em que apareceram por último, e uma tecla
+> deixa de pousar três telas de forma previsível. Verificado em 2026-09-08.
+
+> Efeito colateral: cada `Alt+1..3` dispara três comandos, e com
+> `on-focused-monitor-changed = move-mouse monitor-lazy-center` o cursor pula
+> três vezes antes de pousar no centro. É o mesmo preço que o GlazeWM paga.
+
+**Mudar uma janela de desktop mantendo a tela.** `Alt+Shift+<n>` pede o número
+do *workspace*, então "mesma tela, outro desktop" exige fazer
+`(desktop − 1) × 3 + coluna` de cabeça. `Alt+Ctrl+1/2/3` faz essa conta: a
+coluna vem do workspace em que a janela está, ela mantém o painel e só o
+desktop muda.
+
+A conta vive em `macos/aerospace/move-to-desktop.sh`, chamado por
+`exec-and-forget`, porque binding do AeroSpace é estático — `move-node-to-workspace`
+só aceita workspace literal, não existe "a tela em que eu estou". O script deriva
+a coluna do **workspace atual**, não do nome do monitor, justamente para não
+repetir o mapeamento que a tabela `[workspace-to-monitor-force-assignment]` já
+tem; duas cópias divergiriam na primeira troca de painel.
+
+Para atravessar telas fora do trio:
+
+| Atalho | Ação |
+|---|---|
+| `Alt+Ctrl+H/J/K/L` | mover o foco para o monitor naquela direção |
+| `Alt+Ctrl+Shift+H/J/K/L` | mandar a janela para outro monitor |
+| `Alt+Shift+Tab` | arrastar o **workspace inteiro** para o próximo monitor |
 
 A regra só dispara quando a janela **nasce** — app já aberto não se muda sozinho
 depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
@@ -259,6 +357,13 @@ depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 > ⚠️ **O AeroSpace captura `Alt+<tecla>` globalmente**, antes do app em foco. Por
 > isso `Alt+C` **não** está mapeado — é do fzf. Confira o arquivo antes de
 > adicionar binding novo.
+
+> **Monitor principal.** O display "principal" do macOS é o que tem a menu bar,
+> e por definição é o que está na origem `(0,0)`. Aqui é o **MAG271CQR**, não a
+> tela do MacBook. Troca-se em System Settings → Displays → **Arrange…**,
+> arrastando a barra branca para o monitor desejado — as posições relativas das
+> outras telas são preservadas. Não é um `defaults write`, então o `defaults.sh`
+> não reproduz isso: é passo manual em máquina nova.
 
 > ⚠️ **"Displays have separate Spaces"** precisa estar desligado — com ele ligado
 > o macOS reposiciona janelas por conta própria e briga com qualquer tiler. O
