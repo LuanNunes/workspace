@@ -166,8 +166,8 @@ nothing is destroyed.
 
 Note the two config conventions on macOS: CLI tools follow the XDG habit and
 read ~/.config/<tool>, while native Mac apps use ~/Library/Application Support.
-Ghostty, AeroSpace and Karabiner all accept the ~/.config form, so everything
-stays in one place."
+Ghostty, AeroSpace, Karabiner and LinearMouse all accept the ~/.config form,
+so everything stays in one place."
 
   link "$DOTFILES/.zshrc"                          "$HOME/.zshrc"
   link "$DOTFILES/.p10k.zsh"                       "$HOME/.p10k.zsh"
@@ -178,11 +178,14 @@ stays in one place."
   link "$DOTFILES/macos/aerospace/aerospace.toml"  "$HOME/.config/aerospace/aerospace.toml"
   link "$DOTFILES/macos/aerospace/move-to-desktop.sh" "$HOME/.config/aerospace/move-to-desktop.sh"
 
-  # Karabiner is the one entry linked as a DIRECTORY rather than a file. It
-  # rewrites karabiner.json itself every time you touch its GUI, and it does so
-  # by writing a temp file and renaming it over the target — which replaces a
-  # file symlink with a real file and silently detaches the config from the repo.
-  # Linking the directory leaves the write inside the repo, where it belongs.
+  # LinearMouse and Karabiner are the two entries linked as DIRECTORIES rather
+  # than files, for the same reason: both rewrite their own JSON whenever you
+  # touch their GUI. A Swift app writing with .atomic does it through a temp
+  # file and a rename, which replaces a *file* symlink with a real file and
+  # detaches the config from the repo without a word. Linking the directory
+  # sidesteps the question entirely — the write lands inside the repo either way.
+  link "$DOTFILES/macos/linearmouse"               "$HOME/.config/linearmouse"
+
   link "$DOTFILES/macos/karabiner"                 "$HOME/.config/karabiner"
 }
 

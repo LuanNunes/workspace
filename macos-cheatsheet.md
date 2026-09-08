@@ -237,7 +237,24 @@ fica escondido em Accessibility na UI).
 
 > Mouse externo com scroll invertido é o clássico: o macOS aplica "natural
 > scrolling" ao trackpad **e** ao mouse com a mesma chave. O **LinearMouse** (já
-> no Brewfile) separa os dois.
+> no Brewfile, config versionada em `macos/linearmouse/`) separa os dois.
+
+### Velocidade do mouse: um dispositivo, um lugar
+
+| Dispositivo | Onde configurar |
+|---|---|
+| Mouse externo (Keychron M2) | LinearMouse → *Pointer → Speed* |
+| Trackpad | System Settings → Trackpad |
+
+O `linearmouse.json` desliga a aceleração do M2 (`disableAcceleration`). Com ela
+desligada o LinearMouse governa o ponteiro daquele dispositivo e a curva do
+macOS sai do caminho — então mexer no *Tracking speed* de System Settings quase
+não muda nada, e parece que o mouse está quebrado. Ajuste velocidade no mesmo
+lugar em que a aceleração está desligada.
+
+O `com.apple.mouse.scaling` do sistema continua valendo como **fallback**, para
+o intervalo antes de os login items carregarem ou se o LinearMouse cair. Deixe
+num valor razoável — se estiver muito baixo, esse intervalo parece defeito.
 
 ---
 

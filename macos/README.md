@@ -110,15 +110,17 @@ macos/
 ├── Brewfile                  # every package, for `brew bundle`
 ├── ghostty/config            # → ~/.config/ghostty/config
 ├── aerospace/aerospace.toml  # → ~/.config/aerospace/aerospace.toml
-└── karabiner/                # → ~/.config/karabiner  (the whole DIRECTORY)
-    └── karabiner.json        #   Caps Lock → Esc, and the Keychron K2 fn row
+├── karabiner/                # → ~/.config/karabiner  (the whole DIRECTORY)
+│   └── karabiner.json        #   Caps Lock → Esc, and the Keychron K2 fn row
+└── linearmouse/              # → ~/.config/linearmouse  (also a DIRECTORY)
+    └── linearmouse.json      #   per-device pointer + scroll for external mice
 ```
 
-Karabiner is the only entry symlinked as a directory. It rewrites
-`karabiner.json` itself whenever you touch its GUI, by writing a temp file and
-renaming it over the target — which replaces a *file* symlink with a real file
-and detaches the config from the repo without saying so. Linking the directory
-keeps that write inside the repo.
+Karabiner and LinearMouse are the two entries symlinked as directories rather
+than files. Both rewrite their own JSON whenever you touch their GUI, and an
+app writing atomically does it through a temp file and a rename — which
+replaces a *file* symlink with a real file and detaches the config from the
+repo without saying so. Linking the directory sidesteps it.
 
 Everything else is shared with the WSL box and lives at the repo root:
 `.zshrc`, `.p10k.zsh`, `.ideavimrc`, `nvim/`.
