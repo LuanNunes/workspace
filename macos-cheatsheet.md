@@ -414,13 +414,19 @@ para torná-lo persistente: conferi todas as chaves de configuração do binári
 > **O ARZOPA roda um modo que o macOS não oferece.** Nativo é 2560×1600, e o
 > macOS só expunha HiDPI até 1280×800 — menos área útil que o MacBook, apesar da
 > tela maior. O **BetterDisplay** (Pro, no Brewfile) revela os modos escondidos;
-> o escolhido é **1600×1000 HiDPI**, que renderiza em 3200×2000 e reduz para o
+> o escolhido é **1920×1200 HiDPI**, que renderiza em 3840×2400 e reduz para o
 > painel.
 >
-> A escolha foi por densidade: a 16", 1280×800 dá ~94 pontos por polegada contra
-> ~125 do MacBook — interface visivelmente maior de um lado. A 1600×1000 vai
-> para ~118 e as duas telas ficam parecidas, com 56% mais área. O 1920×1200
-> também existe, mas deixaria a interface menor que a do MacBook.
+> A conta de densidade, a 16": 1280×800 dava ~94 pontos por polegada, contra
+> ~125 do MacBook — interface visivelmente maior de um lado. 1920×1200 vai para
+> ~141, ou seja, **menor** que a do MacBook. Foi escolha deliberada e contra a
+> minha recomendação inicial de igualar densidade (1600×1000, ~118): UI
+> corporativa densa — Domo, VID Central e afins — precisa de largura, e cortar
+> conteúdo custa mais que texto pequeno. Se um dia pesar na vista:
+>
+> ```sh
+> betterdisplaycli set --namelike=ARZOPA --resolution=1600x1000 --hiDPI=on
+> ```
 >
 > Isso vive nas preferências do BetterDisplay, **não** no repo: o `defaults.sh`
 > não reproduz. Numa máquina nova, o `brew bundle` instala o app e o modo é
