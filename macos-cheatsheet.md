@@ -380,6 +380,15 @@ para torná-lo persistente: conferi todas as chaves de configuração do binári
 > reverter ao reconectar — o CLI 4.3.6 tem bug de leitura nessa chave e reporta
 > `false ? ON : OFF)`, então confirme pela interface.
 
+> **Com duas telas, a coluna C engole janelas.** Ela colapsa na mesma tela da
+> coluna B, então os ws 3/6/9 disputam o monitor principal com os ws 2/5/8 — e o
+> `Alt+1..3` termina mostrando a coluna B. Uma janela que caia na coluna C
+> simplesmente some de vista, e parece que os monitores pararam de trocar juntos.
+>
+> Só chega lá app **sem regra**, que nasce onde o foco estiver. Se um app sumir
+> assim, o conserto não é mexer nas colunas — é dar uma regra a ele em
+> `on-window-detected`. Foi o caso do Hoppscotch.
+
 > **Qual tela é a principal decide onde o trabalho acontece**, porque a coluna B
 > é `main` e a A é `secondary`. Trocar o monitor principal inverte as duas
 > colunas automaticamente, sem editar nada — foi assim que o ARZOPA passou de

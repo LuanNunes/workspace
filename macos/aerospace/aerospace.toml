@@ -125,6 +125,12 @@ on-window-detected = [
     { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5 --focus-follows-window' },
 
+    # Hoppscotch on the side column of the browser desktop: it is read next to a
+    # browser, not instead of one. Without a rule it was born wherever focus
+    # happened to be, which on the portable pair meant column C — a workspace
+    # that shares a screen with column B and therefore hides behind it.
+    { if.app-id = 'io.hoppscotch.desktop',       run = 'move-node-to-workspace 7 --focus-follows-window' },
+
     { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 8 --focus-follows-window' },
     { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 8 --focus-follows-window' },
     { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 8 --focus-follows-window' },
