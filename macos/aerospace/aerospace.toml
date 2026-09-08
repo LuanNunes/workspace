@@ -228,9 +228,15 @@ alt-shift-f = 'layout floating tiling'              # pop this window out
 # daily key here, but `alt-.` (insert-last-word) is untouched and remains the
 # one worth keeping.
 #
-# `close` leaves the app running when its last window goes, which is the macOS
-# convention. Add --quit-if-last-window for the Windows behaviour instead.
-alt-w = 'close'
+# --quit-if-last-window makes this behave the way it does on Windows and
+# Omarchy: the app goes away with its last window, instead of lingering with an
+# empty menu bar the way macOS apps normally do. Deliberate — an app you cannot
+# see but is still running is exactly the state a tiling WM is meant to avoid.
+#
+# The cost is real on apps whose window IS the session: the last Ghostty window
+# takes its shells with it, and the last browser window ends the browser. cmd+w
+# is still there when you want to close a window and keep the app.
+alt-w = 'close --quit-if-last-window'
 
 # Minimising in a tiling WM is a one-way door worth knowing about: the window
 # leaves the workspace tree entirely and lives in the Dock, and there is no

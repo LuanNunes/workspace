@@ -301,7 +301,7 @@ Aqui `alt` = **Option**.
 | `Alt+,` | virar accordion (empilhar) |
 | `Alt+F` | fullscreen |
 | `Alt+Shift+F` | soltar a janela (floating) |
-| `Alt+W` | fechar a janela (o app continua vivo) |
+| `Alt+W` | fechar a janela — e **encerrar o app** se for a última |
 | `Alt+M` | minimizar para o Dock |
 | `Alt+-` / `Alt+=` | redimensionar (150px por toque) |
 | `Alt+Shift+;` | entrar no modo service (tabela abaixo) |
@@ -383,9 +383,15 @@ depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 > de volta** — use o Dock ou o AltTab. Se a intenção era só tirar a janela da
 > frente, `Alt+Shift+F` (soltar como floating) costuma ser o que você queria.
 
-> `Alt+W` fecha a janela e deixa o app rodando, que é a convenção do macOS. Para
-> o comportamento do Windows — encerrar o app junto com a última janela — a
-> config aceita `close --quit-if-last-window`.
+> **`Alt+W` encerra o app junto com a última janela** (`--quit-if-last-window`),
+> como no Windows e no Omarchy — e ao contrário da convenção do macOS, onde o
+> app fica vivo com a menu bar vazia. Foi escolha deliberada: app que você não
+> vê mas continua rodando é exatamente o estado que um tiling WM existe para
+> evitar.
+>
+> O custo aparece nos apps cuja janela **é** a sessão: a última janela do
+> Ghostty leva os shells junto, e a última do browser encerra o browser. Quando
+> você quiser fechar só a janela e manter o app, `Cmd+W` continua ali.
 
 > ⚠️ **O AeroSpace captura `Alt+<tecla>` globalmente**, antes do app em foco. Por
 > isso `Alt+C` **não** está mapeado — é do fzf. Confira o arquivo antes de
