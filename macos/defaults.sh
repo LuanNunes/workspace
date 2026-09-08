@@ -75,6 +75,16 @@ defaults write com.apple.dock mineffect -string "scale"      # cheaper than geni
 # stays where it is; MRU reordering makes every jump land somewhere random.
 defaults write com.apple.dock mru-spaces -bool false
 
+# No widgets on the desktop. They are hosted by the Notification Center process
+# and sit on a NEGATIVE window layer, behind the wallpaper icons — so they look
+# like notifications that will not dismiss, and there is no close button to
+# find, because they are not notifications. Under a tiling WM they are invisible
+# clutter anyway: something is always covering the desktop.
+# StageManager gets the same treatment, so the answer does not depend on which
+# window mode is active.
+defaults write com.apple.WindowManager StandardHideWidgets -bool true
+defaults write com.apple.WindowManager StageManagerHideWidgets -bool true
+
 # Don't auto-shuffle windows into Spaces based on the app they belong to.
 defaults write NSGlobalDomain AppleSpacesSwitchOnActivate -bool false
 

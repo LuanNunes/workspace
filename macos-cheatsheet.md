@@ -273,6 +273,18 @@ num valor razoável — se estiver muito baixo, esse intervalo parece defeito.
 
 ---
 
+> **"Notificações" na área de trabalho que não fecham** provavelmente não são
+> notificações. Widgets de desktop (Bolsa, Tempo, Calendário) são desenhados
+> pelo processo *Notification Center* e ficam numa camada **negativa**, atrás de
+> tudo — daí não terem botão de fechar. Para identificar, o dono e a camada
+> aparecem em qualquer inspetor de janelas; camada negativa = widget.
+>
+> O `defaults.sh` já desliga os dois interruptores (`StandardHideWidgets` e
+> `StageManagerHideWidgets`). Para remover só alguns em vez de todos, é
+> Control-clique na área de trabalho → *Edit Widgets*, e o menos em cada um.
+
+---
+
 ## 5. Finder vs Explorer
 
 | Explorer | Finder |
