@@ -188,6 +188,8 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 | Karabiner changes nothing, no error | The driver extension was never approved. `systemextensionsctl list` printing `0 extension(s)` means it is inert. |
 | A display flickers under AeroSpace | `borders` drawing at non-retina resolution. Add `hidpi=on` to its invocation in `after-startup-command`. |
 | Editing `after-startup-command` appears to do nothing | It runs when the AeroSpace server starts, not on `reload-config`. Restart AeroSpace, or re-run the command by hand. |
+| `alt-1`…`alt-3` throw windows at the wrong screen right after opening or closing the lid | The screen count changed, so the applied layout is the other one. `apply-layout.py` does not run itself on that event — re-run it. |
+| `betterdisplaycli get --protectResolution` always says `true` | The CLI 4.3.6 read is constant and its output is a broken interpolation (`true ? ON : OFF)`). `=off`/`=0` are accepted silently, `=false` fails. Read `defaults read pro.betterdisplay.BetterDisplay \| grep protectResolution` instead — the mode string's presence is the enabled state. |
 
 ## Keeping it in sync
 

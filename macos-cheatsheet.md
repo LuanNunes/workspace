@@ -384,13 +384,27 @@ um fragmento e recarrega:
 ./macos/aerospace/apply-layout.py --dry-run
 ```
 
-**Layout de duas telas** (`layout-2mon.toml`) — seis workspaces, desktops em par:
+> ⚠️ **Abrir ou fechar a tampa muda a contagem de telas** — e portanto o layout
+> certo. Na mesa em clamshell são duas (`2mon`); levantar a tampa faz três
+> (`3mon`). O script **não** roda sozinho nessa troca: ele é chamado no
+> `bootstrap.sh` e à mão. Se o `Alt+1..3` começar a mandar janela para tela
+> errada logo depois de abrir ou fechar o MacBook, rode-o de novo antes de
+> procurar culpa na config.
+
+**Layout de duas telas** (`layout-2mon.toml`) — seis workspaces, desktops em
+par. **É o layout do dia a dia**, porque as duas configurações desta máquina são
+pares: na mesa, Alienware + Mancer com o MacBook **fechado**; na rua, MacBook +
+ARZOPA. As colunas são por papel, então o mesmo arquivo serve os dois:
 
 | | Coluna A (secundária) | Coluna B (principal) |
 |---|---|---|
 | **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl | **ws 2** ← IntelliJ, VS Code |
 | **`Alt+2`** chat | ws 3 ← Claude, Codex | **ws 4** ← Slack, Teams, Spotify |
 | **`Alt+3`** browsers | ws 5 ← Hoppscotch | **ws 6** ← Chrome, Safari |
+
+Na mesa a coluna A é o **Mancer em retrato** e a B é o **Alienware**; na rua a A
+é a tela do **MacBook** e a B é o **ARZOPA**. Nenhuma linha do arquivo muda entre
+os dois — quem decide é qual monitor tem a menu bar.
 
 `Alt+4/5/6` mexem numa tela só. `Alt+7/8/9` ficam **sem binding** — seis
 workspaces precisam de seis teclas, e cada `Alt+<tecla>` não usado é uma tecla
@@ -411,28 +425,102 @@ para compensar — que nunca segura, porque o `fullscreen` do AeroSpace signific
 para torná-lo persistente: conferi todas as chaves de configuração do binário do
 0.21.3. Uma janela por workspace é a resposta que o bloco `[gaps]` já assumia.
 
-> **O ARZOPA roda um modo que o macOS não oferece.** Nativo é 2560×1600, e o
-> macOS só expunha HiDPI até 1280×800 — menos área útil que o MacBook, apesar da
-> tela maior. O **BetterDisplay** (Pro, no Brewfile) revela os modos escondidos;
-> o escolhido é **1920×1200 HiDPI**, que renderiza em 3840×2400 e reduz para o
-> painel.
+> **Resolução das três telas — a conta é sempre pontos por polegada.** Nenhuma
+> delas roda no padrão que o macOS escolhe sozinho, e o motivo é o mesmo nas
+> três: a densidade da tela do MacBook (~125 ppi) é a referência, e o padrão do
+> macOS erra para os dois lados dependendo do tamanho do painel.
 >
-> A conta de densidade, a 16": 1280×800 dava ~94 pontos por polegada, contra
-> ~125 do MacBook — interface visivelmente maior de um lado. 1920×1200 vai para
-> ~141, ou seja, **menor** que a do MacBook. Foi escolha deliberada e contra a
-> minha recomendação inicial de igualar densidade (1600×1000, ~118): UI
-> corporativa densa — Domo, VID Central e afins — precisa de largura, e cortar
-> conteúdo custa mais que texto pequeno. Se um dia pesar na vista:
+> | Tela | Modo | ppi efetivo | Por quê |
+> |---|---|---|---|
+> | **Alienware AW3225QF** 32" 4K | 3008×1692 HiDPI @240Hz | ~109 | o padrão era 1920×1080 (~70 ppi) — UI com quase o dobro do tamanho da do MacBook |
+> | **Mancer TE-3217G** 24" 2K | 1440×2560 retrato, 1:1 | ~123 | nativo já casa com o MacBook; HiDPI aqui cortaria a área útil pela metade |
+> | **ARZOPA** 16" portátil | 1920×1200 HiDPI | ~141 | o macOS só expunha até 1280×800 (~94 ppi), menos área que o MacBook apesar da tela maior |
 >
 > ```sh
-> betterdisplaycli set --namelike=ARZOPA --resolution=1600x1000 --hiDPI=on
+> betterdisplaycli set --namelike=AW3225QF --resolution=3008x1692 --hiDPI=on
+> betterdisplaycli set --namelike=ARZOPA   --resolution=1920x1200 --hiDPI=on
 > ```
 >
-> Isso vive nas preferências do BetterDisplay, **não** no repo: o `defaults.sh`
-> não reproduz. Numa máquina nova, o `brew bundle` instala o app e o modo é
-> refeito à mão. Vale ligar *Protect resolution* no menu do app para o macOS não
-> reverter ao reconectar — o CLI 4.3.6 tem bug de leitura nessa chave e reporta
-> `false ? ON : OFF)`, então confirme pela interface.
+> **No Alienware o HiDPI não é opcional.** É um painel QD-OLED, cujo subpixel é
+> triangular em vez de listrado — texto renderizado em 1:1 sai com franja
+> colorida nas bordas. O modo escalado renderiza no dobro e reduz, e é o que
+> mantém o texto limpo. Os 240Hz sobrevivem à escala.
+>
+> Pedi 3200×1800 e o macOS encaixou em **3008×1692**: 3200 não está na lista que
+> este painel expõe. É o vizinho, e a diferença de densidade é de ~7 ppi.
+>
+> **O ARZOPA foi escolha deliberada contra a minha recomendação inicial** de
+> igualar densidade (1600×1000, ~118 ppi): UI corporativa densa — Domo, VID
+> Central e afins — precisa de largura, e cortar conteúdo custa mais que texto
+> pequeno. Se um dia pesar na vista, `--resolution=1600x1000` desfaz.
+>
+> **O Mancer trava em 72Hz** nessa resolução — é o teto que o painel oferece
+> pela conexão atual, não uma configuração. Para uma tela de terminal e chat não
+> incomoda; se um dia incomodar, o suspeito é o cabo/hub antes do monitor.
+>
+> Nada disso vive no repo: são preferências do BetterDisplay, e o `defaults.sh`
+> não reproduz. Em máquina nova o `brew bundle` instala o app e os modos são
+> refeitos à mão. Vale ligar *Protect resolution* no menu do app para o macOS
+> não reverter ao reconectar.
+>
+> **Não confie no `get` dessa chave.** O CLI 4.3.6 devolve uma string de
+> interpolação quebrada (`true ? ON : OFF)`) e o valor é **constante**: mandar
+> `--protectResolution=off` e reler continua dando `true`. Pior, `=false` é
+> rejeitado com `Failed.` enquanto `=off` e `=0` passam calados, então dá para
+> desligar a proteção achando que não desligou. Quem responde de verdade é o
+> plist:
+>
+> ```sh
+> defaults read pro.betterdisplay.BetterDisplay | grep protectResolution
+> ```
+> ```
+> "protectResolution@Display:3" = "1920x1200 HiDPI";   # ARZOPA
+> "protectResolution@Display:4" = "3008x1692 HiDPI";   # Alienware
+> "protectResolution@Display:5" = "1440x2560 LoDPI";   # Mancer
+> ```
+>
+> Não existe booleano de liga/desliga: **a presença da string é o estado
+> ligado**, e ela guarda o modo fixado. O `@Display:N` é o `tagID` do
+> BetterDisplay, **não** o `displayID` — os dois se cruzam entre painéis. Para
+> saber quem é quem, `betterdisplaycli get --identifiers`, ou ache o built-in
+> pelo `builtIn@Display:N = 1`.
+>
+> O mesmo vale para o **refresh rate**: `--protectRefreshRate=on` fixa o valor
+> atual e grava `protectRefreshRate@Display:4 = 240Hz`. Vale ligar junto com a
+> resolução — é o mesmo tipo de reversão no reconectar.
+
+> **Brilho: o Alienware aceita DDC, o Mancer não.** Em clamshell as teclas de
+> brilho não têm mais a tela do MacBook para controlar, e o que resolve é o
+> BetterDisplay falar DDC com o monitor. Testado nos dois, em 2026-09-08:
+>
+> ```sh
+> betterdisplaycli get --namelike=AW3225QF --ddc --vcp=luminance   # -> 100
+> betterdisplaycli get --namelike=TE-3217G --ddc --vcp=luminance   # -> Failed.
+> ```
+>
+> No Alienware a escrita também funciona (`set --hardwareBrightness=70%` e a
+> leitura DDC volta `70`), e depois disso o plist ganha um controlador que antes
+> não existia: `value@hardwareBrightness-DDCController@Display:4`. É brilho de
+> **backlight** de verdade, não o overlay escuro do software dimming. O Mancer
+> fica só com `softwareBrightness`, que lava a imagem em vez de escurecê-la.
+>
+> ⚠️ **`--hardwareBrightness=100%` não devolve exatamente 100.** Voltou `94` na
+> leitura DDC — a escala do BetterDisplay não mapeia 1:1 no VCP. Para um valor
+> exato, escreva o VCP direto:
+>
+> ```sh
+> betterdisplaycli set --namelike=AW3225QF --ddc --vcp=luminance --value=100
+> ```
+>
+> **Fazer as teclas F1/F2 controlarem o Alienware é passo de interface.** Não há
+> feature de CLI para isso (conferido no `betterdisplaycli help` inteiro, 313
+> linhas) e não existe chave no plist até ser ligado na primeira vez — é o painel
+> **Settings → Keyboard** do app. O DDC já está pronto embaixo; falta só mandar o
+> app interceptar as teclas.
+
+> **Trocar o monitor principal também tem CLI**, e é mais rápido que o Arrange…:
+> `betterdisplaycli set --namelike=AW3225QF --main=on`. Desfazer não existe —
+> só designando outra tela como principal.
 
 > **Com duas telas, a coluna C engole janelas.** Ela colapsa na mesma tela da
 > coluna B, então os ws 3/6/9 disputam o monitor principal com os ws 2/5/8 — e o
@@ -446,17 +534,36 @@ para torná-lo persistente: conferi todas as chaves de configuração do binári
 > **Qual tela é a principal decide onde o trabalho acontece**, porque a coluna B
 > é `main` e a A é `secondary`. Trocar o monitor principal inverte as duas
 > colunas automaticamente, sem editar nada — foi assim que o ARZOPA passou de
-> painel lateral a tela de trabalho.
->
-> Por isso a coluna A **não** nomeia um monitor: `^arzopa$` ali colidiria com a
-> coluna B no instante em que o ARZOPA virasse principal, e os nove workspaces
-> empilhariam numa tela só. Já aconteceu duas vezes.
+> painel lateral a tela de trabalho, e é o que faz o mesmo `layout-2mon.toml`
+> servir a mesa e a rua.
 >
 > Troca-se o principal em System Settings → Displays → **Arrange…**, arrastando
-> a barra branca.
-
-> Verificado nas três configurações em 2026-09-08: três monitores, MacBook
-> sozinho, e o par portátil. Nenhuma exigiu mudar o arquivo.
+> a barra branca. Não é `defaults write`, então o `defaults.sh` não reproduz.
+>
+> **Com duas telas nenhum monitor é nomeado**, e é de propósito: `^arzopa$` na
+> coluna A colidiria com a coluna B no instante em que o ARZOPA virasse
+> principal, e os workspaces empilhariam numa tela só. Já aconteceu duas vezes.
+>
+> **Com três telas um nome é inevitável.** `main` e `secondary` particionam duas
+> telas exatamente, mas na terceira o `secondary` casa com *duas* e não sabe
+> separar a coluna A da C. A regra que mantém isso seguro: **só nomear tela que
+> nunca é a principal**. Por isso o `layout-3mon.toml` nomeia o Mancer (coluna
+> A) e o `built-in` (coluna C), e deixa o Alienware sem nome — o que faz dele o
+> principal designado. Mover a menu bar para outra tela exige mover os nomes
+> junto.
+>
+> Visto ao vivo em 2026-09-08, nas duas pontas. Com a tampa aberta e o MacBook
+> ainda principal, os ws 2/5/8 **e** 3/6/9 caíram todos no built-in e o
+> Alienware ficou sem workspace nenhum — exatamente a colisão descrita acima.
+> Fechada a tampa e rodado o `apply-layout.py`, o par ficou limpo:
+>
+> ```
+> 1,3,5 -> TE-3217G     (coluna A, retrato)
+> 2,4,6 -> AW3225QF     (coluna B, principal)
+> ```
+>
+> O `layout-2mon.toml` não precisou de **uma linha** editada para o hardware
+> novo. É o retorno de ter escrito as colunas por papel.
 
 Abrir um app **te leva junto** até o workspace dele
 (`--focus-follows-window` em todas as regras). Sem isso, clicar no Dock movia a
@@ -500,11 +607,21 @@ depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 > adicionar binding novo.
 
 > **Monitor principal.** O display "principal" do macOS é o que tem a menu bar,
-> e por definição é o que está na origem `(0,0)`. Aqui é o **MAG271CQR**, não a
-> tela do MacBook. Troca-se em System Settings → Displays → **Arrange…**,
-> arrastando a barra branca para o monitor desejado — as posições relativas das
-> outras telas são preservadas. Não é um `defaults write`, então o `defaults.sh`
-> não reproduz isso: é passo manual em máquina nova.
+> e por definição é o que está na origem `(0,0)`. Na mesa é o **AW3225QF**, não
+> a tela do MacBook; na rua é o **ARZOPA**. Troca-se em System Settings →
+> Displays → **Arrange…**, arrastando a barra branca para o monitor desejado —
+> as posições relativas das outras telas são preservadas. Não é um
+> `defaults write`, então o `defaults.sh` não reproduz isso: é passo manual em
+> máquina nova.
+>
+> O macOS guarda o arranjo **por configuração de telas**, e clamshell é uma
+> configuração diferente de tampa aberta — arrastar a barra branca com a tampa
+> aberta não decide nada sobre o modo fechado.
+>
+> Na prática, fechar a tampa **já colocou a menu bar no Alienware sozinho**
+> (verificado em 2026-09-08): sem o built-in, o macOS promove uma das externas e
+> escolheu a de maior resolução. Não precisou de Arrange… nenhum. Só volte lá se
+> ele promover a errada.
 
 > ⚠️ **"Displays have separate Spaces"** precisa estar desligado — com ele ligado
 > o macOS reposiciona janelas por conta própria e briga com qualquer tiler. O
