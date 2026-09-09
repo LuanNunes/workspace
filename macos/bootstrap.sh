@@ -306,6 +306,21 @@ Host github-domo
     User git
     IdentityFile ~/.ssh/nunes@domo
 
+# GitLab — personal account (@nunes.lfa). This block is not optional the way a
+# convenience alias would be: Host * above sets IdentitiesOnly=yes, so ssh
+# offers ONLY the key a matching block names. Without it gitlab.com got no key
+# at all and every clone died on Permission denied (publickey) — with the key
+# already registered on the account, which is what made it confusing.
+Host gitlab.com
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/nunes.lfa
+
+Host gitlab-luan
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/nunes.lfa
+
 Host orun
     HostName 192.168.50.10
     User root
