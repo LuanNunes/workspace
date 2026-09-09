@@ -386,10 +386,28 @@ um fragmento e recarrega:
 
 > ⚠️ **Abrir ou fechar a tampa muda a contagem de telas** — e portanto o layout
 > certo. Na mesa em clamshell são duas (`2mon`); levantar a tampa faz três
-> (`3mon`). O script **não** roda sozinho nessa troca: ele é chamado no
-> `bootstrap.sh` e à mão. Se o `Alt+1..3` começar a mandar janela para tela
-> errada logo depois de abrir ou fechar o MacBook, rode-o de novo antes de
-> procurar culpa na config.
+> (`3mon`).
+>
+> Isso é automático desde 2026-09-08, via o LaunchAgent `displaywatch`
+> (`./macos/bootstrap.sh displaywatch`). Nada no sistema oferecia esse gatilho:
+> o launchd dispara em arquivo, não em tela, e o AeroSpace 0.21.3 só tem
+> `on-focus-changed`, `on-focused-monitor-changed` e `on-window-detected` —
+> nenhum dispara quando um painel aparece ou some. O `display-watch.swift`
+> preenche o buraco ouvindo o CoreGraphics e chamando o `apply-layout.py`.
+>
+> Dois atrasos deliberados lá dentro: **3s** depois do último evento, porque um
+> único plug gera uma rajada de callbacks *e* porque o `apply-layout.py` pergunta
+> a contagem ao AeroSpace, que demora um instante para concordar com o
+> CoreGraphics — disparar na hora lê a contagem **antiga**. E **10s** no arranque,
+> que é a corrida com o servidor do AeroSpace subindo no login.
+>
+> Mudança de resolução **não** dispara nada (o `setModeFlag` está fora do filtro
+> de propósito): ela não muda a contagem de telas, então não pode mudar o layout.
+>
+> ```sh
+> tail -f /tmp/aerospace-display-watch.log
+> launchctl print gui/$UID/dev.luannunes.aerospace-display-watch
+> ```
 
 **Layout de duas telas** (`layout-2mon.toml`) — seis workspaces, desktops em
 par. **É o layout do dia a dia**, porque as duas configurações desta máquina são

@@ -22,7 +22,7 @@ DRY_RUN=false
 
 [[ "$(uname -s)" == "Darwin" ]] || { echo "This script is macOS-only."; exit 1; }
 
-STEPS=(clt rosetta brew packages omz links secrets ssh asdf git)
+STEPS=(clt rosetta brew packages omz links displaywatch secrets ssh asdf git)
 
 # --- output helpers ---------------------------------------------------------
 bold()    { printf '\n\033[1;35m━━ %s\033[0m\n' "$*"; }
@@ -59,7 +59,7 @@ link() {
 
 # ===========================================================================
 step_clt() {
-  bold "1/10  Xcode Command Line Tools"
+  bold "1/11  Xcode Command Line Tools"
   explain "The compiler toolchain: clang, make, the macOS SDK headers, and Apple's
 git. Homebrew needs it to build anything from source, and Neovim's treesitter
 needs it to compile parsers. This is the macOS equivalent of build-essential.
@@ -77,7 +77,7 @@ Installs to /Library/Developer/CommandLineTools (~1.5 GB)."
 
 # ===========================================================================
 step_rosetta() {
-  bold "2/10  Rosetta 2"
+  bold "2/11  Rosetta 2"
   explain "Your CPU is arm64. Rosetta translates x86_64 binaries on the fly so
 Intel-only software still runs. You mainly need it so OrbStack can run
 linux/amd64 container images at usable speed — most work images are still
@@ -96,7 +96,7 @@ container case, so your Docker workflow survives. Intel *Mac apps* will not."
 
 # ===========================================================================
 step_brew() {
-  bold "3/10  Homebrew"
+  bold "3/11  Homebrew"
   explain "The package manager — your apt/nala and scoop in one. Two kinds of
 package: 'formula' (CLI software, compiled or poured as a prebuilt bottle) and
 'cask' (a normal .app dragged into /Applications).
@@ -118,7 +118,7 @@ what lets one .zshrc serve this Mac and the WSL box."
 
 # ===========================================================================
 step_packages() {
-  bold "4/10  Packages (brew bundle)"
+  bold "4/11  Packages (brew bundle)"
   explain "Reads macos/Brewfile and installs everything listed. The Brewfile IS
 the inventory of this machine — if you install something by hand later, add it
 there and commit, or the next machine won't have it.
@@ -142,7 +142,7 @@ write into /Applications."
 
 # ===========================================================================
 step_omz() {
-  bold "5/10  Oh My Zsh"
+  bold "5/11  Oh My Zsh"
   explain "macOS already uses zsh as the login shell, so unlike Ubuntu there is
 no chsh step. This only installs the Oh My Zsh framework your .zshrc sources.
 
@@ -158,7 +158,7 @@ KEEP_ZSHRC=yes matters: the installer's default behaviour is to overwrite
 
 # ===========================================================================
 step_links() {
-  bold "6/10  Dotfile symlinks"
+  bold "6/11  Dotfile symlinks"
   explain "Each config in the repo is symlinked to where the app expects it, so
 editing the repo is live and 'git pull' is the whole update process. Any real
 file already at the destination is renamed to <file>.bak.<timestamp> first —
@@ -194,8 +194,57 @@ so everything stays in one place."
 }
 
 # ===========================================================================
+step_displaywatch() {
+  bold "7/11  AeroSpace display watcher"
+  explain "Re-runs apply-layout.py by itself whenever a display is connected or
+disconnected, so opening or closing the MacBook lid switches between the two-
+and three-screen layouts without you remembering to.
+
+Nothing already on the machine can do this. launchd triggers on files, not on
+display changes, and AeroSpace 0.21.3 has no monitor-connected callback (only
+on-focus-changed, on-focused-monitor-changed and on-window-detected). So this
+step compiles a ~40-line CoreGraphics listener and installs it as a LaunchAgent.
+
+Installs:
+  ~/.config/aerospace/display-watch                        (symlink to the repo)
+  ~/Library/LaunchAgents/dev.luannunes.aerospace-display-watch.plist  (symlink)
+Logs to /tmp/aerospace-display-watch.log.
+
+To undo: launchctl bootout gui/\$UID/dev.luannunes.aerospace-display-watch
+and delete the two symlinks. The layout still works without it — you just go
+back to running apply-layout.py by hand."
+
+  local src="$DOTFILES/macos/aerospace/display-watch.swift"
+  local bin="$DOTFILES/macos/aerospace/display-watch"
+  local label="dev.luannunes.aerospace-display-watch"
+  local plist="$DOTFILES/macos/launchd/$label.plist"
+
+  # The binary is a build artifact, not a tracked file — a compiled Mach-O has
+  # no business in a dotfiles repo, and it would be the wrong architecture on
+  # half the machines that clone it. Build when missing or when the source is
+  # newer, which also makes editing the .swift and re-running this step work.
+  if [[ -x "$bin" && "$bin" -nt "$src" ]]; then
+    skip "display-watch is already built and newer than its source"
+  else
+    run swiftc -O "$src" -o "$bin"
+  fi
+
+  link "$bin"    "$HOME/.config/aerospace/display-watch"
+  link "$plist"  "$HOME/Library/LaunchAgents/$label.plist"
+
+  # bootout before bootstrap so re-running this step picks up an edited plist.
+  # It fails when the agent is not loaded, which is the normal first-run case —
+  # hence the guard, which `set -e` would otherwise turn into an exit.
+  if launchctl print "gui/$UID/$label" >/dev/null 2>&1; then
+    run launchctl bootout "gui/$UID/$label"
+  fi
+  run launchctl bootstrap "gui/$UID" "$HOME/Library/LaunchAgents/$label.plist"
+  $DRY_RUN || ok "loaded — tail -f /tmp/aerospace-display-watch.log to watch it"
+}
+
+# ===========================================================================
 step_secrets() {
-  bold "7/10  Secrets"
+  bold "8/11  Secrets"
   explain "~/.zshrc.secrets holds the API keys. It is git-ignored and sourced by
 .zshrc. Copy the real one from the old machine, or fill this template in."
 
@@ -210,7 +259,7 @@ step_secrets() {
 
 # ===========================================================================
 step_ssh() {
-  bold "8/10  SSH config"
+  bold "9/11  SSH config"
   explain "This writes ~/.ssh/config only — it never generates keys. The work key
 nunes@domo is registered with the org; regenerating it would lock you out.
 Copy the key FILES over from the old machine by hand.
@@ -266,7 +315,7 @@ EOF"
 
 # ===========================================================================
 step_asdf() {
-  bold "9/10  asdf plugins"
+  bold "10/11  asdf plugins"
   explain "asdf 0.16+ is a Go binary, not a sourced shell script — .zshrc just puts
 its shims directory on PATH. A 'shim' is a tiny wrapper: calling 'node' hits the
 shim, which reads .tool-versions and dispatches to the right real binary.
@@ -297,7 +346,7 @@ old ones working on the WSL box."
 
 # ===========================================================================
 step_git() {
-  bold "10/10  git"
+  bold "11/11  git"
   explain "Three machine-level settings:
 
   core.autocrlf=false   — 'input' was a Windows-era setting. The checkout here is
@@ -332,10 +381,12 @@ Steps, in order:
    4. packages   everything in macos/Brewfile
    5. omz        Oh My Zsh framework
    6. links      symlink the repo's configs into place
-   7. secrets    create ~/.zshrc.secrets from the template
-   8. ssh        write ~/.ssh/config (never generates keys)
-   9. asdf       add the language plugins
-  10. git        global git settings + .DS_Store ignore
+   7. displaywatch  LaunchAgent that re-applies the AeroSpace layout when a
+                    display is plugged in or unplugged
+   8. secrets    create ~/.zshrc.secrets from the template
+   9. ssh        write ~/.ssh/config (never generates keys)
+  10. asdf       add the language plugins
+  11. git        global git settings + .DS_Store ignore
 
 Then, separately:
   ./macos/defaults.sh      system preferences (see the file, it is commented)

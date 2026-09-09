@@ -115,7 +115,11 @@ macos/
 │   ├── layout-3mon.toml      # three screens: trios, nine workspaces
 │   ├── apply-layout.py       # merges base + fragment → aerospace.toml
 │   ├── move-to-desktop.sh    # alt-ctrl-<n>: same screen, other desktop
+│   ├── display-watch.swift   # re-applies the layout when a screen comes or goes
+│   ├── display-watch         # COMPILED from the above, git-ignored
 │   └── aerospace.toml        # GENERATED, git-ignored → ~/.config/aerospace/
+├── launchd/
+│   └── dev.luannunes.aerospace-display-watch.plist   # → ~/Library/LaunchAgents/
 ├── karabiner/                # → ~/.config/karabiner  (the whole DIRECTORY)
 │   └── karabiner.json        #   Caps Lock → Esc, and the Keychron K2 fn row
 └── linearmouse/              # → ~/.config/linearmouse  (also a DIRECTORY)
@@ -188,7 +192,8 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 | Karabiner changes nothing, no error | The driver extension was never approved. `systemextensionsctl list` printing `0 extension(s)` means it is inert. |
 | A display flickers under AeroSpace | `borders` drawing at non-retina resolution. Add `hidpi=on` to its invocation in `after-startup-command`. |
 | Editing `after-startup-command` appears to do nothing | It runs when the AeroSpace server starts, not on `reload-config`. Restart AeroSpace, or re-run the command by hand. |
-| `alt-1`…`alt-3` throw windows at the wrong screen right after opening or closing the lid | The screen count changed, so the applied layout is the other one. `apply-layout.py` does not run itself on that event — re-run it. |
+| `alt-1`…`alt-3` throw windows at the wrong screen right after opening or closing the lid | The screen count changed and the layout has not caught up. The `displaywatch` LaunchAgent normally handles this within ~3s; if it is not running (`launchctl print gui/$UID/dev.luannunes.aerospace-display-watch`), re-run `apply-layout.py` by hand. |
+| The display watcher never fires | Check `/tmp/aerospace-display-watch.log`. A run that fires before AeroSpace's server is up dies with "Can't connect to AeroSpace server" — that is the login race the binary's 10s startup delay exists for. |
 | `betterdisplaycli get --protectResolution` always says `true` | The CLI 4.3.6 read is constant and its output is a broken interpolation (`true ? ON : OFF)`). `=off`/`=0` are accepted silently, `=false` fails. Read `defaults read pro.betterdisplay.BetterDisplay \| grep protectResolution` instead — the mode string's presence is the enabled state. |
 
 ## Keeping it in sync

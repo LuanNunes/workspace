@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>dev.luannunes.aerospace-display-watch</string>
+
+    <!--
+      Run through /bin/sh ONLY to get $HOME expanded. launchd does not expand ~
+      or $HOME inside ProgramArguments, so a direct invocation would have to
+      hardcode /Users/<name> and this file would stop being portable. `exec`
+      keeps it a single process instead of leaving a shell as the parent, so
+      KeepAlive below watches the watcher and not a wrapper.
+
+      Both paths are the symlinks bootstrap.sh creates in ~/.config/aerospace,
+      which is why nothing here mentions where the repo is checked out.
+    -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>exec "$HOME/.config/aerospace/display-watch" "$HOME/.config/aerospace/apply-layout.py"</string>
+    </array>
+
+    <!-- RunAtLoad starts it at login; the binary itself waits 10s before its
+         first run so AeroSpace's server is up to be asked. -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- It is a daemon that should never exit. If it does, bring it back. -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- apply-layout.py prints which layout it chose and why, and that output is
+         the only record of what happened while you were not looking. Both
+         streams go to one file so the ordering is real:
+             tail -f /tmp/aerospace-display-watch.log
+         /tmp rather than ~/Library/Logs for the same reason as the paths above —
+         launchd will not expand $HOME here, and these keys take no shell. -->
+    <key>StandardOutPath</key>
+    <string>/tmp/aerospace-display-watch.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/aerospace-display-watch.log</string>
+</dict>
+</plist>
