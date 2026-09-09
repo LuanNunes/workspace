@@ -600,6 +600,27 @@ telas antes de assentar no último que subiu.
 A regra só dispara quando a janela **nasce** — app já aberto não se muda sozinho
 depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 
+> **Trocar de layout é a exceção, desde 2026-09-08.** O `apply-layout.py`
+> re-aloja as janelas já abertas quando — e **somente quando** — o layout muda de
+> fato. Sem isso, abrir ou fechar a tampa deixava cada app no workspace que o
+> layout *anterior* tinha dado: o Safari aberto com a tampa levantada ia para o
+> ws 8 pela regra do `3mon`, e fechar a tampa o deixava lá — num workspace que o
+> `2mon` nem sequer mapeia tecla, então **invisível e inalcançável pelo teclado**.
+> Parecia janela que "não expande".
+>
+> O gatilho é a mudança de layout, não a execução do script: rodar
+> `apply-layout.py` de novo sem trocar de layout não mexe em nada, para não
+> desfazer o que você posicionou à mão. Ele imprime o que moveu:
+>
+> ```
+> apply-layout: com.apple.Safari 6 -> 8
+> ```
+>
+> `--no-rehome` desliga o comportamento numa execução. E o re-alojamento não usa
+> `--focus-follows-window` de propósito: as regras usam para abrir um app te
+> levar junto, mas aqui uma dúzia de janelas pode mover de uma vez, e seguir cada
+> uma deixaria o foco em lugar aleatório.
+
 > **`Alt+W` e `Alt+M` custaram duas teclas do zsh** — eram `kill-region` e
 > `copy-prev-shell-word`. É o preço descrito no aviso abaixo, pago de propósito
 > para casar com o `win+w`/`win+m` do GlazeWM. O `Alt+.` (inserir último

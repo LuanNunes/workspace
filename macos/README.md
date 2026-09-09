@@ -186,6 +186,7 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 | `.DS_Store` in every commit | `core.excludesfile` — written by `bootstrap.sh`. |
 | Repos ask for a passphrase every time | Key not in the Keychain: `ssh-add --apple-use-keychain ~/.ssh/<key>`. |
 | Edits to `aerospace.toml` vanish | It is generated. Edit `aerospace.base.toml` or a `layout-*.toml` and re-run `apply-layout.py`. |
+| An app sits on a workspace the current layout does not bind a key for | It was born under the other layout and kept that workspace. `apply-layout.py` re-homes open windows when the layout changes; if it is already applied, force it with `apply-layout.py <layout>` or move the window by `--window-id`. |
 | A monitor pattern grabs the wrong panel | The patterns are regexes, not names. `MSI MAG271C` is a prefix of `MSI MAG271CQR`; anchor with `^…$`. |
 | Dropping `workspace-to-monitor-force-assignment` to get Hyprland-style fluid workspaces | It does not work — every workspace still has a monitor, just an undeclared one. Verified 2026-09-08. |
 | One `alt-<n>` moves only one screen | That is `alt-4`…`alt-9`, the escape hatch. The trio switches are `alt-1`, `alt-2`, `alt-3`. |

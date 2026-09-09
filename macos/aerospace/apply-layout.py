@@ -9,6 +9,17 @@ arrangement windows/windows-terminal/apply-theme.py uses for its themes.
     ./apply-layout.py            detect screen count and apply the match
     ./apply-layout.py 2mon       force a layout
     ./apply-layout.py --dry-run  print what would change, write nothing
+    ./apply-layout.py --no-rehome  switch layouts but leave open windows alone
+
+Switching layouts re-homes the windows that are already open, because
+`on-window-detected` rules fire only when a window is BORN. Without this, an app
+opened under one layout keeps the workspace that layout gave it: Safari opened
+with the lid up landed on ws 8, and closing the lid left it there — on a
+workspace the two-screen layout does not even bind a key for, so it was
+invisible AND unreachable from the keyboard.
+
+Re-homing runs ONLY when the layout actually changed, so re-running this script
+never overrides where you deliberately put something.
 
 The generated aerospace.toml is git-ignored: it is an artifact, and the sources
 are base + fragment. bootstrap.sh runs this before symlinking.
@@ -63,9 +74,62 @@ def parse_fragment(path):
     return parts
 
 
+def rehome_windows(app_rules):
+    """Move already-open windows to the workspace the NEW layout gives them.
+
+    AeroSpace applies `on-window-detected` when a window is created and never
+    again, so a layout switch leaves every open window on the workspace the
+    previous layout chose. Ask the config what each app should get, ask
+    AeroSpace where each window actually is, and reconcile the difference.
+
+    Deliberately WITHOUT --focus-follows-window: the rules use it so that
+    opening an app takes you to it, but here a dozen windows may move at once
+    and following each one would leave focus somewhere random.
+    """
+    wanted = dict(re.findall(
+        r"if\.app-id\s*=\s*'([^']+)'.*?run\s*=\s*'move-node-to-workspace\s+(\d+)",
+        app_rules))
+    if not wanted:
+        return
+
+    out = subprocess.run(
+        [AEROSPACE, "list-windows", "--all",
+         "--format", "%{window-id} %{app-bundle-id} %{workspace}"],
+        capture_output=True, text=True)
+    if out.returncode != 0:
+        print(f"apply-layout: could not list windows, skipping re-home: "
+              f"{out.stderr.strip()}", file=sys.stderr)
+        return
+
+    moved = 0
+    for line in out.stdout.splitlines():
+        parts = line.split()
+        if len(parts) != 3:
+            continue
+        win_id, app_id, current = parts
+        target = wanted.get(app_id)
+        if target is None or target == current:
+            continue
+        r = subprocess.run([AEROSPACE, "move-node-to-workspace", target,
+                            "--window-id", win_id],
+                           capture_output=True, text=True)
+        if r.returncode == 0:
+            print(f"apply-layout: {app_id} {current} -> {target}")
+            moved += 1
+        else:
+            # Not fatal: a window can close between the list and the move, and
+            # one app refusing to move is no reason to strand the rest.
+            print(f"apply-layout: could not move {app_id} ({win_id}): "
+                  f"{r.stderr.strip()}", file=sys.stderr)
+    if not moved:
+        print("apply-layout: no windows needed re-homing")
+
+
 def main():
-    args = [a for a in sys.argv[1:] if a != "--dry-run"]
+    args = [a for a in sys.argv[1:]
+            if a not in ("--dry-run", "--no-rehome")]
     dry = "--dry-run" in sys.argv[1:]
+    rehome = "--no-rehome" not in sys.argv[1:]
 
     if args:
         layout = args[0]
@@ -101,9 +165,20 @@ def main():
         f"#\n"
         f"# AeroSpace BASE — everything that does not depend on how many screens are", 1)
 
+    # Whether the LAYOUT changed, not whether this script ran. The generated
+    # file carries the fragment's name in its header, so identical content means
+    # the same layout merged from the same sources — and that is the signal for
+    # whether open windows should be re-homed. Re-homing on every invocation
+    # would silently undo any window you had moved by hand.
+    changed = (not OUT.exists()) or OUT.read_text() != merged
+
     if dry:
         print(f"apply-layout: would write {OUT} from layout-{layout} "
               f"({len(merged.splitlines())} lines)")
+        if changed and rehome:
+            print("apply-layout: would re-home open windows (layout changed)")
+        elif not changed:
+            print("apply-layout: layout unchanged, would leave windows alone")
         return
 
     OUT.write_text(merged)
@@ -116,6 +191,9 @@ def main():
             + (check.stdout + check.stderr).strip())
     subprocess.run([AEROSPACE, "reload-config"], check=False)
     print("apply-layout: reloaded")
+
+    if changed and rehome:
+        rehome_windows(parts["APP_RULES"])
 
 
 if __name__ == "__main__":
