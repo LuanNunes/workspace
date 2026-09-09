@@ -105,6 +105,13 @@ cask "hoppscotch"
 cask "postman"
 
 # ===========================================================================
+#  Notes & docs
+# ===========================================================================
+# Cask ships the Electron app; it self-updates (auto_updates), so `brew upgrade`
+# is a no-op for it — the entry is here to make a fresh machine reproducible.
+cask "notion"
+
+# ===========================================================================
 #  Containers
 # ===========================================================================
 # OrbStack instead of Docker Desktop: same `docker`/`docker compose` CLI, but
