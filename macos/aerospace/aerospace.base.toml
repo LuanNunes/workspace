@@ -46,8 +46,13 @@ after-login-command = []
 # hidpi=on is not cosmetic. Without it borders draws at non-retina resolution,
 # and on a HiDPI panel that produced a visible flicker — traced on 2026-09-08 by
 # killing borders (flicker stopped) and restarting it with the flag (it did not
-# come back). Every display on this machine is HiDPI, so there is no case for
-# leaving it off.
+# come back).
+#
+# The Mancer TE-3217G is the one panel here that is NOT HiDPI: at 24" its native
+# 2560x1440 already lands near the MacBook's density, so it runs 1:1 and a HiDPI
+# mode would halve the usable area. The flag stays on regardless — it is the
+# screen that showed the flicker that decides, and turning it off to suit the
+# Mancer would bring the flicker back on the Alienware.
 #
 # NOTE: this list runs when the AeroSpace SERVER starts, not on reload-config.
 # Changing it here does nothing until AeroSpace itself is restarted; to apply it

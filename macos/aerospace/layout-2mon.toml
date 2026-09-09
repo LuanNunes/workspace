@@ -1,5 +1,13 @@
-# Layout fragment — TWO screens (MacBook + a portable panel). Merged into
-# aerospace.base.toml by apply-layout.py. Section markers must stay as written.
+# Layout fragment — TWO screens. Merged into aerospace.base.toml by
+# apply-layout.py. Section markers must stay as written.
+#
+# THIS IS THE EVERYDAY LAYOUT. Both setups on this machine are pairs:
+#
+#   desk  Alienware AW3225QF (main) + Mancer TE-3217G in portrait, lid CLOSED.
+#         In clamshell the built-in goes offline entirely, so 'built-in' below
+#         never matches and 'secondary' can only be the Mancer — the pattern
+#         list has no ambiguity to resolve.
+#   road  MacBook + the ARZOPA 16", which is what the fallbacks are for.
 #
 # Two screens means two columns and six workspaces, and each desktop is a PAIR.
 # The three-column layout borrowed from GlazeWM does not survive the trip: with

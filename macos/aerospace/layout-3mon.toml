@@ -14,57 +14,63 @@ persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 #   desktop 2 = 4 5 6   chat and music
 #   desktop 3 = 7 8 9   browsers
 #
-# The columns are defined by ROLE, not by monitor, and each is a LIST of
-# patterns — AeroSpace takes the first that matches, and anything matching
-# nothing falls back to the main monitor. That is what lets one table serve
-# every desk with no edit when hardware changes:
+# THREE SCREENS IS NOW THE LID-OPEN CASE. The desk runs in clamshell on two
+# panels (see layout-2mon.toml, the everyday layout); open the MacBook there and
+# it becomes the third. So the mapping this file has to serve is:
 #
-#   column A (side)     ws 1,4,7   whichever screen is NOT the primary one
-#   column B (primary)  ws 2,5,8   always 'main' — whichever screen you made
-#                                  primary is where the work goes
-#   column C (third)    ws 3,6,9   the third panel on the full desk; with fewer
-#                                  monitors these collapse onto main and become
-#                                  extra scratch workspaces, reachable with
-#                                  alt-shift-<n>
+#   column A (side)     ws 1,4,7   Mancer TE-3217G, in portrait
+#   column B (primary)  ws 2,5,8   'main' — the Alienware AW3225QF
+#   column C (third)    ws 3,6,9   the MacBook's own panel
 #
-# Verified across three configurations on 2026-09-08: three monitors, laptop
-# alone, and the portable pair. Nothing needed changing between them.
+# ONE MONITOR IS NAMED HERE, WHICH THE TWO-SCREEN FILE DELIBERATELY AVOIDS.
+# With two panels 'main' and 'secondary' partition them exactly, so roles alone
+# were enough. With three, 'secondary' matches BOTH non-main screens and cannot
+# tell column A from column C — a name is unavoidable. The rule that keeps it
+# safe: only ever name a screen that is never the primary one. Naming the
+# monitor that later becomes 'main' collides with column B and piles all nine
+# workspaces onto one screen. That has happened twice.
+#
+# Which makes the Alienware the designated primary. It is the only panel here
+# with no name in this table, so it is the only one that can hold the menu bar
+# without a collision. Move the menu bar somewhere else and the names below have
+# to move with it.
 #
 # Patterns are REGEXES matched against the monitor name (case-insensitive), not
-# literal names. Check what this machine reports with: aerospace list-monitors
+# literal names, and anchoring matters: `MSI MAG271C` was a prefix of
+# `MSI MAG271CQR` and grabbed the wrong panel. Check what this machine reports
+# with: aerospace list-monitors
 #
 # `persistent-workspaces` at the top of this file is what GlazeWM calls
 # keep_alive: without it an empty member of a desktop would be deactivated, and
 # the next alt-<n> would restore only the screens that still had a window.
 
-# column A — the side panel. 'secondary' is the non-main monitor, so this
-# follows whichever screen you did NOT make primary, in either direction: name
-# the ARZOPA main and the side panel becomes the MacBook, and the other way
-# round. Naming the monitor here instead would collide with column B the moment
-# that monitor became main, and pile all nine workspaces onto one screen.
-# 'built-in' is the fallback for the laptop on its own, where there is no
-# secondary at all.
-1 = ['secondary', 'built-in']
-4 = ['secondary', 'built-in']
-7 = ['secondary', 'built-in']
+# column A — the side panel: the portrait Mancer. The fallbacks behind it keep
+# this file usable on a desk it was not written for — 'secondary' for any other
+# pair, 'built-in' for the laptop on its own.
+1 = ['^TE-3217G$', 'secondary', 'built-in']
+4 = ['^TE-3217G$', 'secondary', 'built-in']
+7 = ['^TE-3217G$', 'secondary', 'built-in']
 
 # column B — the primary screen, wherever the menu bar is
 2 = 'main'
 5 = 'main'
 8 = 'main'
 
-# column C — the third panel. No pattern yet: the MSIs are gone and the
-# Alienware is not here. Add its name to the front of each list when it arrives.
-3 = 'main'
-6 = 'main'
-9 = 'main'
+# column C — the third panel: the MacBook, whose lid being open is what makes
+# this a three-screen desk in the first place. Falls back to 'main' rather than
+# to 'secondary', because a 'secondary' here would race column A for the same
+# screen; sharing with column B is the visible, recoverable failure, and it is
+# the one the two-screen layout already lives with.
+3 = ['built-in', 'main']
+6 = ['built-in', 'main']
+9 = ['built-in', 'main']
 
 # ---8<--- WORKSPACE_BINDINGS
 # Switch all three monitors at once — one keypress, one desktop, three screens.
 # Each binding focuses the whole trio: left, then right, then CENTRE. Centre
 # goes last on purpose, because focusing a workspace follows focus to its
-# monitor, so ending there leaves the keyboard on the main 1440p panel rather
-# than on whichever screen happened to be last in the list.
+# monitor, so ending there leaves the keyboard on the Alienware rather than on
+# whichever screen happened to be last in the list.
 alt-1 = ['workspace 1', 'workspace 3', 'workspace 2']   # terminal and editors
 alt-2 = ['workspace 4', 'workspace 6', 'workspace 5']   # chat and music
 alt-3 = ['workspace 7', 'workspace 9', 'workspace 8']   # browsers
