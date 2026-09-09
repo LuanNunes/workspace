@@ -207,6 +207,7 @@ step compiles a ~40-line CoreGraphics listener and installs it as a LaunchAgent.
 
 Installs:
   ~/.config/aerospace/display-watch                        (symlink to the repo)
+  ~/.config/aerospace/apply-layout.py                      (symlink to the repo)
   ~/Library/LaunchAgents/dev.luannunes.aerospace-display-watch.plist  (symlink)
 Logs to /tmp/aerospace-display-watch.log.
 
@@ -231,6 +232,13 @@ back to running apply-layout.py by hand."
 
   link "$bin"    "$HOME/.config/aerospace/display-watch"
   link "$plist"  "$HOME/Library/LaunchAgents/$label.plist"
+
+  # apply-layout.py has to be reachable under ~/.config too, because the plist
+  # names it there rather than in the repo — launchd expands neither ~ nor
+  # $HOME, so a repo path would have to be hardcoded and the file would stop
+  # being portable. Linked HERE and not in step_links so this step still works
+  # run on its own, the way the header of this script promises every step does.
+  link "$DOTFILES/macos/aerospace/apply-layout.py" "$HOME/.config/aerospace/apply-layout.py"
 
   # bootout before bootstrap so re-running this step picks up an edited plist.
   # It fails when the agent is not loaded, which is the normal first-run case —
