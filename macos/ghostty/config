@@ -104,6 +104,12 @@ keybind = cmd+shift+k=goto_split:up
 keybind = cmd+shift+l=goto_split:right
 keybind = cmd+shift+enter=toggle_split_zoom
 
+# New WINDOW, as opposed to a new split. Ghostty already ships cmd+n for this;
+# cmd+shift+n is the same command on the shape these fingers reach for, and it
+# is the other half of AeroSpace's alt-shift-enter — that one RAISES the
+# terminal you have, this one makes another.
+keybind = cmd+shift+n=new_window
+
 # Quick terminal — a drop-down console over whatever app is focused, like Guake
 # or the Quake console. Bound in AeroSpace too; this is the in-app half.
 keybind = global:cmd+grave_accent=toggle_quick_terminal

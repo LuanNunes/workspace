@@ -335,7 +335,7 @@ Aqui `alt` = **Option**.
 
 | Atalho | Ação |
 |---|---|
-| `Alt+Enter` | novo Ghostty |
+| `Alt+Shift+Enter` | focar o Ghostty (abre um se não houver) |
 | `Alt+H/J/K/L` | mover **foco** |
 | `Alt+Shift+H/J/K/L` | mover a **janela** |
 | `Alt+A` | voltar à janela anterior (dentro do mesmo workspace) |

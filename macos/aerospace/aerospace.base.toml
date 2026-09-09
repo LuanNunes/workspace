@@ -146,7 +146,18 @@ preset = 'qwerty'
 [mode.main.binding]
 
 # --- launch -----------------------------------------------------------------
-alt-enter = 'exec-and-forget open -na Ghostty'
+# NOT on alt-enter, which is where i3 and GlazeWM put it and where this lived
+# until it collided with the IDE. ⌥⏎ is "Show Context Actions" in Rider and
+# IntelliJ — the single most-used key in a JetBrains editor — and per the note
+# at the top of this file AeroSpace swallows it system-wide, so the IDE never
+# saw it. Pressing it over Rider spawned a terminal instead of the quick-fix
+# menu. Shift is enough to get out of the way: JetBrains binds nothing to ⌥⇧⏎.
+#
+# `open -a`, not `open -na`: -n forces a NEW instance every press, which is why
+# this used to pile up terminal windows. Plain -a raises the Ghostty that is
+# already running (and the ws 1 rule pulls focus there), and only launches one
+# when none exists. For a genuinely new window, Ghostty's own cmd+n / cmd+shift+n.
+alt-shift-enter = 'exec-and-forget open -a Ghostty'
 
 # --- focus / move (i3 hjkl) -------------------------------------------------
 alt-h = 'focus left'
