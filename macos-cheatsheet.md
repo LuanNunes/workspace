@@ -416,9 +416,9 @@ ARZOPA. As colunas são por papel, então o mesmo arquivo serve os dois:
 
 | | Coluna A (secundária) | Coluna B (principal) |
 |---|---|---|
-| **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl | **ws 2** ← IntelliJ, VS Code |
+| **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl, Hoppscotch | **ws 2** ← IntelliJ, VS Code |
 | **`Alt+2`** chat | ws 3 ← Claude, Codex | **ws 4** ← Slack, Teams, Spotify |
-| **`Alt+3`** browsers | ws 5 ← Hoppscotch | **ws 6** ← Chrome, Safari |
+| **`Alt+3`** browsers | ws 5 — livre | **ws 6** ← Chrome, Safari |
 
 Na mesa a coluna A é o **Mancer em retrato** e a B é o **Alienware**; na rua a A
 é a tela do **MacBook** e a B é o **ARZOPA**. Nenhuma linha do arquivo muda entre
@@ -547,7 +547,7 @@ para torná-lo persistente: conferi todas as chaves de configuração do binári
 >
 > Só chega lá app **sem regra**, que nasce onde o foco estiver. Se um app sumir
 > assim, o conserto não é mexer nas colunas — é dar uma regra a ele em
-> `on-window-detected`. Foi o caso do Hoppscotch.
+> `on-window-detected`. Foi o caso do Hoppscotch, hoje fixado no ws 1.
 
 > **Qual tela é a principal decide onde o trabalho acontece**, porque a coluna B
 > é `main` e a A é `secondary`. Trocar o monitor principal inverte as duas

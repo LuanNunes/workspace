@@ -113,6 +113,14 @@ alt-shift-9 = 'move-node-to-workspace 9 --focus-follows-window'
     { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1 --focus-follows-window' },
     { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1 --focus-follows-window' },
 
+    # Hoppscotch is pinned to ws 1 — the side column of the WORK desktop, next
+    # to the terminal, not to a browser. It used to live on ws 7 (side column of
+    # the browser desktop) on the theory that it is read alongside a browser;
+    # in practice it is read alongside the thing making the request. Keeping the
+    # same number in both layouts also means it lands in the same place whether
+    # the lid is open or shut.
+    { if.app-id = 'io.hoppscotch.desktop',       run = 'move-node-to-workspace 1 --focus-follows-window' },
+
     { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2 --focus-follows-window' },
     { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2 --focus-follows-window' },
     { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2 --focus-follows-window' },
@@ -124,12 +132,6 @@ alt-shift-9 = 'move-node-to-workspace 9 --focus-follows-window'
     { if.app-id = 'com.microsoft.teams2',        run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5 --focus-follows-window' },
-
-    # Hoppscotch on the side column of the browser desktop: it is read next to a
-    # browser, not instead of one. Without a rule it was born wherever focus
-    # happened to be, which on the portable pair meant column C — a workspace
-    # that shares a screen with column B and therefore hides behind it.
-    { if.app-id = 'io.hoppscotch.desktop',       run = 'move-node-to-workspace 7 --focus-follows-window' },
 
     { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 8 --focus-follows-window' },
     { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 8 --focus-follows-window' },

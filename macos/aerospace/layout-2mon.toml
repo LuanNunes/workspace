@@ -76,6 +76,7 @@ alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
     # app in it is the same as having no rule the day you switch tools.
     { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1 --focus-follows-window' },
     { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1 --focus-follows-window' },
+    { if.app-id = 'io.hoppscotch.desktop',       run = 'move-node-to-workspace 1 --focus-follows-window' },
 
     { if.app-id = 'com.microsoft.VSCode',        run = 'move-node-to-workspace 2 --focus-follows-window' },
     { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2 --focus-follows-window' },
@@ -88,8 +89,6 @@ alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
     { if.app-id = 'com.microsoft.teams2',        run = 'move-node-to-workspace 4 --focus-follows-window' },
     { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 4 --focus-follows-window' },
     { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 4 --focus-follows-window' },
-
-    { if.app-id = 'io.hoppscotch.desktop',       run = 'move-node-to-workspace 5 --focus-follows-window' },
 
     { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 6 --focus-follows-window' },
     { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 6 --focus-follows-window' },
