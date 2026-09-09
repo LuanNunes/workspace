@@ -20,6 +20,10 @@
 // Any command works — it is not AeroSpace-specific. Installed as a LaunchAgent
 // by macos/bootstrap.sh (step `displaywatch`).
 
+// AppKit is imported for ONE reason, and it is not cosmetic: see the NSApplication
+// note at the bottom of this file. Without it the CoreGraphics callback below is
+// registered successfully and then never fires.
+import AppKit
 import CoreGraphics
 import Dispatch
 import Foundation
@@ -90,4 +94,20 @@ let onReconfigure: CGDisplayReconfigurationCallBack = { _, flags, _ in
 
 CGDisplayRegisterReconfigurationCallback(onReconfigure, nil)
 queue.async { scheduleRun(after: startupDelay) }
-CFRunLoopRun()
+
+// THIS MUST BE AN NSApplication, NOT a bare CFRunLoopRun().
+//
+// CGDisplayRegisterReconfigurationCallback returns success either way, and a
+// plain command-line tool spinning CFRunLoopRun() then receives NOTHING — no
+// error, no callback, ever. Verified on 2026-09-08 by connecting and discarding
+// a virtual screen with two probes running side by side: the CFRunLoopRun build
+// logged zero events for a display that AeroSpace could see appear and vanish,
+// while an otherwise identical NSApplication build logged the whole burst.
+//
+// The callback is delivered through the process's window server connection, and
+// that connection is what NSApplication establishes. `.accessory` keeps it out
+// of the Dock and gives it no menu bar, so it is a daemon in every way that
+// matters — it just has to be an app underneath.
+let app = NSApplication.shared
+app.setActivationPolicy(.accessory)
+app.run()
