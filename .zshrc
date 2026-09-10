@@ -350,6 +350,29 @@ alias v="nvim"
 alias zshconfig="nvim ~/.zshrc"
 alias zshreload="source ~/.zshrc"
 
+# Portuguese accents cheat sheet, because the shortcut you'd expect does not
+# exist here: `defaults.sh` turns ApplePressAndHoldEnabled off (so holding `j`
+# repeats in Neovim instead of opening the accent picker), and the input source
+# is plain U.S. — no Brazilian layout, no ABC-Extended. That leaves the Option
+# dead keys as the only route, and dead keys are exactly the thing nobody
+# remembers. macOS-only: the WSL side gets its accents from the us/intl X
+# layout set in the startup block, whose dead keys are different characters.
+if [[ "$OSTYPE" == darwin* ]]; then
+  acentos() {
+    printf '\n\033[1;35m━━ Acentos — layout U.S., teclas mortas\033[0m\n\n'
+    printf '  \033[36m%-4s\033[0m %s\n' \
+      '⌥e' '→ vogal    á é í ó ú' \
+      '⌥n' '→ vogal    ã õ ñ' \
+      '⌥i' '→ vogal    â ê ô' \
+      '⌥`' '→ vogal    à è ò' \
+      '⌥u' '→ vogal    ü' \
+      '⌥c' '           ç        (⌥⇧C = Ç)'
+    printf '\n\033[2m  Maiúscula: mesma tecla morta, vogal com ⇧    → ⌥e ⇧A = Á\033[0m\n'
+    printf '\033[2m  Só o acento: tecla morta + espaço            → ⌥i espaço = ^\033[0m\n'
+    printf '\033[2m  No Ghostty: ⌥ DIREITO acentua; o esquerdo é Alt (fzf, readline).\033[0m\n\n'
+  }
+fi
+
 # Domo
 # The personal account is the gh default, but it can't see the domo org. Bind the
 # work account to domo-development remotes; `auth` is excluded so `gh auth status`

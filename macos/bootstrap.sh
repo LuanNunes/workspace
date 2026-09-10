@@ -458,7 +458,7 @@ Steps that are NOT scripted, on purpose — they need your eyes:
                             Spaces settings are only read at login).
 
   2. Accessibility permission — System Settings → Privacy & Security →
-     Accessibility → add AeroSpace, Raycast, AltTab, Karabiner-Elements.
+     Accessibility → add AeroSpace, Raycast, Karabiner-Elements.
      macOS shows these apps NO error when the permission is missing; they just
      silently do nothing. It is the #1 "it's broken" on a new Mac.
 

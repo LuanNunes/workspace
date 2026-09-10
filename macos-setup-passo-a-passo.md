@@ -126,8 +126,8 @@ Onde resolver: **System Settings → Privacy & Security**.
 
 | Permissão | Quem precisa aqui | Sem ela |
 |---|---|---|
-| **Accessibility** | AeroSpace, Raycast, AltTab, Karabiner | app abre e não faz nada |
-| **Input Monitoring** | Karabiner, AltTab | teclas não são capturadas |
+| **Accessibility** | AeroSpace, Raycast, Karabiner | app abre e não faz nada |
+| **Input Monitoring** | Karabiner | teclas não são capturadas |
 | **Full Disk Access** | Ghostty/Terminal, backup | `Operation not permitted` em `~/Library`, Mail, etc. |
 
 > Se você conceder e ainda assim não funcionar: **saia e reabra o app**. A

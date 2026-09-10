@@ -26,7 +26,7 @@ cd ~/projects/resolveprogramming/workspace
 ```
 
 Then **log out and back in** (key repeat and the Spaces settings are read at
-login), grant Accessibility permission to AeroSpace/Raycast/AltTab/Karabiner,
+login), grant Accessibility permission to AeroSpace/Raycast/Karabiner,
 and open Ghostty — Zinit and lazy.nvim finish their first-run installs there.
 
 Every step is idempotent: re-running one that is already done is a no-op, and any
@@ -178,7 +178,7 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 
 | Symptom | Cause |
 |---|---|
-| AeroSpace / Raycast / AltTab launch but do nothing | Accessibility permission not granted. macOS reports no error. |
+| AeroSpace / Raycast / Karabiner launch but do nothing | Accessibility permission not granted. macOS reports no error. |
 | Holding `j` in Neovim doesn't repeat | `ApplePressAndHoldEnabled` — run `defaults.sh`, then **log out**. |
 | `Alt-C` (fzf) does nothing in Ghostty | `macos-option-as-alt` — set to `left` in `ghostty/config`. |
 | Accents (`á`, `ç`, `ã`) stopped working | Same setting, but set to `true`. Use `left` and type accents with the **right** Option. |

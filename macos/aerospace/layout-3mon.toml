@@ -125,11 +125,34 @@ alt-shift-9 = 'move-node-to-workspace 9 --focus-follows-window'
     { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2 --focus-follows-window' },
     { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2 --focus-follows-window' },
 
-    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4 --focus-follows-window' },
-    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4 --focus-follows-window' },
+    # Teams and Slack own the side column outright, stacked one above the other:
+    # that column is the Mancer in portrait (1440x2560), where
+    # `default-root-container-orientation = 'auto'` resolves to a VERTICAL split,
+    # so two windows there are already a top and a bottom half. Chat is the one
+    # thing that reads better tall than wide, and it is what the panel is for.
+    #
+    # The second command in each rule is what makes it Teams ON TOP rather than
+    # whichever of the two you happened to open first. `on-window-detected` has
+    # no way to say "insert at position 0", so the window is placed and then
+    # nudged: Teams one step up, Slack one step down. Both are no-ops once the
+    # window is already at that end, which is why `--boundaries-action stop`
+    # matters — the default there is `create-implicit-container`, and that would
+    # wrap the window in a nested container instead of leaving it alone.
+    #
+    # KEEP EACH RULE ON ONE LINE. apply-layout.py's re-home step reads these with
+    # a line-oriented regex; a rule split across lines is a rule it silently
+    # skips, and the app then keeps whatever workspace the old layout gave it.
+    #
+    # On the road the same workspace is the MacBook's own panel, which is
+    # landscape — 'auto' splits horizontally there and the two land side by side,
+    # with the up/down nudges doing nothing. Fine: the pairing is the point, the
+    # orientation is the monitor's business.
+    { if.app-id = 'com.microsoft.teams2', run = ['move-node-to-workspace 4 --focus-follows-window', 'move --boundaries workspace --boundaries-action stop up'] },
+    { if.app-id = 'com.tinyspeck.slackmacgap', run = ['move-node-to-workspace 4 --focus-follows-window', 'move --boundaries workspace --boundaries-action stop down'] },
 
-    { if.app-id = 'com.tinyspeck.slackmacgap',   run = 'move-node-to-workspace 5 --focus-follows-window' },
-    { if.app-id = 'com.microsoft.teams2',        run = 'move-node-to-workspace 5 --focus-follows-window' },
+    # Everything else on the chat desktop goes to the wide primary screen.
+    { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 5 --focus-follows-window' },
+    { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5 --focus-follows-window' },
 

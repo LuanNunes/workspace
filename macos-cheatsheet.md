@@ -59,8 +59,10 @@ o terminal do Windows ter atalhos esquisitos. No Mac:
    Ctrl+C → SIGINT          (nível de terminal)
 ```
 
-São teclas **diferentes**. O Vim e o zsh recuperam o `Ctrl` inteiro: `Ctrl+R`
-(atuin), `Ctrl+T` (fzf), `Ctrl+W`, `Ctrl+A/E` — todos livres, sem conflito.
+São teclas **diferentes**. O Vim e o zsh recuperam quase todo o `Ctrl`:
+`Ctrl+R` (atuin), `Ctrl+T` (fzf), `Ctrl+A/E` — livres, sem conflito. A exceção é
+o `Ctrl+W`, que desde 2026-09-10 fecha janela no AeroSpace (seção 6) e por isso
+não chega mais ao zsh nem ao Neovim.
 
 ### ② App ≠ janela
 
@@ -76,9 +78,23 @@ A maior pegadinha para quem vem do Windows:
 A barra de menu no topo pertence ao **app em foco**, não à janela. Por isso ela
 muda quando você troca de app.
 
-> Instalamos o **AltTab** justamente porque `Cmd+Tab` por app é irritante no
-> começo. Configure o hotkey dele para `Cmd+Tab` e você tem o comportamento do
-> Windows de volta. Deixe `Alt+Tab` livre — o AeroSpace usa.
+> `Cmd+Tab` por app é irritante vindo do Windows, mas **fica como é**: ele é o
+> único switcher que te mostra os ícones dos apps na tela antes de você soltar a
+> tecla. Para "próxima janela **deste** workspace" existe `Alt` + `` ` ``
+> (AeroSpace, tabela na seção 7). `Alt+Tab` continua com o AeroSpace, para voltar
+> ao workspace anterior.
+>
+> **Duas coisas já tentadas e desfeitas, para não repetir:**
+>
+> - **AltTab** (removido em 09/2026): pede **Screen & System Audio Recording** —
+>   permissão de captura de tela, que é como o macOS lê título e miniatura de
+>   janela alheia; o nome assustador vem do Sequoia, que juntou o áudio do
+>   sistema no mesmo interruptor. E nem resolvia o pedido: não sabe filtrar por
+>   workspace do AeroSpace, listava as janelas todas.
+> - **Remapear `Cmd+Tab` no Karabiner** para o ciclo do AeroSpace: funciona, mas
+>   o Karabiner intercepta no nível do HID, então o macOS nunca vê a tecla e o
+>   overlay com os ícones **some**. A troca vira um pulo cego. Desfeito no mesmo
+>   dia.
 
 ### ③ Por baixo é BSD, não Linux
 
@@ -153,6 +169,9 @@ Configuramos o Ghostty com `macos-option-as-alt = left`. Isso significa:
 | ç | `⌥c` |
 | à | `⌥\`` depois `a` |
 | ü | `⌥u` depois `u` |
+
+> **`acentos`** no terminal imprime essa tabela. É uma função no `.zshrc` (só
+> macOS), para não ter que voltar aqui toda vez que a tecla morta escapar.
 
 Se preferir teclado dedicado, System Settings → Keyboard → Input Sources →
 **ABC – Extended** (melhor para dev, mantém o layout US) ou **Brazilian**.
@@ -336,9 +355,11 @@ Aqui `alt` = **Option**.
 | Atalho | Ação |
 |---|---|
 | `Alt+Shift+Enter` | focar o Ghostty (abre um se não houver) |
-| `Alt+H/J/K/L` | mover **foco** |
-| `Alt+Shift+H/J/K/L` | mover a **janela** |
+| `Alt+H/J/K/L` | mover **foco** — atravessa os monitores |
+| `Alt+Shift+H/J/K/L` | mover a **janela** — idem |
 | `Alt+A` | voltar à janela anterior (dentro do mesmo workspace) |
+| `Alt` + `` ` `` | **próxima** janela deste workspace |
+| `Alt+Shift` + `` ` `` | a anterior, mesma volta ao contrário |
 | `Alt+1/2/3` | trocar os **três monitores** de uma vez (desktop 1/2/3) |
 | `Alt+4..9` | mover **uma** tela só (quebra o trio de propósito) |
 | `Alt+Shift+1..9` | mandar janela para workspace |
@@ -351,13 +372,30 @@ Aqui `alt` = **Option**.
 | `Alt+,` | virar accordion (empilhar) |
 | `Alt+F` | fullscreen |
 | `Alt+Shift+F` | soltar a janela (floating) |
-| `Alt+W` | fechar a janela — e **encerrar o app** se for a última |
+| `Ctrl+W` | fechar a janela — e **encerrar o app** se for a última |
 | `Alt+M` | minimizar para o Dock |
 | `Alt+-` / `Alt+=` | redimensionar (150px por toque) |
 | `Alt+Shift+;` | entrar no modo service (tabela abaixo) |
 
 `Alt+Tab` é entre **workspaces**, `Alt+A` é entre **janelas** — é o que você quer
 quando dois apps dividem o mesmo workspace.
+
+`Alt` + `` ` `` percorre **todas** as janelas do workspace em ordem de árvore e
+dá a volta no fim, enquanto `Alt+A` só alterna entre as **duas últimas**. O
+`--boundaries workspace` no binding é o que segura o ciclo dentro do workspace:
+sem ele o `dfs-next` atravessa para o workspace do monitor vizinho.
+
+O `Alt+H/J/K/L` **atravessa os monitores** desde 2026-09-10, e antes não: o
+`focus` do AeroSpace assume `--boundaries workspace` quando você não diz nada, e
+com isso o foco nunca saía da tela atual — num workspace com duas janelas ele só
+ficava pulando entre as duas, que é exatamente a cara de "o atalho está preso
+neste monitor". O `--boundaries all-monitors-outer-frame` nos bindings é o que
+solta, e o `move` ganhou o mesmo por simetria.
+
+Continua parando nas bordas externas da mesa, de propósito. Quando **não há**
+janela na direção que você quer — a tela vizinha está vazia, ou você só quer
+pular de painel — o atalho é o `Alt+Ctrl+H/J/K/L`, que age no monitor e dá a
+volta.
 
 **Modo service** — `Alt+Shift+;` e depois **uma** tecla; toda opção já volta
 sozinha para o modo main:
@@ -417,7 +455,7 @@ ARZOPA. As colunas são por papel, então o mesmo arquivo serve os dois:
 | | Coluna A (secundária) | Coluna B (principal) |
 |---|---|---|
 | **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl, Hoppscotch | **ws 2** ← IntelliJ, VS Code |
-| **`Alt+2`** chat | ws 3 ← Claude, Codex | **ws 4** ← Slack, Teams, Spotify |
+| **`Alt+2`** chat | ws 3 ← Teams em cima, Slack embaixo | **ws 4** ← Claude, Codex, WhatsApp, Spotify |
 | **`Alt+3`** browsers | ws 5 — livre | **ws 6** ← Chrome, Safari |
 
 Na mesa a coluna A é o **Mancer em retrato** e a B é o **Alienware**; na rua a A
@@ -427,6 +465,34 @@ os dois — quem decide é qual monitor tem a menu bar.
 `Alt+4/5/6` mexem numa tela só. `Alt+7/8/9` ficam **sem binding** — seis
 workspaces precisam de seis teclas, e cada `Alt+<tecla>` não usado é uma tecla
 devolvida ao zsh e ao Neovim.
+
+**Teams e Slack ficam com a coluna A do desktop de chat inteira**, um em cima do
+outro — ws 3 no layout de duas telas, ws 4 no de três. Na mesa essa coluna é o
+Mancer em retrato (1440x2560), onde o `default-root-container-orientation =
+'auto'` resolve para split **vertical**, então duas janelas ali já viram metade
+de cima e metade de baixo. Chat é a única coisa que fica melhor alta do que
+larga, e é para isso que o painel serve. Claude, Codex, WhatsApp e Spotify
+foram para a tela larga junto.
+
+Quem garante **Teams em cima** e não "o que você abriu primeiro" é o segundo
+comando da regra: o `on-window-detected` não sabe dizer "insira na posição 0",
+então a janela é colocada e depois empurrada — Teams um passo para cima, Slack
+um para baixo.
+
+```toml
+{ if.app-id = 'com.microsoft.teams2', run = ['move-node-to-workspace 3 --focus-follows-window', 'move --boundaries workspace --boundaries-action stop up'] },
+```
+
+> ⚠️ **Cada regra tem que caber numa linha só.** O re-alojamento do
+> `apply-layout.py` lê o bloco `APP_RULES` com regex de uma linha; regra quebrada
+> em duas é regra que ele ignora em silêncio, e aí o app fica no workspace que o
+> layout antigo deu. O `--boundaries-action stop` também não é enfeite: o padrão
+> do `move` é `create-implicit-container`, que em vez de não fazer nada
+> embrulharia a janela num container aninhado quando ela já estivesse na ponta.
+
+> Na rua essa mesma coluna é a tela do MacBook, que é **paisagem** — o `auto`
+> divide na horizontal e os dois ficam lado a lado, com os empurrões não fazendo
+> nada. Tudo bem: o par é o que importa, a orientação é assunto do monitor.
 
 **Layout de três telas** (`layout-3mon.toml`) — nove workspaces, desktops em
 trio, com uma terceira coluna: `Alt+1` = ws 1/2/3, `Alt+2` = 4/5/6, `Alt+3` =
@@ -621,17 +687,29 @@ depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 > levar junto, mas aqui uma dúzia de janelas pode mover de uma vez, e seguir cada
 > uma deixaria o foco em lugar aleatório.
 
-> **`Alt+W` e `Alt+M` custaram duas teclas do zsh** — eram `kill-region` e
-> `copy-prev-shell-word`. É o preço descrito no aviso abaixo, pago de propósito
-> para casar com o `win+w`/`win+m` do GlazeWM. O `Alt+.` (inserir último
-> argumento), que é o realmente usado no dia a dia, continua intacto.
+> **Fechar saiu do `Alt+W` em 2026-09-10.** O Option é a tecla de acento deste
+> teclado, então escrever português é morar em cima do modificador que fecha
+> janela — e como o fechar leva o app junto (bloco abaixo), um escorregão em
+> "ação" derrubava a sessão inteira. Casar com o `win+w` do GlazeWM não vale
+> isso.
+>
+> **O `Ctrl+W` custa mais caro do que o `Alt+W` que ele substitui**, e é bom
+> saber disso antes de estranhar: o AeroSpace captura `Ctrl+W` globalmente do
+> mesmo jeito que captura `Alt`, então o zsh perde o `backward-kill-word` (o
+> `Ctrl+W` que existe em todo shell) e o Neovim perde o `Ctrl+W`, prefixo dos
+> comandos de janela. Se essa metade doer mais que a outra, o `Ctrl+Shift+W` não
+> é de ninguém e a troca é uma linha em `aerospace.base.toml`.
+>
+> O `Alt+M` continua cobrando o `copy-prev-shell-word` do zsh. O `Alt+.`
+> (inserir último argumento), o realmente usado no dia a dia, segue intacto.
 
 > **Minimizar é porta de mão única num tiling WM.** A janela sai da árvore do
 > workspace e passa a viver no Dock, e **não há atalho do AeroSpace que a traga
-> de volta** — use o Dock ou o AltTab. Se a intenção era só tirar a janela da
+> de volta** — use o Dock ou o `Cmd+Tab`. `Alt` + `` ` `` não serve: ele só
+> percorre janelas que ainda estão na árvore. Se a intenção era só tirar a janela da
 > frente, `Alt+Shift+F` (soltar como floating) costuma ser o que você queria.
 
-> **`Alt+W` encerra o app junto com a última janela** (`--quit-if-last-window`),
+> **`Ctrl+W` encerra o app junto com a última janela** (`--quit-if-last-window`),
 > como no Windows e no Omarchy — e ao contrário da convenção do macOS, onde o
 > app fica vivo com a menu bar vazia. Foi escolha deliberada: app que você não
 > vê mas continua rodando é exatamente o estado que um tiling WM existe para
@@ -644,6 +722,10 @@ depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 > ⚠️ **O AeroSpace captura `Alt+<tecla>` globalmente**, antes do app em foco. Por
 > isso `Alt+C` **não** está mapeado — é do fzf. Confira o arquivo antes de
 > adicionar binding novo.
+>
+> Vale igual para o `Ctrl+W`, o único binding aqui fora do `Alt`. Que fique o
+> único: o `Ctrl` é onde o terminal guarda tudo, e o `Alt` ao menos tinha teclas
+> sobrando.
 
 > **Monitor principal.** O display "principal" do macOS é o que tem a menu bar,
 > e por definição é o que está na origem `(0,0)`. Na mesa é o **AW3225QF**, não
@@ -751,9 +833,9 @@ lugares em System Settings → Privacy & Security:
 
 | Permissão | Quem precisa | Sintoma sem ela |
 |---|---|---|
-| **Accessibility** | AeroSpace, Raycast, AltTab, Karabiner | app abre e simplesmente não faz nada |
+| **Accessibility** | AeroSpace, Raycast, Karabiner | app abre e simplesmente não faz nada |
 | **Full Disk Access** | Terminal/Ghostty, backup | "Operation not permitted" em `~/Library`, Mail, etc. |
-| **Input Monitoring** | Karabiner, AltTab | teclas não são capturadas |
+| **Input Monitoring** | Karabiner | teclas não são capturadas |
 
 **Gatekeeper**: app baixado fora da App Store dá "não pode ser aberto".
 
@@ -793,7 +875,7 @@ O `sudo_local` sobrevive a update de sistema, diferente de editar `/etc/pam.d/su
 | Ditto | **Maccy** |
 | Windhawk / TranslucentTB | nativo — `background-blur = macos-glass-regular` no Ghostty |
 | FancyZones / Win+setas | **AeroSpace** |
-| Alt+Tab | **AltTab** (configure para `Cmd+Tab`) |
+| Alt+Tab | **AeroSpace** — `Alt` + `` ` `` cicla as janelas do workspace; `Cmd+Tab` segue o switcher de apps do macOS |
 | Scoop | `brew --cask` |
 | Nala / apt | `brew` |
 | Docker Desktop | **OrbStack** |

@@ -17,10 +17,15 @@
 #   aerospace reload-config
 # Full command reference: https://nikitabobko.github.io/AeroSpace/commands
 #
-# NOTE ON `alt`: AeroSpace grabs its bindings system-wide, BEFORE the focused
+# NOTE ON MODIFIERS: AeroSpace grabs its bindings system-wide, BEFORE the focused
 # app sees them. So every `alt-<key>` below is permanently unavailable to zsh,
 # Neovim and fzf. That's why `alt-c` is deliberately NOT bound — fzf's cd-widget
 # owns it. Check this file before adding a binding.
+#
+# `ctrl-w` (close, further down) is the one binding here that does not use alt,
+# and it pays the same toll: zsh loses backward-kill-word and Neovim loses its
+# window prefix. Keep it the only ctrl- binding — ctrl is where the terminal
+# keeps everything, and alt at least had spare keys.
 
 # Schema version of this file. Without it AeroSpace assumes 1 and warns on every
 # start. https://nikitabobko.github.io/AeroSpace/guide#config-version
@@ -160,21 +165,52 @@ preset = 'qwerty'
 alt-shift-enter = 'exec-and-forget open -a Ghostty'
 
 # --- focus / move (i3 hjkl) -------------------------------------------------
-alt-h = 'focus left'
-alt-j = 'focus down'
-alt-k = 'focus up'
-alt-l = 'focus right'
+# `--boundaries all-monitors-outer-frame` is not decoration. A bare `focus left`
+# defaults to `--boundaries workspace`, so the focus never leaves the screen you
+# are on: on a workspace holding two windows it just bounces between them, which
+# reads as "hjkl is stuck on this monitor". Traced on 2026-09-10 — with focus on
+# the Alienware, `aerospace focus left` did nothing, and the same command with
+# this flag landed on the Mancer.
+#
+# The default boundaries-action, `stop`, is kept: hjkl walks the whole desk and
+# then halts at its far edges. Wrapping around lives on alt-ctrl-hjkl below,
+# which is the binding you want when there is no window in that direction at all.
+alt-h = 'focus --boundaries all-monitors-outer-frame left'
+alt-j = 'focus --boundaries all-monitors-outer-frame down'
+alt-k = 'focus --boundaries all-monitors-outer-frame up'
+alt-l = 'focus --boundaries all-monitors-outer-frame right'
 
-alt-shift-h = 'move left'
-alt-shift-j = 'move down'
-alt-shift-k = 'move up'
-alt-shift-l = 'move right'
+# Same boundary on `move`, so a window travels exactly the path the focus does.
+# Without it `move` also stops at the workspace edge, and alt-shift-l against the
+# last window builds an implicit container instead of handing it to the monitor
+# next door.
+alt-shift-h = 'move --boundaries all-monitors-outer-frame left'
+alt-shift-j = 'move --boundaries all-monitors-outer-frame down'
+alt-shift-k = 'move --boundaries all-monitors-outer-frame up'
+alt-shift-l = 'move --boundaries all-monitors-outer-frame right'
 
 # Alternate between the last two WINDOWS. `alt-tab` below does the same for
 # workspaces; this one is what you want when two apps share a workspace.
 # Costs zsh its `alt-a` (unbound by default, so nothing real is lost) — see the
 # note at the top of this file before adding any other alt-<key>.
 alt-a = 'focus-back-and-forth'
+
+# Cycle EVERY window of the current workspace, in tree order — the per-workspace
+# cmd-tab macOS never had (its own is per-APP, and spans every workspace).
+#
+# `--boundaries workspace` is the whole point: a bare `dfs-next` walks off the
+# end of this tree and into the next monitor's workspace, which is the exact
+# behaviour this is meant to replace. `wrap-around-the-workspace` closes the
+# ring, so holding the key cycles instead of stopping on the last window.
+#
+# NOT on cmd-tab, and that was tried: the Dock owns cmd-tab as a system hotkey
+# and never hands it to AeroSpace, so the only way there is a Karabiner rule at
+# the HID level — which also swallows the keypress before macOS sees it, and
+# with it the app-switcher overlay that shows you the icons. Losing that overlay
+# was worse than the win. cmd-tab stays native and per-app; this is the
+# per-workspace cycle, on its own key.
+alt-backtick = 'focus dfs-next --boundaries workspace --boundaries-action wrap-around-the-workspace'
+alt-shift-backtick = 'focus dfs-prev --boundaries workspace --boundaries-action wrap-around-the-workspace'
 
 # --- layout -----------------------------------------------------------------
 alt-slash = 'layout tiles horizontal vertical'      # toggle split direction
@@ -183,14 +219,26 @@ alt-f = 'fullscreen'
 alt-shift-f = 'layout floating tiling'              # pop this window out
 
 # --- window lifecycle -------------------------------------------------------
-# alt-w to close and alt-m to minimise, matching win+w and win+m in
-# windows/glazewm/config.yaml (and SUPER+W on Omarchy). macOS already has cmd+w,
-# but cmd+w is per-app and inconsistent — some apps close a tab with it.
+# ctrl-w closes and alt-m minimises. macOS already has cmd+w, but cmd+w is
+# per-app and inconsistent — some apps close a tab with it.
 #
-# These two cost real zsh bindings, per the warning at the top of this file:
-# alt-w was `kill-region` and alt-m was `copy-prev-shell-word`. Neither is a
-# daily key here, but `alt-.` (insert-last-word) is untouched and remains the
-# one worth keeping.
+# Closing used to be alt-w, matching win+w in windows/glazewm/config.yaml (and
+# SUPER+W on Omarchy), and moved off it on 2026-09-10: Option is the accent key
+# on this keyboard, so writing Portuguese means living on the very modifier that
+# closes windows — and with --quit-if-last-window below, one slip took the whole
+# app down. Matching Windows is not worth losing a session to a mistyped "ação".
+#
+# ctrl-w is not free either, and it costs MORE than the alt-w it replaces.
+# AeroSpace grabs it globally the same way it grabs alt (see the note at the top
+# of this file), so it is gone from every app underneath: zsh loses
+# `backward-kill-word` — the ⌃W every shell on every platform has — and Neovim
+# loses ⌃W, its window-command prefix. That is the trade: a key used many times
+# an hour in the terminal, against an app that disappears without being asked.
+# If the shell half turns out to hurt more, ctrl-shift-w is unclaimed everywhere
+# and is a one-line change.
+#
+# alt-m still costs zsh `copy-prev-shell-word`, per that same note. `alt-.`
+# (insert-last-word), the one actually used daily, remains untouched.
 #
 # --quit-if-last-window makes this behave the way it does on Windows and
 # Omarchy: the app goes away with its last window, instead of lingering with an
@@ -200,12 +248,13 @@ alt-shift-f = 'layout floating tiling'              # pop this window out
 # The cost is real on apps whose window IS the session: the last Ghostty window
 # takes its shells with it, and the last browser window ends the browser. cmd+w
 # is still there when you want to close a window and keep the app.
-alt-w = 'close --quit-if-last-window'
+ctrl-w = 'close --quit-if-last-window'
 
 # Minimising in a tiling WM is a one-way door worth knowing about: the window
 # leaves the workspace tree entirely and lives in the Dock, and there is no
-# AeroSpace binding that brings it back. Use the Dock or AltTab (cmd-tab) to
-# restore it.
+# AeroSpace binding that brings it back. Use the Dock, or cmd-tab, which is
+# still macOS's own app switcher. alt-backtick (above) will not find it either —
+# it only walks windows that are still in the tree.
 alt-m = 'macos-native-minimize'
 
 # --- resize -----------------------------------------------------------------
@@ -244,8 +293,8 @@ alt-ctrl-shift-k = 'move-node-to-monitor --wrap-around --focus-follows-window up
 alt-ctrl-shift-l = 'move-node-to-monitor --wrap-around --focus-follows-window right'
 
 # Jump back to the previous workspace — the Alt-Tab you actually want.
-# If you also installed the AltTab app, move ITS hotkey to cmd-tab so the two
-# don't fight over this chord.
+# This is workspace-level. For "next window inside THIS workspace", see
+# alt-backtick above.
 alt-tab = 'workspace-back-and-forth'
 alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 

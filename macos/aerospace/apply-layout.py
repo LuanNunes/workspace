@@ -86,8 +86,19 @@ def rehome_windows(app_rules):
     opening an app takes you to it, but here a dozen windows may move at once
     and following each one would leave focus somewhere random.
     """
+    # `run` is either one command or a LIST of them: a rule that also pins the
+    # window's place in the tree writes
+    # `run = ['move-node-to-workspace 3 …', 'move … up']`. The optional `[` is
+    # what keeps those rules visible here — without it they matched nothing and
+    # the app silently kept whatever workspace the previous layout gave it.
     wanted = dict(re.findall(
-        r"if\.app-id\s*=\s*'([^']+)'.*?run\s*=\s*'move-node-to-workspace\s+(\d+)",
+        r"if\.app-id\s*=\s*'([^']+)'.*?run\s*=\s*\[?\s*'move-node-to-workspace\s+(\d+)",
+        app_rules))
+    # The follow-up `move <direction>` from those same rules, so a re-home puts
+    # Teams back above Slack instead of wherever the loop order left them. The
+    # rule is the single source of truth for the order; this only replays it.
+    ordering = dict(re.findall(
+        r"if\.app-id\s*=\s*'([^']+)'.*?'move ([^']*?(?:left|down|up|right))'",
         app_rules))
     if not wanted:
         return
@@ -116,6 +127,11 @@ def rehome_windows(app_rules):
         if r.returncode == 0:
             print(f"apply-layout: {app_id} {current} -> {target}")
             moved += 1
+            nudge = ordering.get(app_id)
+            if nudge:
+                subprocess.run([AEROSPACE, "move", "--window-id", win_id,
+                                *nudge.split()],
+                               capture_output=True, text=True)
         else:
             # Not fatal: a window can close between the list and the move, and
             # one app refusing to move is no reason to strand the rest.
