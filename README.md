@@ -51,9 +51,9 @@ dotfiles/
 │   └── desktop-customization.md  # Windhawk, TranslucentTB, Flow Launcher, Bibata cursor
 ├── vim-cheatsheet.md       # Vim grammar + all our <leader> mappings (PT-BR)
 ├── shell-cheatsheet.md     # every CLI tool in both shells, and how to use it (PT-BR)
-├── macos-cheatsheet.md     # Windows/WSL → macOS day-to-day reference (PT-BR)
-├── macos-setup-passo-a-passo.md  # guided setup: macOS concepts + every step
-│                           # explained, with how to verify and undo (PT-BR)
+├── macos-cheatsheet.md     # Windows/WSL → macOS day-to-day reference
+├── macos-setup-step-by-step.md  # guided setup: macOS concepts + every step
+│                                # explained, with how to verify and undo
 └── README.md
 ```
 
@@ -182,7 +182,7 @@ Three documents, by purpose:
 
 | Document | For |
 |---|---|
-| [`macos-setup-passo-a-passo.md`](macos-setup-passo-a-passo.md) | **setting the machine up** — the macOS concepts (bundles, `~/Library`, `defaults`/`cfprefsd`, launchd, SIP, TCC, Gatekeeper, Rosetta, APFS) and every step with how to verify and undo it |
+| [`macos-setup-step-by-step.md`](macos-setup-step-by-step.md) | **setting the machine up** — the macOS concepts (bundles, `~/Library`, `defaults`/`cfprefsd`, launchd, SIP, TCC, Gatekeeper, Rosetta, APFS) and every step with how to verify and undo it |
 | [`macos-cheatsheet.md`](macos-cheatsheet.md) | **daily use** — shortcut conversion table, accents, AeroSpace bindings, Windows→macOS equivalences |
 | [`macos/README.md`](macos/README.md) | **the repo side** — layout, what's shared with WSL, Apple Silicon caveats |
 

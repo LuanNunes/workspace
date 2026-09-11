@@ -1,336 +1,345 @@
-# 🍎 macOS Cheat-Sheet (transição Windows + WSL → MacBook Pro)
+# 🍎 macOS Cheat-Sheet (Windows + WSL → MacBook Pro transition)
 
-Primeira máquina Apple. Mesma regra do Vim e do shell: **uma coisa nova por
-semana**, não todas hoje. O plano de 4 semanas está no fim.
+First Apple machine. Same rule as Vim and the shell: **one new thing per week**,
+not all of them today. The 4-week plan is at the end.
 
 ---
 
-## 0. Antes de instalar qualquer coisa
+## 0. Before installing anything
 
-Máquina própria, controle próprio — nada de MDM. A ordem que faz sentido é:
-**Software Update → Apple Account → FileVault → Time Machine**, e só então o
-ambiente de dev.
+Own machine, own control — no MDM. The order that makes sense is: **Software
+Update → Apple Account → FileVault → Time Machine**, and only then the dev
+environment.
 
-FileVault primeiro porque ativar com o disco ainda vazio é instantâneo; depois de
-500 GB de projetos, a cifragem inicial leva horas rodando em segundo plano.
+FileVault first because turning it on while the disk is still empty is
+instantaneous; after 500 GB of projects, the initial encryption takes hours
+running in the background.
 
-> Quer entender o que cada passo do setup faz antes de rodar?
-> **[`macos-setup-passo-a-passo.md`](macos-setup-passo-a-passo.md)** — conceitos do
-> sistema, e cada passo com "o que muda / como verificar / como desfazer".
+> Want to understand what each setup step does before running it?
+> **[`macos-setup-step-by-step.md`](macos-setup-step-by-step.md)** — system
+> concepts, and every step with "what changes / how to verify / how to undo".
 
-### O que trazer da máquina antiga (nada disso o Homebrew reinstala)
+### What to bring from the old machine (Homebrew reinstalls none of this)
 
-| Origem (WSL) | Destino (Mac) | Por quê |
+| Source (WSL) | Destination (Mac) | Why |
 |---|---|---|
-| `~/.ssh/nunes@domo{,.pub}` | `~/.ssh/` | chave de trabalho, registrada na Domo — **nunca** regere |
-| `~/.ssh/nunes.lfa{,.pub}` | `~/.ssh/` | chave pessoal (GitHub `github-luan`) |
+| `~/.ssh/nunes@domo{,.pub}` | `~/.ssh/` | work key, registered with Domo — **never** regenerate |
+| `~/.ssh/nunes.lfa{,.pub}` | `~/.ssh/` | personal key (GitHub `github-luan`) |
 | `~/.zshrc.secrets` | `~/.zshrc.secrets` | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` |
-| `~/.gnupg/` | `~/.gnupg/` | chaves GPG (perdê-las = perder assinaturas antigas) |
-| `~/.kube/config` | `~/.kube/config` | contextos de cluster |
-| `~/.aws/{config,credentials}` | `~/.aws/` | acesso ao EKS que o `tug` usa |
-| `~/.m2/settings.xml` | `~/.m2/` | repositórios/credenciais Maven internos |
-| `~/.gradle/gradle.properties` | `~/.gradle/` | idem para Gradle |
-| `~/.npmrc`, `~/.nuget/NuGet/NuGet.Config` | idem | registries privados |
-| chave de sync do `atuin` | — | `atuin key` na máquina antiga, guarde antes |
-| `~/projects/` | `~/projects/` | ou só re-clone tudo, se estiver tudo pushado |
+| `~/.gnupg/` | `~/.gnupg/` | GPG keys (losing them = losing old signatures) |
+| `~/.kube/config` | `~/.kube/config` | cluster contexts |
+| `~/.aws/{config,credentials}` | `~/.aws/` | the EKS access `tug` uses |
+| `~/.m2/settings.xml` | `~/.m2/` | internal Maven repositories/credentials |
+| `~/.gradle/gradle.properties` | `~/.gradle/` | same for Gradle |
+| `~/.npmrc`, `~/.nuget/NuGet/NuGet.Config` | same | private registries |
+| `atuin` sync key | — | `atuin key` on the old machine, save it beforehand |
+| `~/projects/` | `~/projects/` | or just re-clone everything, if it is all pushed |
 
 ```sh
-# da máquina antiga, com o Mac já na rede:
+# from the old machine, with the Mac already on the network:
 scp ~/.ssh/nunes@domo ~/.ssh/nunes@domo.pub ~/.ssh/nunes.lfa ~/.ssh/nunes.lfa.pub \
     ~/.zshrc.secrets <mac>:~/
 ```
 
-Depois: `chmod 600` nas chaves e `ssh-add --apple-use-keychain ~/.ssh/nunes@domo`.
+Afterwards: `chmod 600` on the keys and
+`ssh-add --apple-use-keychain ~/.ssh/nunes@domo`.
 
-> Existe um **Windows Migration Assistant** oficial, mas para máquina de dev ele
-> traz lixo e nenhum dos arquivos acima. Use a lista.
+> There is an official **Windows Migration Assistant**, but for a dev machine it
+> brings junk and none of the files above. Use the list.
 
 ---
 
-## 1. As três ideias que destravam tudo
+## 1. The three ideas that unlock everything
 
-### ① Cmd é o novo Ctrl — e isso é um presente
+### ① Cmd is the new Ctrl — and that is a gift
 
-No Windows, `Ctrl+C` é *copiar* **e** *matar processo*. Esse conflito é a razão de
-o terminal do Windows ter atalhos esquisitos. No Mac:
+On Windows, `Ctrl+C` is *copy* **and** *kill process*. That conflict is why the
+Windows terminal has odd shortcuts. On the Mac:
 
 ```
-   Cmd+C  → copiar          (nível de aplicação)
-   Ctrl+C → SIGINT          (nível de terminal)
+   Cmd+C  → copy            (application level)
+   Ctrl+C → SIGINT          (terminal level)
 ```
 
-São teclas **diferentes**. O Vim e o zsh recuperam quase todo o `Ctrl`:
-`Ctrl+R` (atuin), `Ctrl+T` (fzf), `Ctrl+A/E` — livres, sem conflito. A exceção é
-o `Ctrl+W`, que desde 2026-09-10 fecha janela no AeroSpace (seção 6) e por isso
-não chega mais ao zsh nem ao Neovim.
+They are **different** keys. Vim and zsh get almost all of `Ctrl` back:
+`Ctrl+R` (atuin), `Ctrl+T` (fzf), `Ctrl+A/E` — free, no conflict. The exception
+is `Ctrl+W`, which since 2026-09-10 closes a window in AeroSpace (section 6) and
+therefore no longer reaches zsh or Neovim.
 
-### ② App ≠ janela
+### ② App ≠ window
 
-A maior pegadinha para quem vem do Windows:
+The biggest trap for someone coming from Windows:
 
-| Você quer | Windows | macOS |
+| You want to | Windows | macOS |
 |---|---|---|
-| fechar a **janela** | `Alt+F4` | `Cmd+W` — **o app continua rodando** |
-| fechar o **app** | `Alt+F4` | `Cmd+Q` |
-| trocar de **app** | `Alt+Tab` | `Cmd+Tab` |
-| trocar de **janela do mesmo app** | `Alt+Tab` | `` Cmd+` `` |
+| close the **window** | `Alt+F4` | `Cmd+W` — **the app keeps running** |
+| close the **app** | `Alt+F4` | `Cmd+Q` |
+| switch **app** | `Alt+Tab` | `Cmd+Tab` |
+| switch **window of the same app** | `Alt+Tab` | `` Cmd+` `` |
 
-A barra de menu no topo pertence ao **app em foco**, não à janela. Por isso ela
-muda quando você troca de app.
+The menu bar at the top belongs to the **focused app**, not to the window. That
+is why it changes when you switch apps.
 
-> **`Alt+Tab` é o AltTab**, que é um switcher por **janela** — escolher já traz
-> a janela. O `Cmd+Tab` continua o nativo, por **app**, e é daí que vem o
-> "escolhi o app e ele não abriu": ativar um app não levanta janela nenhuma.
+> **`Alt+Tab` is AltTab**, which is a per-**window** switcher — picking one
+> brings that window up. `Cmd+Tab` is still the native, per-**app** one, and it
+> is where "I picked the app and nothing opened" comes from: activating an app
+> raises no window at all.
 >
-> O AeroSpace **não mapeia nada** em `Alt+Tab` nem em `Alt+Shift+Tab`, de
-> propósito: esses dois são os atalhos padrão do AltTab, e o AeroSpace captura
-> antes do app, então qualquer binding ali comeria o switcher. Foi o que
-> acontecia — `Alt+Tab` era `workspace-back-and-forth` e trocava de workspace
-> quando você queria trocar de app. Esse comando saiu junto; se fizer falta,
-> ponha num chord que não seja tab.
+> AeroSpace maps **nothing** to `Alt+Tab` or `Alt+Shift+Tab`, deliberately:
+> those two are AltTab's default shortcuts, and AeroSpace grabs them before the
+> app does, so any binding there would eat the switcher. That is exactly what
+> used to happen — `Alt+Tab` was `workspace-back-and-forth` and changed
+> workspace when you wanted to change app. That command went with it; if it is
+> missed, give it a chord that is not tab.
 >
-> Ele precisa de **Accessibility** para enxergar janela alheia, e de **Screen &
-> System Audio Recording** para mostrar título e miniatura (o nome assustador é
-> do Sequoia, que juntou o áudio do sistema no mesmo interruptor). Sem a
-> primeira ele abre e não faz nada.
+> It needs **Accessibility** to see other apps' windows, and **Screen & System
+> Audio Recording** to show title and thumbnail (the alarming name is Sequoia's,
+> which folded system audio into the same switch). Without the first it opens
+> and does nothing.
 >
-> `Alt` + `` ` `` continua sendo o ciclo **deste** workspace (seção 6) — o
-> AltTab lista tudo, sem filtrar por workspace, e as duas coisas servem para
-> momentos diferentes.
+> `Alt` + `` ` `` is still the cycle within **this** workspace (section 6) —
+> AltTab lists everything, with no workspace filter, and the two serve different
+> moments.
 
-> **Uma coisa tentada e desfeita, para não repetir:** remapear `Cmd+Tab` no
-> **Karabiner** para o ciclo do AeroSpace. Funciona, mas o Karabiner intercepta
-> no nível do HID, então o macOS nunca vê a tecla e o overlay com os ícones
-> **some**. A troca vira um pulo cego. Desfeito no mesmo dia.
+> **One thing tried and undone, so it is not repeated:** remapping `Cmd+Tab` in
+> **Karabiner** to AeroSpace's cycle. It works, but Karabiner intercepts at the
+> HID level, so macOS never sees the key and the overlay with the icons
+> **disappears**. The switch becomes a blind jump. Undone the same day.
 
-### ③ Por baixo é BSD, não Linux
+### ③ Underneath it is BSD, not Linux
 
-Os utilitários são os do BSD, com flags diferentes:
+The utilities are BSD's, with different flags:
 
 ```sh
-sed -i 's/a/b/' f     # ✅ Linux    ❌ macOS (pede sufixo de backup)
+sed -i 's/a/b/' f     # ✅ Linux    ❌ macOS (wants a backup suffix)
 sed -i '' 's/a/b/' f  # ✅ macOS
 ls --color            # ❌ macOS
 date -d '1 day ago'   # ❌ macOS
 ```
 
-Por isso o `Brewfile` instala `coreutils`, `gnu-sed`, `gawk`, `grep` — que viram
-`gls`, `gsed`, `gawk`, `ggrep`. Eles **não** entram na frente do PATH de
-propósito: script que assume BSD quebraria. Chame com o `g` na frente quando
-precisar do comportamento Linux.
+That is why the `Brewfile` installs `coreutils`, `gnu-sed`, `gawk`, `grep` —
+which become `gls`, `gsed`, `gawk`, `ggrep`. They do **not** go to the front of
+the PATH, on purpose: a script assuming BSD would break. Call them with the
+leading `g` when you need Linux behaviour.
 
 ---
 
-## 2. Tabela de conversão de atalhos
+## 2. Shortcut conversion table
 
-| Ação | Windows | macOS |
+| Action | Windows | macOS |
 |---|---|---|
-| Copiar / colar / recortar | `Ctrl+C/V/X` | `Cmd+C/V/X` |
-| Colar **movendo** arquivo | `Ctrl+X` → `Ctrl+V` | `Cmd+C` → `Cmd+Option+V` |
-| Desfazer / refazer | `Ctrl+Z` / `Ctrl+Y` | `Cmd+Z` / `Cmd+Shift+Z` |
-| Salvar / abrir / imprimir | `Ctrl+S/O/P` | `Cmd+S/O/P` |
-| Selecionar tudo | `Ctrl+A` | `Cmd+A` |
-| Localizar / próximo | `Ctrl+F` / `F3` | `Cmd+F` / `Cmd+G` |
-| Nova aba / fechar aba | `Ctrl+T` / `Ctrl+W` | `Cmd+T` / `Cmd+W` |
-| Reabrir aba fechada | `Ctrl+Shift+T` | `Cmd+Shift+T` |
-| **Início / fim da linha** | `Home` / `End` | `Cmd+←` / `Cmd+→` |
-| **Início / fim do documento** | `Ctrl+Home/End` | `Cmd+↑` / `Cmd+↓` |
-| Palavra a palavra | `Ctrl+←/→` | `Option+←/→` |
-| **Delete para frente** | `Delete` | `Fn+Delete` |
-| Renomear arquivo | `F2` | `Enter` (!) |
-| Abrir arquivo | `Enter` | `Cmd+↓` ou `Cmd+O` |
-| Propriedades / info | `Alt+Enter` | `Cmd+I` |
-| Deletar arquivo | `Delete` | `Cmd+Delete` |
-| Gerenciador de tarefas | `Ctrl+Shift+Esc` | `Cmd+Option+Esc` (Force Quit) |
-| Bloquear tela | `Win+L` | `Ctrl+Cmd+Q` |
+| Copy / paste / cut | `Ctrl+C/V/X` | `Cmd+C/V/X` |
+| Paste **moving** a file | `Ctrl+X` → `Ctrl+V` | `Cmd+C` → `Cmd+Option+V` |
+| Undo / redo | `Ctrl+Z` / `Ctrl+Y` | `Cmd+Z` / `Cmd+Shift+Z` |
+| Save / open / print | `Ctrl+S/O/P` | `Cmd+S/O/P` |
+| Select all | `Ctrl+A` | `Cmd+A` |
+| Find / next | `Ctrl+F` / `F3` | `Cmd+F` / `Cmd+G` |
+| New tab / close tab | `Ctrl+T` / `Ctrl+W` | `Cmd+T` / `Cmd+W` |
+| Reopen closed tab | `Ctrl+Shift+T` | `Cmd+Shift+T` |
+| **Start / end of line** | `Home` / `End` | `Cmd+←` / `Cmd+→` |
+| **Start / end of document** | `Ctrl+Home/End` | `Cmd+↑` / `Cmd+↓` |
+| Word by word | `Ctrl+←/→` | `Option+←/→` |
+| **Forward delete** | `Delete` | `Fn+Delete` |
+| Rename file | `F2` | `Enter` (!) |
+| Open file | `Enter` | `Cmd+↓` or `Cmd+O` |
+| Properties / info | `Alt+Enter` | `Cmd+I` |
+| Delete file | `Delete` | `Cmd+Delete` |
+| Task manager | `Ctrl+Shift+Esc` | `Cmd+Option+Esc` (Force Quit) |
+| Lock screen | `Win+L` | `Ctrl+Cmd+Q` |
 | Launcher | `Win` / Flow Launcher | `Cmd+Space` (Raycast) |
-| Histórico de clipboard | Ditto | `Cmd+Shift+V` (Maccy) |
-| Print screen (área) | `Win+Shift+S` | `Cmd+Shift+4` |
-| Print screen (tela) | `PrtScr` | `Cmd+Shift+3` |
-| Gravar tela / opções | Xbox Game Bar | `Cmd+Shift+5` |
-| Emoji | `Win+.` | `Fn+E` ou `Ctrl+Cmd+Space` |
-| Minimizar / ocultar app | `Win+D` | `Cmd+M` / `Cmd+H` |
-| Espaço/desktop ao lado | `Ctrl+Win+←/→` | `Ctrl+←/→` |
-| Mission Control | `Win+Tab` | `Ctrl+↑` (ou 3 dedos p/ cima) |
-| Forçar reload sem cache | `Ctrl+F5` | `Cmd+Shift+R` |
+| Clipboard history | Ditto | `Cmd+Shift+V` (Maccy) |
+| Screenshot (region) | `Win+Shift+S` | `Cmd+Shift+4` |
+| Screenshot (screen) | `PrtScr` | `Cmd+Shift+3` |
+| Screen recording / options | Xbox Game Bar | `Cmd+Shift+5` |
+| Emoji | `Win+.` | `Fn+E` or `Ctrl+Cmd+Space` |
+| Minimise / hide app | `Win+D` | `Cmd+M` / `Cmd+H` |
+| Space/desktop next door | `Ctrl+Win+←/→` | `Ctrl+←/→` |
+| Mission Control | `Win+Tab` | `Ctrl+↑` (or 3 fingers up) |
+| Force reload without cache | `Ctrl+F5` | `Cmd+Shift+R` |
 
-**Dentro do Ghostty/Neovim/zsh, `Ctrl` continua sendo `Ctrl`.** Nada acima
-atrapalha seu muscle memory de Vim.
+**Inside Ghostty/Neovim/zsh, `Ctrl` is still `Ctrl`.** Nothing above interferes
+with your Vim muscle memory.
 
 ---
 
-## 3. Teclado
+## 3. Keyboard
 
-### Acentos em português
+### Portuguese accents
 
-Configuramos o Ghostty com `macos-option-as-alt = left`. Isso significa:
+Ghostty is configured with `macos-option-as-alt = left`. That means:
 
-- **Option esquerdo** = `Alt` de verdade → `Alt+C` do fzf, `Alt+B/F` do readline.
-- **Option direito** = tecla morta de composição → acentos:
+- **Left Option** = a real `Alt` → fzf's `Alt+C`, readline's `Alt+B/F`.
+- **Right Option** = dead key for composition → accents:
 
-| Você quer | Digite |
+| You want | Type |
 |---|---|
-| á é í ó ú | `⌥e` depois a vogal |
-| ã õ ñ | `⌥n` depois a vogal |
-| â ê ô | `⌥i` depois a vogal |
+| á é í ó ú | `⌥e` then the vowel |
+| ã õ ñ | `⌥n` then the vowel |
+| â ê ô | `⌥i` then the vowel |
 | ç | `⌥c` |
-| à | `⌥\`` depois `a` |
-| ü | `⌥u` depois `u` |
+| à | `⌥\`` then `a` |
+| ü | `⌥u` then `u` |
 
-> **`acentos`** no terminal imprime essa tabela. É uma função no `.zshrc` (só
-> macOS), para não ter que voltar aqui toda vez que a tecla morta escapar.
+> **`acentos`** in the terminal prints that table. It is a function in `.zshrc`
+> (macOS only), so you do not have to come back here every time the dead key
+> slips your mind.
 
-Se preferir teclado dedicado, System Settings → Keyboard → Input Sources →
-**ABC – Extended** (melhor para dev, mantém o layout US) ou **Brazilian**.
+If you prefer a dedicated keyboard layout, System Settings → Keyboard → Input
+Sources → **ABC – Extended** (better for dev, keeps the US layout) or
+**Brazilian**.
 
-### Ajustes que valem no primeiro dia
+### Settings worth making on day one
 
-| Ajuste | Onde |
+| Setting | Where |
 |---|---|
-| **Caps Lock → Esc** (ouro puro no Vim) | `macos/karabiner/karabiner.json` — vale para **todo** teclado |
-| F1–F12 como função, não brilho/volume | idem, mas só no Keychron K2 |
-| Key repeat rápido | já feito pelo `defaults.sh` — exige **logout** |
-| Tecla 🌐 (Globe) não fazer nada | Keyboard → Press 🌐 to → Do Nothing |
+| **Caps Lock → Esc** (pure gold in Vim) | `macos/karabiner/karabiner.json` — applies to **every** keyboard |
+| F1–F12 as function keys, not brightness/volume | same, but only on the Keychron K2 |
+| Fast key repeat | already done by `defaults.sh` — requires a **logout** |
+| 🌐 (Globe) key doing nothing | Keyboard → Press 🌐 to → Do Nothing |
 
 ### Keychron K2
 
-O ajuste de `Caps Lock` em System Settings → Keyboard → Keyboard Shortcuts →
-Modifier Keys é **por dispositivo**: configurado no K2, ele não vale no teclado
-interno, e some quando você pluga outro teclado. Por isso o remap mora no
-Karabiner, versionado no repo.
+The `Caps Lock` setting in System Settings → Keyboard → Keyboard Shortcuts →
+Modifier Keys is **per device**: set on the K2, it does not apply to the
+built-in keyboard, and it disappears when you plug in another one. That is why
+the remap lives in Karabiner, versioned in the repo.
 
-O K2 em modo Mac se anuncia com o vendor ID da **Apple** (`1452`), produto
-`591` — o teclado interno é `1452`/`33028`, então os dois são distinguíveis. É
-esse par que o `karabiner.json` usa para deixar a fn row como F1–F12 só no K2,
-mantendo brilho/volume diretos no teclado do MacBook.
+The K2 in Mac mode announces itself with **Apple**'s vendor ID (`1452`), product
+`591` — the built-in keyboard is `1452`/`33028`, so the two are
+distinguishable. That pair is what `karabiner.json` uses to make the fn row
+F1–F12 on the K2 only, keeping brightness/volume direct on the MacBook's own
+keyboard.
 
-#### `Page Down` vira `Del` (apagar para frente)
+#### `Page Down` becomes `Del` (forward delete)
 
-O macOS chama de `delete` a tecla que apaga **para trás** — o Backspace do
-Windows. Apagar para frente (`⌦`, o `Del` do Windows) é `Fn`+`delete`, um chord
-para algo que no Windows era uma tecla só.
+macOS calls `delete` the key that erases **backwards** — Windows' Backspace.
+Erasing forwards (`⌦`, Windows' `Del`) is `Fn`+`delete`, a chord for something
+that was a single key on Windows.
 
-O `karabiner.json` remapeia `page_down` → `delete_forward`, **só no K2**. Você
-não perde a função de página: `Fn`+`↓` é Page Down nativo no macOS, sem
-configuração nenhuma.
+`karabiner.json` remaps `page_down` → `delete_forward`, **on the K2 only**. You
+do not lose the page function: `Fn`+`↓` is native Page Down on macOS, with no
+configuration at all.
 
-Para identificar qualquer tecla deste teclado com certeza — as legendas são
-duplas e mudam de papel com a chavinha — abra o **Karabiner-EventViewer** e
-aperte a tecla. Ele mostra o nome que o macOS recebeu (`delete_or_backspace`
-para o Backspace, `delete_forward` para o Del).
+To identify any key on this keyboard with certainty — the legends are doubled
+and change role with the side switch — open **Karabiner-EventViewer** and press
+the key. It shows the name macOS received (`delete_or_backspace` for Backspace,
+`delete_forward` for Del).
 
-#### A fileira de baixo muda de ordem com a chavinha
+#### The bottom row changes order with the side switch
 
-Esta é a pegadinha nº 1 de quem vem do Windows, e ela **parece** um bug de
-config: "o Alt parou de funcionar".
+This is trap number 1 for anyone coming from Windows, and it **looks** like a
+config bug: "Alt stopped working".
 
 ```
 Windows/Android:   Ctrl │  ⊞ Win   │   Alt     │ ␣
 Mac/iOS:           Ctrl │ ⌥ Option │ ⌘ Command │ ␣
 ```
 
-A tecla colada no espaço era `Alt` e virou `⌘ Command`. O dedo vai no mesmo
-lugar e sai o modificador errado, então nenhum binding `alt-*` do AeroSpace
-dispara. O Option está **uma tecla à esquerda**.
+The key next to the space bar used to be `Alt` and is now `⌘ Command`. The
+finger goes to the same place and the wrong modifier comes out, so no AeroSpace
+`alt-*` binding fires. Option is **one key to the left**.
 
-Teste em 5 segundos, sem ferramenta nenhuma: no Spotlight, digite algo, segure a
-tecla suspeita e aperte `A`. Selecionou tudo = é `Command`. Saiu `å` = é
-`Option`.
+A 5-second test, with no tooling at all: in Spotlight, type something, hold the
+suspect key and press `A`. Selected everything = it is `Command`. Produced `å` =
+it is `Option`.
 
-Não vale a pena trocar Option↔Command para "devolver" o Alt ao polegar: `⌘` é a
-tecla mais usada do macOS, e o remap valeria só no K2 — o teclado interno
-continuaria no layout Apple, deixando as duas memórias musculares em conflito.
+Swapping Option↔Command to "give" Alt back to the thumb is not worth it: `⌘` is
+the most-used key on macOS, and the remap would apply only to the K2 — the
+built-in keyboard would stay on the Apple layout, leaving the two muscle
+memories in conflict.
 
-Dois pré-requisitos físicos, antes de culpar a config:
+Two physical prerequisites, before blaming the config:
 
-1. A chave lateral do K2 em **Mac/iOS**, não Windows/Android.
-2. O Karabiner precisa ter a **driver extension** aprovada. Sem isso ele fica
-   instalado e inerte, sem mensagem de erro nenhuma:
+1. The K2's side switch on **Mac/iOS**, not Windows/Android.
+2. Karabiner needs its **driver extension** approved. Without it, it sits
+   installed and inert, with no error message at all:
 
 ```sh
-systemextensionsctl list      # "0 extension(s)" = inerte
+systemextensionsctl list      # "0 extension(s)" = inert
 ```
 
-Aprove em System Settings → General → Login Items & Extensions → Driver
-Extensions, e conceda Input Monitoring em Privacy & Security.
+Approve it in System Settings → General → Login Items & Extensions → Driver
+Extensions, and grant Input Monitoring in Privacy & Security.
 
-> `defaults.sh` desliga `ApplePressAndHoldEnabled`. Sem isso, **segurar `j` no
-> Neovim não repete** — abre o seletor de acentos. É o item nº 1 de frustração de
-> quem usa Vim no Mac.
+> `defaults.sh` turns off `ApplePressAndHoldEnabled`. Without that, **holding
+> `j` in Neovim does not repeat** — it opens the accent picker. It is the number
+> 1 frustration for Vim users on the Mac.
 
 ---
 
-## 4. Trackpad — o que você vai sentir falta se voltar
+## 4. Trackpad — what you will miss if you go back
 
-Vale investir 10 minutos aqui. System Settings → Trackpad.
+Worth investing 10 minutes here. System Settings → Trackpad.
 
-| Gesto | Faz |
+| Gesture | Does |
 |---|---|
-| 3 dedos para cima | Mission Control (todas as janelas) |
-| 3 dedos para os lados | trocar de Space / tela cheia |
-| 4 dedos pinçando | Launchpad |
-| Espalhar 4 dedos | mostrar Desktop |
-| 2 dedos nas bordas | scroll (natural, invertido — dá pra desligar) |
-| **3 dedos arrastando** | mover janela/seleção sem clicar |
+| 3 fingers up | Mission Control (all windows) |
+| 3 fingers sideways | switch Space / full screen |
+| 4 fingers pinching | Launchpad |
+| Spread 4 fingers | show Desktop |
+| 2 fingers at the edges | scroll (natural, inverted — can be turned off) |
+| **3 fingers dragging** | move a window/selection without clicking |
 
-O `defaults.sh` já liga **tap to click** e **three-finger drag** (esse segundo
-fica escondido em Accessibility na UI).
+`defaults.sh` already turns on **tap to click** and **three-finger drag** (the
+second one is hidden under Accessibility in the UI).
 
-> Mouse externo com scroll invertido é o clássico: o macOS aplica "natural
-> scrolling" ao trackpad **e** ao mouse com a mesma chave. O **LinearMouse** (já
-> no Brewfile, config versionada em `macos/linearmouse/`) separa os dois.
+> An external mouse with inverted scrolling is the classic: macOS applies
+> "natural scrolling" to the trackpad **and** the mouse from the same switch.
+> **LinearMouse** (already in the Brewfile, config versioned in
+> `macos/linearmouse/`) separates the two.
 
-### Velocidade do mouse: um dispositivo, um lugar
+### Mouse speed: one device, one place
 
-| Dispositivo | Onde configurar |
+| Device | Where to set it |
 |---|---|
-| Mouse externo (Keychron M2) | LinearMouse → *Pointer → Speed* |
+| External mouse (Keychron M2) | LinearMouse → *Pointer → Speed* |
 | Trackpad | System Settings → Trackpad |
 
-O `linearmouse.json` desliga a aceleração do M2 (`disableAcceleration`). Com ela
-desligada o LinearMouse governa o ponteiro daquele dispositivo e a curva do
-macOS sai do caminho — então mexer no *Tracking speed* de System Settings quase
-não muda nada, e parece que o mouse está quebrado. Ajuste velocidade no mesmo
-lugar em que a aceleração está desligada.
+`linearmouse.json` turns off the M2's acceleration (`disableAcceleration`). With
+it off, LinearMouse governs that device's pointer and macOS's curve steps out of
+the way — so moving *Tracking speed* in System Settings changes almost nothing,
+and the mouse feels broken. Set the speed in the same place the acceleration is
+turned off.
 
-O `com.apple.mouse.scaling` do sistema continua valendo como **fallback**, para
-o intervalo antes de os login items carregarem ou se o LinearMouse cair. Deixe
-num valor razoável — se estiver muito baixo, esse intervalo parece defeito.
+The system's `com.apple.mouse.scaling` still applies as a **fallback**, for the
+window before login items load or if LinearMouse dies. Leave it at a sane value
+— set to an extreme, that window feels like a fault.
 
 ---
 
-> **"Notificações" na área de trabalho que não fecham** provavelmente não são
-> notificações. Widgets de desktop (Bolsa, Tempo, Calendário) são desenhados
-> pelo processo *Notification Center* e ficam numa camada **negativa**, atrás de
-> tudo — daí não terem botão de fechar. Para identificar, o dono e a camada
-> aparecem em qualquer inspetor de janelas; camada negativa = widget.
+> **"Notifications" on the desktop that will not close** are probably not
+> notifications. Desktop widgets (Stocks, Weather, Calendar) are drawn by the
+> *Notification Center* process and sit on a **negative** layer, behind
+> everything — hence no close button. To identify one, the owner and the layer
+> show up in any window inspector; negative layer = widget.
 >
-> O `defaults.sh` já desliga os dois interruptores (`StandardHideWidgets` e
-> `StageManagerHideWidgets`). Para remover só alguns em vez de todos, é
-> Control-clique na área de trabalho → *Edit Widgets*, e o menos em cada um.
+> `defaults.sh` already turns off both switches (`StandardHideWidgets` and
+> `StageManagerHideWidgets`). To remove only some instead of all, it is
+> Control-click on the desktop → *Edit Widgets*, and the minus on each one.
 
-### Notificação travada na tela
+### A notification stuck on screen
 
-Banner que não sai no X nem passando o mouse:
+A banner that will not leave on the X or on hover:
 
 ```sh
 killall NotificationCenter
 ```
 
-O agente reinicia sozinho — é do sistema — e os banners na tela vão embora. Não
-apaga o histórico da Central de Notificações, só limpa o que está desenhado.
+The agent restarts by itself — it belongs to the system — and the on-screen
+banners go away. It does not erase Notification Center history, it only clears
+what is drawn.
 
-> ⚠️ **Responda antes de matar.** Alguns banners são pedidos de decisão, não
-> avisos: os de *App Background Activity* (agentes e daemons pedindo para subir
-> no login) e os de permissão de notificação têm `Allow` / `Don't Allow`
-> aparecendo ao passar o mouse. Descartar sem responder deixa o pedido pendente
-> — e no caso dos daemons do Karabiner, isso significa o remap parar de
-> funcionar no próximo boot, sem erro nenhum.
+> ⚠️ **Answer before killing.** Some banners are requests for a decision, not
+> notices: *App Background Activity* ones (agents and daemons asking to start at
+> login) and notification-permission ones have `Allow` / `Don't Allow` appearing
+> on hover. Dismissing without answering leaves the request pending — and in the
+> case of Karabiner's daemons, that means the remap stops working on the next
+> boot, with no error at all.
 >
-> Aviso puramente informativo, como *"Login Item Added"*, pode matar à vontade.
+> A purely informative notice, like *"Login Item Added"*, you can kill freely.
 
-Se o banner **não** responde ao `killall`, provavelmente não é notificação: veja
-a nota sobre widgets de desktop acima.
+If the banner does **not** respond to `killall`, it is probably not a
+notification: see the note about desktop widgets above.
 
 ---
 
@@ -338,293 +347,309 @@ a nota sobre widgets de desktop acima.
 
 | Explorer | Finder |
 |---|---|
-| barra de endereço | `Cmd+Shift+G` → digite o caminho |
-| `Ctrl+X` em arquivo | não existe — `Cmd+C` e depois `Cmd+Option+V` |
-| mostrar ocultos | `Cmd+Shift+.` |
-| nova pasta | `Cmd+Shift+N` |
-| subir um nível | `Cmd+↑` |
-| voltar | `Cmd+[` |
-| abrir terminal aqui | botão direito → Services, ou `open .` no sentido inverso |
-| espaço = nada | **espaço = Quick Look** (preview de qualquer arquivo) |
+| address bar | `Cmd+Shift+G` → type the path |
+| `Ctrl+X` on a file | does not exist — `Cmd+C` then `Cmd+Option+V` |
+| show hidden | `Cmd+Shift+.` |
+| new folder | `Cmd+Shift+N` |
+| go up one level | `Cmd+↑` |
+| back | `Cmd+[` |
+| open terminal here | right-click → Services, or `open .` in the other direction |
+| space = nothing | **space = Quick Look** (preview of any file) |
 
-Do terminal, `open .` abre o Finder na pasta atual — o `explorer.exe .` do WSL.
+From the terminal, `open .` opens Finder in the current folder — WSL's
+`explorer.exe .`.
 
-**`.DS_Store`**: o Finder cria esse arquivo em toda pasta que você abre. O
-`bootstrap.sh` põe ele num `~/.gitignore_global` para não vazar em commit.
+**`.DS_Store`**: Finder creates that file in every folder you open.
+`bootstrap.sh` puts it in a `~/.gitignore_global` so it does not leak into a
+commit.
 
 ---
 
-## 6. Janelas — AeroSpace
+## 6. Windows — AeroSpace
 
-Tiling i3-like, sem mexer no SIP. Config em `macos/aerospace/aerospace.toml`.
-Aqui `alt` = **Option**.
+i3-like tiling, without touching SIP. Config in
+`macos/aerospace/aerospace.toml`. Here `alt` = **Option**.
 
-| Atalho | Ação |
+| Shortcut | Action |
 |---|---|
-| `Alt+Shift+Enter` | focar o Ghostty (abre um se não houver) |
-| `Alt+H/L` | mover **foco** na horizontal — atravessa os monitores |
-| `Alt+J/K` | mover **foco** na vertical — **fica** neste workspace |
-| `Alt+Shift+H/L` / `Alt+Shift+J/K` | mover a **janela**, mesmas fronteiras |
-| `Alt+A` | voltar à janela anterior (dentro do mesmo workspace) |
-| `Alt` + `` ` `` | **próxima** janela deste workspace |
-| `Alt+Shift` + `` ` `` | a anterior, mesma volta ao contrário |
-| `Alt+1/2/3` | trocar os **três monitores** de uma vez (desktop 1/2/3) |
-| `Alt+4..9` | mover **uma** tela só (quebra o trio de propósito) |
-| `Alt+Shift+1..9` | mandar janela para workspace |
-| `Alt+Ctrl+1/2/3` | mandar janela para outro **desktop**, na mesma coluna |
-| `Alt+Tab` / `Alt+Shift+Tab` | **AltTab**, não AeroSpace — ver acima |
-| `Alt+Ctrl+H/J/K/L` | mover o **foco** entre monitores |
-| `Alt+Ctrl+Shift+H/J/K/L` | mandar a janela para outro **monitor** |
-| `Alt+/` | alternar split horizontal/vertical |
-| `Alt+,` | virar accordion (empilhar) |
+| `Alt+Shift+Enter` | focus Ghostty (opens one if there is none) |
+| `Alt+H/L` | move **focus** horizontally — crosses monitors |
+| `Alt+J/K` | move **focus** vertically — **stays** in this workspace |
+| `Alt+Shift+H/L` / `Alt+Shift+J/K` | move the **window**, same boundaries |
+| `Alt+A` | back to the previous window (within the same workspace) |
+| `Alt` + `` ` `` | **next** window in this workspace |
+| `Alt+Shift` + `` ` `` | the previous one, same ring the other way |
+| `Alt+1/2/3` | switch **all three monitors** at once (desktop 1/2/3) |
+| `Alt+4..9` | move **one** screen only (breaks the trio on purpose) |
+| `Alt+Shift+1..9` | send a window to a workspace |
+| `Alt+Ctrl+1/2/3` | send a window to another **desktop**, same column |
+| `Alt+Tab` / `Alt+Shift+Tab` | **AltTab**, not AeroSpace — see above |
+| `Alt+Ctrl+H/J/K/L` | move **focus** between monitors |
+| `Alt+Ctrl+Shift+H/J/K/L` | send the window to another **monitor** |
+| `Alt+/` | toggle horizontal/vertical split |
+| `Alt+,` | switch to accordion (stack them) |
 | `Alt+F` | fullscreen |
-| `Alt+Shift+F` | soltar a janela (floating) |
-| `Ctrl+W` | fechar a janela — e **encerrar o app** se for a última |
-| `Alt+M` | minimizar para o Dock |
-| `Alt+Shift+M` | trazer de volta as janelas do app em foco |
-| `Alt+-` / `Alt+=` | redimensionar (150px por toque) |
-| `Alt+Shift+;` | entrar no modo service (tabela abaixo) |
+| `Alt+Shift+F` | pop the window out (floating) |
+| `Ctrl+W` | close the window — and **quit the app** if it is the last one |
+| `Alt+M` | minimise to the Dock |
+| `Alt+Shift+M` | bring the focused app's windows back |
+| `Alt+-` / `Alt+=` | resize (150px per press) |
+| `Alt+Shift+;` | enter service mode (table below) |
 
-`Alt+Tab` é entre **workspaces**, `Alt+A` é entre **janelas** — é o que você quer
-quando dois apps dividem o mesmo workspace.
+`Alt+A` is between **windows** — it is what you want when two apps share the
+same workspace. For switching **workspace**, the keys are `Alt+1..9`; `Alt+Tab`
+belongs to AltTab and does not touch workspaces.
 
-`Alt` + `` ` `` percorre **todas** as janelas do workspace em ordem de árvore e
-dá a volta no fim, enquanto `Alt+A` só alterna entre as **duas últimas**. O
-`--boundaries workspace` no binding é o que segura o ciclo dentro do workspace:
-sem ele o `dfs-next` atravessa para o workspace do monitor vizinho.
+`Alt` + `` ` `` walks **every** window in the workspace in tree order and wraps
+at the end, while `Alt+A` only alternates between the **last two**. The
+`--boundaries workspace` in the binding is what holds the cycle inside the
+workspace: without it, `dfs-next` crosses into the neighbouring monitor's
+workspace.
 
-O `Alt+H/L` **atravessa os monitores** desde 2026-09-10, e antes não: o `focus`
-do AeroSpace assume `--boundaries workspace` quando você não diz nada, e com isso
-o foco nunca saía da tela atual — num workspace com duas janelas ele só ficava
-pulando entre as duas, que é exatamente a cara de "o atalho está preso neste
-monitor". O `--boundaries all-monitors-outer-frame` nos bindings é o que solta,
-e o `move` ganhou o mesmo por simetria.
+`Alt+H/L` **crosses monitors** as of 2026-09-10, and did not before: AeroSpace's
+`focus` assumes `--boundaries workspace` when you say nothing, and with that the
+focus never left the current screen — in a workspace with two windows it just
+bounced between them, which is exactly what "the shortcut is stuck on this
+monitor" looks like. `--boundaries all-monitors-outer-frame` in the bindings is
+what frees it, and `move` got the same for symmetry.
 
-**O `Alt+J/K` não recebeu isso, e no mesmo dia recebeu e foi desfeito.** As
-colunas desta mesa ficam lado a lado, então horizontal é o eixo que significa
-"próxima tela"; vertical só significa "a outra janela deste workspace". Com a
-tampa **aberta** a diferença aparece: o MacBook fica fisicamente **abaixo** dos
-externos, e aí o `Alt+J` parava de significar "a janela de baixo" e passava a
-significar "cair no painel do laptop". Pior no `Alt+Shift+J`, que jogava a
-janela para lá — e uma janela que muda de monitor muda de **workspace** junto,
-em silêncio, então o `Alt+1/2/3` seguinte mostrava ela num lugar que você não
-escolheu. No Mancer em retrato, com Teams em cima e Slack embaixo, é exatamente
-a tecla que você usa para ir de um para o outro.
+**`Alt+J/K` did not get that, and on the same day it got it and it was undone.**
+The columns of this desk sit side by side, so horizontal is the axis that means
+"next screen"; vertical only ever means "the other window in this workspace".
+With the lid **open** the difference shows: the MacBook sits physically
+**below** the externals, and then `Alt+J` stopped meaning "the window below" and
+started meaning "fall onto the laptop panel". Worse on `Alt+Shift+J`, which
+threw the window down there — and a window that changes monitor changes
+**workspace** with it, silently, so the next `Alt+1/2/3` showed it somewhere you
+did not choose. On the Mancer in portrait, with Teams on top and Slack below,
+that is exactly the key you use to get from one to the other.
 
-Nada se perdeu: viagem deliberada entre painéis é o `Alt+Ctrl+H/J/K/L`, que age
-no **monitor** e dá a volta. É também o que você quer quando **não há** janela
-na direção pedida — a tela vizinha está vazia, ou você só quer pular de painel.
+Nothing is lost: deliberate travel between panels is `Alt+Ctrl+H/J/K/L`, which
+acts on the **monitor** and wraps around. It is also what you want when there is
+**no** window in the requested direction — the neighbouring screen is empty, or
+you just want to hop panels.
 
-**Modo service** — `Alt+Shift+;` e depois **uma** tecla; toda opção já volta
-sozinha para o modo main:
+**Service mode** — `Alt+Shift+;` and then **one** key; every option returns to
+main mode by itself:
 
-| Tecla | Ação |
+| Key | Action |
 |---|---|
-| `Esc` | recarrega a config e sai |
-| `R` | resetar o layout que você embaralhou |
-| `F` | alternar floating/tiling |
-| `Backspace` | fechar todas as janelas menos a atual |
-| `Alt+Shift+H/J/K/L` | juntar esta janela no container do vizinho |
+| `Esc` | reload the config and leave |
+| `R` | reset the layout you scrambled |
+| `F` | toggle floating/tiling |
+| `Backspace` | close every window but this one |
+| `Alt+Shift+H/J/K/L` | join this window into the neighbour's container |
 
-Os monitores se comportam como **uma tela só**: uma tecla troca todas as telas
-ao mesmo tempo. Ideia portada do `windows/glazewm/config.yaml`.
+The monitors behave as **a single screen**: one key switches every screen at
+once. Idea ported from `windows/glazewm/config.yaml`.
 
-Existem **três layouts**, um por contagem de tela, porque uma forma só nunca
-serve às três: o arquivo de três telas esconde um terço dos workspaces atrás dos
-outros quando só há duas, e o de duas telas deixa metade deles **sem tecla**
-quando só há uma (a história está na seção de uma tela, abaixo). O
-`macos/aerospace/apply-layout.py` mescla `aerospace.base.toml` com um fragmento
-e recarrega:
+There are **three layouts**, one per screen count, because no single shape
+serves all three: the three-screen file hides a third of the workspaces behind
+the others when there are only two, and the two-screen one leaves half of them
+**with no key at all** when there is only one (that story is in the one-screen
+section below). `macos/aerospace/apply-layout.py` merges `aerospace.base.toml`
+with a fragment and reloads:
 
 ```sh
-./macos/aerospace/apply-layout.py          # detecta as telas e aplica
-./macos/aerospace/apply-layout.py 3mon     # força um layout
+./macos/aerospace/apply-layout.py          # detect the screens and apply
+./macos/aerospace/apply-layout.py 3mon     # force a layout
 ./macos/aerospace/apply-layout.py --dry-run
 ```
 
-> ⚠️ **Abrir ou fechar a tampa muda a contagem de telas** — e portanto o layout
-> certo. Na mesa em clamshell são duas (`2mon`); levantar a tampa faz três
-> (`3mon`); desplugar tudo e sair de casa faz uma (`1mon`).
+> ⚠️ **Opening or closing the lid changes the screen count** — and therefore the
+> right layout. At the desk in clamshell there are two (`2mon`); raising the lid
+> makes three (`3mon`); unplugging everything and leaving the house makes one
+> (`1mon`).
 >
-> Isso é automático desde 2026-09-08, via o LaunchAgent `displaywatch`
-> (`./macos/bootstrap.sh displaywatch`). Nada no sistema oferecia esse gatilho:
-> o launchd dispara em arquivo, não em tela, e o AeroSpace 0.21.3 só tem
-> `on-focus-changed`, `on-focused-monitor-changed` e `on-window-detected` —
-> nenhum dispara quando um painel aparece ou some. O `display-watch.swift`
-> preenche o buraco ouvindo o CoreGraphics e chamando o `apply-layout.py`.
+> This is automatic since 2026-09-08, via the `displaywatch` LaunchAgent
+> (`./macos/bootstrap.sh displaywatch`). Nothing in the system offered that
+> trigger: launchd fires on files, not on screens, and AeroSpace 0.21.3 only has
+> `on-focus-changed`, `on-focused-monitor-changed` and `on-window-detected` —
+> none of which fires when a panel appears or disappears. `display-watch.swift`
+> fills the hole by listening to CoreGraphics and calling `apply-layout.py`.
 >
-> Dois atrasos deliberados lá dentro: **3s** depois do último evento, porque um
-> único plug gera uma rajada de callbacks *e* porque o `apply-layout.py` pergunta
-> a contagem ao AeroSpace, que demora um instante para concordar com o
-> CoreGraphics — disparar na hora lê a contagem **antiga**. E **10s** no arranque,
-> que é a corrida com o servidor do AeroSpace subindo no login.
+> Two deliberate delays inside it: **3s** after the last event, because a single
+> plug generates a burst of callbacks *and* because `apply-layout.py` asks
+> AeroSpace for the count, which takes a moment to agree with CoreGraphics —
+> firing immediately reads the **old** count. And **10s** at startup, which is
+> the race with AeroSpace's server coming up at login.
 >
-> Mudança de resolução **não** dispara nada (o `setModeFlag` está fora do filtro
-> de propósito): ela não muda a contagem de telas, então não pode mudar o layout.
+> A resolution change fires **nothing** (`setModeFlag` is outside the filter on
+> purpose): it does not change the screen count, so it cannot change the layout.
 >
 > ```sh
 > tail -f ~/Library/Logs/aerospace-display-watch.log
 > launchctl print gui/$UID/dev.luannunes.aerospace-display-watch
 > ```
 
-**Layout de duas telas** (`layout-2mon.toml`) — seis workspaces, desktops em
-par. **É o layout do dia a dia**, porque as duas configurações desta máquina são
-pares: na mesa, Alienware + Mancer com o MacBook **fechado**; na rua, MacBook +
-ARZOPA. As colunas são por papel, então o mesmo arquivo serve os dois:
+**Two-screen layout** (`layout-2mon.toml`) — six workspaces, desktops in pairs.
+**This is the everyday layout**, because both of this machine's setups are
+pairs: at the desk, Alienware + Mancer with the MacBook **closed**; on the road,
+MacBook + ARZOPA. The columns are by role, so the same file serves both:
 
-| | Coluna A (secundária) | Coluna B (principal) |
+| | Column A (secondary) | Column B (primary) |
 |---|---|---|
-| **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl, Hoppscotch | **ws 2** ← IntelliJ, VS Code |
-| **`Alt+2`** chat | ws 3 ← Teams em cima, Slack embaixo | **ws 4** ← Claude, Codex, WhatsApp, Spotify |
+| **`Alt+1`** work | ws 1 ← Ghostty, Toggl, Hoppscotch | **ws 2** ← IntelliJ, VS Code |
+| **`Alt+2`** chat | ws 3 ← Teams on top, Slack below | **ws 4** ← Claude, Codex, WhatsApp, Spotify |
 | **`Alt+3`** browsers | ws 5 ← Notion | **ws 6** ← Chrome, Safari |
 
-Na mesa a coluna A é o **Mancer em retrato** e a B é o **Alienware**; na rua a A
-é a tela do **MacBook** e a B é o **ARZOPA**. Nenhuma linha do arquivo muda entre
-os dois — quem decide é qual monitor tem a menu bar.
+At the desk, column A is the **Mancer in portrait** and B is the **Alienware**;
+on the road, A is the **MacBook**'s screen and B is the **ARZOPA**. Not one line
+of the file changes between the two — what decides is which monitor has the menu
+bar.
 
-`Alt+4/5/6` mexem numa tela só. `Alt+7/8/9` ficam **sem binding** — seis
-workspaces precisam de seis teclas, e cada `Alt+<tecla>` não usado é uma tecla
-devolvida ao zsh e ao Neovim.
+`Alt+4/5/6` move one screen only. `Alt+7/8/9` stay **unbound** — six workspaces
+need six keys, and every unused `Alt+<key>` is a key given back to zsh and
+Neovim.
 
-**Teams e Slack ficam com a coluna A do desktop de chat inteira**, um em cima do
-outro — ws 3 no layout de duas telas, ws 4 no de três. Na mesa essa coluna é o
-Mancer em retrato (1440x2560), onde o `default-root-container-orientation =
-'auto'` resolve para split **vertical**, então duas janelas ali já viram metade
-de cima e metade de baixo. Chat é a única coisa que fica melhor alta do que
-larga, e é para isso que o painel serve. Claude, Codex, WhatsApp e Spotify
-foram para a tela larga junto.
+**Teams and Slack own column A of the chat desktop outright**, one above the
+other — ws 3 in the two-screen layout, ws 4 in the three-screen one. At the desk
+that column is the Mancer in portrait (1440x2560), where
+`default-root-container-orientation = 'auto'` resolves to a **vertical** split,
+so two windows there are already a top half and a bottom half. Chat is the one
+thing that reads better tall than wide, and that is what the panel is for.
+Claude, Codex, WhatsApp and Spotify went to the wide screen together.
 
-Quem garante **Teams em cima** e não "o que você abriu primeiro" é o segundo
-comando da regra: o `on-window-detected` não sabe dizer "insira na posição 0",
-então a janela é colocada e depois empurrada — Teams um passo para cima, Slack
-um para baixo.
+What guarantees **Teams on top** rather than "whichever you opened first" is the
+second command in the rule: `on-window-detected` has no way to say "insert at
+position 0", so the window is placed and then nudged — Teams one step up, Slack
+one step down.
 
 ```toml
 { if.app-id = 'com.microsoft.teams2', run = ['move-node-to-workspace 3 --focus-follows-window', 'move --boundaries workspace --boundaries-action stop up'] },
 ```
 
-> ⚠️ **Cada regra tem que caber numa linha só.** O re-alojamento do
-> `apply-layout.py` lê o bloco `APP_RULES` com regex de uma linha; regra quebrada
-> em duas é regra que ele ignora em silêncio, e aí o app fica no workspace que o
-> layout antigo deu. O `--boundaries-action stop` também não é enfeite: o padrão
-> do `move` é `create-implicit-container`, que em vez de não fazer nada
-> embrulharia a janela num container aninhado quando ela já estivesse na ponta.
+> ⚠️ **Every rule has to fit on one line.** `apply-layout.py`'s re-homing reads
+> the `APP_RULES` block with a line-oriented regex; a rule broken across two
+> lines is a rule it silently skips, and then the app keeps the workspace the
+> old layout gave it. `--boundaries-action stop` is not decoration either: the
+> default for `move` is `create-implicit-container`, which instead of doing
+> nothing would wrap the window in a nested container when it is already at the
+> end.
 
-> Na rua essa mesma coluna é a tela do MacBook, que é **paisagem** — o `auto`
-> divide na horizontal e os dois ficam lado a lado, com os empurrões não fazendo
-> nada. Tudo bem: o par é o que importa, a orientação é assunto do monitor.
+> On the road that same column is the MacBook's screen, which is **landscape** —
+> `auto` splits horizontally and the two land side by side, with the nudges
+> doing nothing. Fine: the pairing is what matters, the orientation is the
+> monitor's business.
 
-**Layout de três telas** (`layout-3mon.toml`) — nove workspaces, desktops em
-trio, com uma terceira coluna: `Alt+1` = ws 1/2/3, `Alt+2` = 4/5/6, `Alt+3` =
-7/8/9, e `Alt+4..9` como saída de emergência.
+**Three-screen layout** (`layout-3mon.toml`) — nine workspaces, desktops in
+trios, with a third column: `Alt+1` = ws 1/2/3, `Alt+2` = 4/5/6, `Alt+3` =
+7/8/9, and `Alt+4..9` as the escape hatch.
 
-Nesses dois, as colunas são por **papel**: a coluna A é `secondary` (a tela que
-não é a principal) e a B é `main`. Trocar qual monitor é o principal inverte as
-colunas sozinho.
+In those two, the columns are by **role**: column A is `secondary` (the screen
+that is not the primary one) and B is `main`. Changing which monitor is the
+primary flips the columns by itself.
 
-**Layout de uma tela** (`layout-1mon.toml`) — os mesmos seis workspaces do layout
-de duas telas, **uma tecla cada**: `Alt+1..6` vão literalmente para o workspace
-de mesmo número. É o único layout em que `Alt+<n>` quer dizer exatamente isso.
+**One-screen layout** (`layout-1mon.toml`) — the same six workspaces as the
+two-screen layout, **one key each**: `Alt+1..6` go literally to the workspace of
+the same number. It is the only layout where `Alt+<n>` means exactly that.
 
-| | tecla | |
+| | key | |
 |---|---|---|
 | ws 1 | `Alt+1` | Ghostty, Hoppscotch, Toggl |
 | ws 2 | `Alt+2` | IntelliJ, VS Code, Android Studio |
-| ws 3 | `Alt+3` | Teams em cima, Slack embaixo |
+| ws 3 | `Alt+3` | Teams on top, Slack below |
 | ws 4 | `Alt+4` | Claude, Codex, WhatsApp, Spotify |
 | ws 5 | `Alt+5` | Notion |
 | ws 6 | `Alt+6` | Chrome, Safari, Firefox |
 
-> ⚠️ **Este arquivo nasceu de um bug, em 2026-09-11.** Até então uma tela só era
-> servida pelo `layout-2mon.toml`, na teoria de que um layout de pares "degrada"
-> para seis workspaces numa tela. Ele não degrada — ele **quebra**. As teclas de
-> lá são pares:
+> ⚠️ **This file was born from a bug, on 2026-09-11.** Until then a single
+> screen was served by `layout-2mon.toml`, on the theory that a pair layout
+> "degrades" to six workspaces on one screen. It does not degrade — it
+> **breaks**. The keys there are pairs:
 >
 > ```toml
 > alt-1 = ['workspace 1', 'workspace 2']
 > ```
 >
-> e os dois comandos caem no **mesmo** monitor quando só existe um, então o
-> segundo sobrescreve o primeiro e você chega sempre no workspace **par**.
-> `Alt+1/2/3` iam para ws 2, 4 e 6; **ws 1, 3 e 5 não tinham tecla nenhuma**, e o
-> `Alt+4/5/6` não socorria porque também é a metade par. Não é canto: ws 1 é o
-> terminal e ws 3 é Teams + Slack, ou seja, os dois workspaces mais procurados
-> eram os dois inalcançáveis. Descoberto no café, com o Ghostty parado na ws 1 e
-> nenhuma tecla capaz de chegar nele.
+> and both commands land on the **same** monitor when only one exists, so the
+> second overwrites the first and you always arrive at the **even** workspace.
+> `Alt+1/2/3` reached ws 2, 4 and 6; **ws 1, 3 and 5 had no key at all**, and
+> `Alt+4/5/6` was no rescue because it binds the even half too. Not a corner
+> case: ws 1 is the terminal and ws 3 is Teams + Slack, so the two workspaces
+> reached for most often were the two that could not be reached. Found at a
+> café, with Ghostty sitting on ws 1 and no key able to get to it.
 
-**Por que seis workspaces e não três.** Uma tela mostra um workspace, então o
-par não tem mais nada a dizer e dobrar cada desktop num workspace só parece o
-movimento óbvio. É o errado: juntaria de volta o terminal e a IDE, que o layout
-de duas telas separa justamente porque dividir um workspace deixa a IDE com um
-terço de tela. Seis workspaces com um slot de app cada mantêm **cada app no
-mesmo número nos três layouts** — e é isso que torna fechar a tampa de graça: o
-`apply-layout.py` re-homeia janelas abertas quando o layout muda, e com os
-números idênticos dos dois lados ele não acha nada para mover.
+**Why six workspaces and not three.** One screen shows one workspace, so the
+pairing has nothing left to say and folding each desktop down to a single
+workspace looks like the obvious move. It is the wrong one: it would put the
+terminal and the IDE back together, which the two-screen layout separates
+precisely because sharing a workspace leaves the IDE a third of a screen. Six
+workspaces with one app slot each keep **every app on the same number across all
+three layouts** — and that is what makes closing the lid free: `apply-layout.py`
+re-homes open windows when the layout changes, and with identical numbers on
+both sides it finds nothing to move.
 
-**As regras de app não são copiadas, são herdadas.** O `layout-1mon.toml` declara
+**The app rules are not copied, they are inherited.** `layout-1mon.toml`
+declares
 
 ```toml
 # ---8<--- APP_RULES = layout-2mon.toml
 ```
 
-e o `apply-layout.py` vai buscar aquela seção no outro arquivo. Qual app mora em
-qual workspace é decisão sobre **apps**; quantos workspaces aparecem ao mesmo
-tempo é decisão sobre **telas**. Só a segunda muda quando a tampa fecha, então
-instalar um app novo continua sendo editar **um** arquivo — `layout-2mon.toml` —
-e nada mais. A herança é de **um nível só** e o corpo da seção que herda tem que
-ser comentário: as duas coisas são checadas, com erro na cara em vez de silêncio.
+and `apply-layout.py` fetches that section from the other file. Which app lives
+on which workspace is a decision about **apps**; how many workspaces are visible
+at once is a decision about **screens**. Only the second changes when the lid
+closes, so installing a new app is still editing **one** file —
+`layout-2mon.toml` — and nothing else. Inheritance is **one level only** and the
+body of an inheriting section must be comments: both are checked, and both fail
+loudly instead of silently.
 
-**O terminal e o IDE ficam em colunas diferentes de propósito.** Dividindo um
-workspace, o IDE ficava com um terço da tela, e o reflexo era apertar `Alt+F`
-para compensar — que nunca segura, porque o `fullscreen` do AeroSpace significa
-"a janela em foco ocupa o workspace", não um estado de maximizado. Não há ajuste
-para torná-lo persistente: conferi todas as chaves de configuração do binário do
-0.21.3. Uma janela por workspace é a resposta que o bloco `[gaps]` já assumia.
+**The terminal and the IDE are on different columns on purpose.** Sharing a
+workspace left the IDE with a third of the screen, and the reflex was to press
+`Alt+F` to compensate — which never holds, because AeroSpace's `fullscreen`
+means "the focused window fills the workspace", not a maximised state. There is
+no setting to make it persistent: I checked every configuration key in the
+0.21.3 binary. One window per workspace is the answer the `[gaps]` block already
+assumed.
 
-> **Resolução das três telas — a conta é sempre pontos por polegada.** Nenhuma
-> delas roda no padrão que o macOS escolhe sozinho, e o motivo é o mesmo nas
-> três: a densidade da tela do MacBook (~125 ppi) é a referência, e o padrão do
-> macOS erra para os dois lados dependendo do tamanho do painel.
+> **Resolution on the three screens — the sum is always dots per inch.** None of
+> them runs at the default macOS picks on its own, and the reason is the same
+> for all three: the MacBook screen's density (~125 ppi) is the reference, and
+> macOS's default errs in both directions depending on the panel size.
 >
-> | Tela | Modo | ppi efetivo | Por quê |
+> | Screen | Mode | effective ppi | Why |
 > |---|---|---|---|
-> | **Alienware AW3225QF** 32" 4K | 3008×1692 HiDPI @240Hz | ~109 | o padrão era 1920×1080 (~70 ppi) — UI com quase o dobro do tamanho da do MacBook |
-> | **Mancer TE-3217G** 24" 2K | 1440×2560 retrato, 1:1 | ~123 | nativo já casa com o MacBook; HiDPI aqui cortaria a área útil pela metade |
-> | **ARZOPA** 16" portátil | 1920×1200 HiDPI | ~141 | o macOS só expunha até 1280×800 (~94 ppi), menos área que o MacBook apesar da tela maior |
+> | **Alienware AW3225QF** 32" 4K | 3008×1692 HiDPI @240Hz | ~109 | the default was 1920×1080 (~70 ppi) — UI at nearly twice the MacBook's size |
+> | **Mancer TE-3217G** 24" 2K | 1440×2560 portrait, 1:1 | ~123 | native already matches the MacBook; HiDPI here would halve the usable area |
+> | **ARZOPA** 16" portable | 1920×1200 HiDPI | ~141 | macOS only exposed up to 1280×800 (~94 ppi), less area than the MacBook despite the bigger screen |
 >
 > ```sh
 > betterdisplaycli set --namelike=AW3225QF --resolution=3008x1692 --hiDPI=on
 > betterdisplaycli set --namelike=ARZOPA   --resolution=1920x1200 --hiDPI=on
 > ```
 >
-> **No Alienware o HiDPI não é opcional.** É um painel QD-OLED, cujo subpixel é
-> triangular em vez de listrado — texto renderizado em 1:1 sai com franja
-> colorida nas bordas. O modo escalado renderiza no dobro e reduz, e é o que
-> mantém o texto limpo. Os 240Hz sobrevivem à escala.
+> **On the Alienware, HiDPI is not optional.** It is a QD-OLED panel, whose
+> subpixel is triangular rather than striped — text rendered at 1:1 comes out
+> with colour fringing on the edges. The scaled mode renders at double and
+> downsamples, and that is what keeps the text clean. The 240Hz survives the
+> scaling.
 >
-> Pedi 3200×1800 e o macOS encaixou em **3008×1692**: 3200 não está na lista que
-> este painel expõe. É o vizinho, e a diferença de densidade é de ~7 ppi.
+> I asked for 3200×1800 and macOS settled on **3008×1692**: 3200 is not in the
+> list this panel exposes. It is the neighbour, and the density difference is
+> ~7 ppi.
 >
-> **O ARZOPA foi escolha deliberada contra a minha recomendação inicial** de
-> igualar densidade (1600×1000, ~118 ppi): UI corporativa densa — Domo, VID
-> Central e afins — precisa de largura, e cortar conteúdo custa mais que texto
-> pequeno. Se um dia pesar na vista, `--resolution=1600x1000` desfaz.
+> **The ARZOPA was a deliberate choice against my initial recommendation** of
+> matching density (1600×1000, ~118 ppi): dense corporate UI — Domo, VID Central
+> and the like — needs width, and cutting content costs more than small text. If
+> it ever strains the eyes, `--resolution=1600x1000` undoes it.
 >
-> **O Mancer trava em 72Hz** nessa resolução — é o teto que o painel oferece
-> pela conexão atual, não uma configuração. Para uma tela de terminal e chat não
-> incomoda; se um dia incomodar, o suspeito é o cabo/hub antes do monitor.
+> **The Mancer caps at 72Hz** at that resolution — it is the ceiling the panel
+> offers over the current connection, not a setting. For a terminal and chat
+> screen it does not bother; if it ever does, the suspect is the cable/hub
+> before the monitor.
 >
-> Nada disso vive no repo: são preferências do BetterDisplay, e o `defaults.sh`
-> não reproduz. Em máquina nova o `brew bundle` instala o app e os modos são
-> refeitos à mão. Vale ligar *Protect resolution* no menu do app para o macOS
-> não reverter ao reconectar.
+> None of this lives in the repo: they are BetterDisplay preferences, and
+> `defaults.sh` does not reproduce them. On a new machine `brew bundle` installs
+> the app and the modes are redone by hand. Worth turning on *Protect
+> resolution* in the app's menu so macOS does not revert on reconnect.
 >
-> **Não confie no `get` dessa chave.** O CLI 4.3.6 devolve uma string de
-> interpolação quebrada (`true ? ON : OFF)`) e o valor é **constante**: mandar
-> `--protectResolution=off` e reler continua dando `true`. Pior, `=false` é
-> rejeitado com `Failed.` enquanto `=off` e `=0` passam calados, então dá para
-> desligar a proteção achando que não desligou. Quem responde de verdade é o
-> plist:
+> **Do not trust that key's `get`.** CLI 4.3.6 returns a broken interpolation
+> string (`true ? ON : OFF)`) and the value is **constant**: sending
+> `--protectResolution=off` and reading it back still gives `true`. Worse,
+> `=false` is rejected with `Failed.` while `=off` and `=0` pass silently, so
+> you can turn the protection off believing you did not. What actually answers
+> is the plist:
 >
 > ```sh
 > defaults read pro.betterdisplay.BetterDisplay | grep protectResolution
@@ -635,406 +660,416 @@ para torná-lo persistente: conferi todas as chaves de configuração do binári
 > "protectResolution@Display:5" = "1440x2560 LoDPI";   # Mancer
 > ```
 >
-> Não existe booleano de liga/desliga: **a presença da string é o estado
-> ligado**, e ela guarda o modo fixado. O `@Display:N` é o `tagID` do
-> BetterDisplay, **não** o `displayID` — os dois se cruzam entre painéis. Para
-> saber quem é quem, `betterdisplaycli get --identifiers`, ou ache o built-in
-> pelo `builtIn@Display:N = 1`.
+> There is no on/off boolean: **the presence of the string is the on state**,
+> and it holds the pinned mode. The `@Display:N` is BetterDisplay's `tagID`,
+> **not** the `displayID` — the two cross over between panels. To tell which is
+> which, `betterdisplaycli get --identifiers`, or find the built-in by
+> `builtIn@Display:N = 1`.
 >
-> O mesmo vale para o **refresh rate**: `--protectRefreshRate=on` fixa o valor
-> atual e grava `protectRefreshRate@Display:4 = 240Hz`. Vale ligar junto com a
-> resolução — é o mesmo tipo de reversão no reconectar.
+> The same goes for the **refresh rate**: `--protectRefreshRate=on` pins the
+> current value and writes `protectRefreshRate@Display:4 = 240Hz`. Worth turning
+> on alongside the resolution — it is the same kind of revert on reconnect.
 
-> **Brilho: o Alienware aceita DDC, o Mancer não.** Em clamshell as teclas de
-> brilho não têm mais a tela do MacBook para controlar, e o que resolve é o
-> BetterDisplay falar DDC com o monitor. Testado nos dois, em 2026-09-08:
+> **Brightness: the Alienware accepts DDC, the Mancer does not.** In clamshell
+> the brightness keys no longer have the MacBook's screen to control, and what
+> solves it is BetterDisplay speaking DDC to the monitor. Tested on both, on
+> 2026-09-08:
 >
 > ```sh
 > betterdisplaycli get --namelike=AW3225QF --ddc --vcp=luminance   # -> 100
 > betterdisplaycli get --namelike=TE-3217G --ddc --vcp=luminance   # -> Failed.
 > ```
 >
-> No Alienware a escrita também funciona (`set --hardwareBrightness=70%` e a
-> leitura DDC volta `70`), e depois disso o plist ganha um controlador que antes
-> não existia: `value@hardwareBrightness-DDCController@Display:4`. É brilho de
-> **backlight** de verdade, não o overlay escuro do software dimming. O Mancer
-> fica só com `softwareBrightness`, que lava a imagem em vez de escurecê-la.
+> On the Alienware writing works too (`set --hardwareBrightness=70%` and the DDC
+> read comes back `70`), and after that the plist gains a controller that did
+> not exist before: `value@hardwareBrightness-DDCController@Display:4`. It is
+> real **backlight** brightness, not software dimming's dark overlay. The Mancer
+> is left with only `softwareBrightness`, which washes the image out instead of
+> darkening it.
 >
-> ⚠️ **`--hardwareBrightness=100%` não devolve exatamente 100.** Voltou `94` na
-> leitura DDC — a escala do BetterDisplay não mapeia 1:1 no VCP. Para um valor
-> exato, escreva o VCP direto:
+> ⚠️ **`--hardwareBrightness=100%` does not return exactly 100.** It came back
+> `94` on the DDC read — BetterDisplay's scale does not map 1:1 onto the VCP.
+> For an exact value, write the VCP directly:
 >
 > ```sh
 > betterdisplaycli set --namelike=AW3225QF --ddc --vcp=luminance --value=100
 > ```
 >
-> **Fazer as teclas F1/F2 controlarem o Alienware é passo de interface.** Não há
-> feature de CLI para isso (conferido no `betterdisplaycli help` inteiro, 313
-> linhas) e não existe chave no plist até ser ligado na primeira vez — é o painel
-> **Settings → Keyboard** do app. O DDC já está pronto embaixo; falta só mandar o
-> app interceptar as teclas.
+> **Making the F1/F2 keys control the Alienware is a UI step.** There is no CLI
+> feature for it (checked across the whole of `betterdisplaycli help`, 313
+> lines) and no key exists in the plist until it is turned on the first time —
+> it is the app's **Settings → Keyboard** panel. The DDC is already in place
+> underneath; all that is left is telling the app to intercept the keys.
 
-> **Trocar o monitor principal também tem CLI**, e é mais rápido que o Arrange…:
-> `betterdisplaycli set --namelike=AW3225QF --main=on`. Desfazer não existe —
-> só designando outra tela como principal.
+> **Changing the primary monitor has a CLI too**, and it is faster than
+> Arrange…: `betterdisplaycli set --namelike=AW3225QF --main=on`. There is no
+> undo — only designating another screen as primary.
 
-> **Com duas telas, a coluna C engole janelas.** Ela colapsa na mesma tela da
-> coluna B, então os ws 3/6/9 disputam o monitor principal com os ws 2/5/8 — e o
-> `Alt+1..3` termina mostrando a coluna B. Uma janela que caia na coluna C
-> simplesmente some de vista, e parece que os monitores pararam de trocar juntos.
+> **With two screens, column C swallows windows.** It collapses onto the same
+> screen as column B, so ws 3/6/9 fight the primary monitor with ws 2/5/8 — and
+> `Alt+1..3` ends up showing column B. A window that lands in column C simply
+> vanishes from view, and it looks like the monitors stopped switching together.
 >
-> Só chega lá app **sem regra**, que nasce onde o foco estiver. Se um app sumir
-> assim, o conserto não é mexer nas colunas — é dar uma regra a ele em
-> `on-window-detected`. Foi o caso do Hoppscotch, hoje fixado no ws 1, e do
-> Notion, fixado no ws 5 em 2026-09-10.
+> Only an app **with no rule** gets there, since it is born wherever the focus
+> is. If an app disappears like that, the fix is not to touch the columns — it
+> is to give it a rule in `on-window-detected`. That was the case for
+> Hoppscotch, now pinned to ws 1, and for Notion, pinned to ws 5 on 2026-09-10.
 
-> **`on-window-detected` dispara em janela que NASCE, e desminimizar não é
-> nascer.** Descoberto testando a regra nova do Notion: ele estava rodando com a
-> única janela minimizada — invisível para o `aerospace list-windows`, porque
-> janela minimizada sai da árvore —, e o `open -a Notion` **restaurou** aquela
-> janela em vez de criar uma. Ela voltou no workspace onde o foco estava, não no
-> ws 5, e a regra pareceu quebrada. Depois de um `quit` de verdade e um relaunch,
-> foi para o ws 5 na primeira tentativa.
+> **`on-window-detected` fires on a window that is BORN, and un-minimising is
+> not being born.** Discovered while testing Notion's new rule: it was running
+> with its only window minimised — invisible to `aerospace list-windows`,
+> because a minimised window leaves the tree — and `open -a Notion` **restored**
+> that window instead of creating one. It came back on whichever workspace the
+> focus was on, not ws 5, and the rule looked broken. After a real `quit` and a
+> relaunch, it went to ws 5 on the first try.
 >
-> Vale para o `Alt+Shift+M` também, que é exatamente essa restauração: ele traz a
-> janela de volta, mas não a re-roteia. Se ela voltar no lugar errado, é
-> `Alt+Shift+<n>` para empurrar — não é a regra que falhou.
+> It applies to `Alt+Shift+M` too, which is exactly that restoration: it brings
+> the window back, but does not re-route it. If it comes back in the wrong
+> place, `Alt+Shift+<n>` pushes it — the rule did not fail.
 
-> **Qual tela é a principal decide onde o trabalho acontece**, porque a coluna B
-> é `main` e a A é `secondary`. Trocar o monitor principal inverte as duas
-> colunas automaticamente, sem editar nada — foi assim que o ARZOPA passou de
-> painel lateral a tela de trabalho, e é o que faz o mesmo `layout-2mon.toml`
-> servir a mesa e a rua.
+> **Which screen is the primary decides where the work happens**, because column
+> B is `main` and A is `secondary`. Changing the primary monitor flips the two
+> columns automatically, with nothing to edit — that is how the ARZOPA went from
+> side panel to work screen, and it is what lets the same `layout-2mon.toml`
+> serve both the desk and the road.
 >
-> Troca-se o principal em System Settings → Displays → **Arrange…**, arrastando
-> a barra branca. Não é `defaults write`, então o `defaults.sh` não reproduz.
+> You change the primary in System Settings → Displays → **Arrange…**, dragging
+> the white bar. It is not a `defaults write`, so `defaults.sh` does not
+> reproduce it.
 >
-> **Com duas telas nenhum monitor é nomeado**, e é de propósito: `^arzopa$` na
-> coluna A colidiria com a coluna B no instante em que o ARZOPA virasse
-> principal, e os workspaces empilhariam numa tela só. Já aconteceu duas vezes.
+> **With two screens no monitor is named**, and that is deliberate: `^arzopa$`
+> in column A would collide with column B the moment the ARZOPA became the
+> primary, and the workspaces would pile onto a single screen. It has happened
+> twice.
 >
-> **Com três telas um nome é inevitável.** `main` e `secondary` particionam duas
-> telas exatamente, mas na terceira o `secondary` casa com *duas* e não sabe
-> separar a coluna A da C. A regra que mantém isso seguro: **só nomear tela que
-> nunca é a principal**. Por isso o `layout-3mon.toml` nomeia o Mancer (coluna
-> A) e o `built-in` (coluna C), e deixa o Alienware sem nome — o que faz dele o
-> principal designado. Mover a menu bar para outra tela exige mover os nomes
-> junto.
+> **With three screens a name is unavoidable.** `main` and `secondary` partition
+> two screens exactly, but on the third, `secondary` matches *two* and cannot
+> tell column A from column C. The rule that keeps it safe: **only ever name a
+> screen that is never the primary one**. That is why `layout-3mon.toml` names
+> the Mancer (column A) and `built-in` (column C), and leaves the Alienware
+> unnamed — which makes it the designated primary. Moving the menu bar to
+> another screen means moving the names with it.
 >
-> Visto ao vivo em 2026-09-08, nas duas pontas. Com a tampa aberta e o MacBook
-> ainda principal, os ws 2/5/8 **e** 3/6/9 caíram todos no built-in e o
-> Alienware ficou sem workspace nenhum — exatamente a colisão descrita acima.
-> Fechada a tampa e rodado o `apply-layout.py`, o par ficou limpo:
+> Seen live on 2026-09-08, at both ends. With the lid open and the MacBook still
+> primary, ws 2/5/8 **and** 3/6/9 all landed on the built-in and the Alienware
+> got no workspace at all — exactly the collision described above. With the lid
+> closed and `apply-layout.py` run, the pair came out clean:
 >
 > ```
-> 1,3,5 -> TE-3217G     (coluna A, retrato)
-> 2,4,6 -> AW3225QF     (coluna B, principal)
+> 1,3,5 -> TE-3217G     (column A, portrait)
+> 2,4,6 -> AW3225QF     (column B, primary)
 > ```
 >
-> O `layout-2mon.toml` não precisou de **uma linha** editada para o hardware
-> novo. É o retorno de ter escrito as colunas por papel.
+> `layout-2mon.toml` did not need **one line** edited for the new hardware. That
+> is the return on having written the columns by role.
 
-Abrir um app **te leva junto** até o workspace dele
-(`--focus-follows-window` em todas as regras). Sem isso, clicar no Dock movia a
-janela para um workspace possivelmente invisível e você ficava olhando para a
-tela antiga achando que o app não abriu.
+Opening an app **takes you with it** to its workspace
+(`--focus-follows-window` on every rule). Without that, clicking the Dock moved
+the window to a possibly invisible workspace and you sat staring at the old
+screen thinking the app had not opened.
 
-Duas consequências disso, ambas esperadas:
+Two consequences of that, both expected:
 
-Abrir um app **quebra o trio** — só a tela daquele workspace muda, as outras
-duas ficam onde estavam. Um `Alt+1..3` depois re-sincroniza as três.
+Opening an app **breaks the trio** — only that workspace's screen changes, the
+other two stay where they were. An `Alt+1..3` afterwards re-syncs all three.
 
-No **login**, com vários apps restaurando de uma vez, cada um que casa com uma
-regra puxa o foco quando sua janela aparece. Os primeiros segundos pulam entre
-telas antes de assentar no último que subiu.
+At **login**, with several apps restoring at once, each one matching a rule
+pulls the focus when its window appears. The first few seconds jump between
+screens before settling on the last one to come up.
 
-A regra só dispara quando a janela **nasce** — app já aberto não se muda sozinho
-depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
+The rule only fires when the window is **born** — an app that is already open
+does not move itself after a `reload-config`. Use `Alt+Shift+<n>` once, or close
+and reopen it.
 
-> **Trocar de layout é a exceção, desde 2026-09-08.** O `apply-layout.py`
-> re-aloja as janelas já abertas quando — e **somente quando** — o layout muda de
-> fato. Sem isso, abrir ou fechar a tampa deixava cada app no workspace que o
-> layout *anterior* tinha dado: o Safari aberto com a tampa levantada ia para o
-> ws 8 pela regra do `3mon`, e fechar a tampa o deixava lá — num workspace que o
-> `2mon` nem sequer mapeia tecla, então **invisível e inalcançável pelo teclado**.
-> Parecia janela que "não expande".
+> **Switching layouts is the exception, as of 2026-09-08.** `apply-layout.py`
+> re-homes already-open windows when — and **only when** — the layout actually
+> changes. Without that, opening or closing the lid left each app on the
+> workspace the *previous* layout had given it: Safari opened with the lid up
+> went to ws 8 by the `3mon` rule, and closing the lid left it there — on a
+> workspace `2mon` does not even map a key for, so **invisible and unreachable
+> from the keyboard**. It looked like a window that "would not expand".
 >
-> O gatilho é a mudança de layout, não a execução do script: rodar
-> `apply-layout.py` de novo sem trocar de layout não mexe em nada, para não
-> desfazer o que você posicionou à mão. Ele imprime o que moveu:
+> The trigger is the layout changing, not the script running: running
+> `apply-layout.py` again without switching layouts touches nothing, so it does
+> not undo what you positioned by hand. It prints what it moved:
 >
 > ```
 > apply-layout: com.apple.Safari 6 -> 8
 > ```
 >
-> `--no-rehome` desliga o comportamento numa execução. E o re-alojamento não usa
-> `--focus-follows-window` de propósito: as regras usam para abrir um app te
-> levar junto, mas aqui uma dúzia de janelas pode mover de uma vez, e seguir cada
-> uma deixaria o foco em lugar aleatório.
+> `--no-rehome` turns the behaviour off for one run. And the re-homing
+> deliberately does not use `--focus-follows-window`: the rules use it so that
+> opening an app takes you with it, but here a dozen windows may move at once,
+> and following each one would leave the focus somewhere random.
 
-> **Fechar saiu do `Alt+W` em 2026-09-10.** O Option é a tecla de acento deste
-> teclado, então escrever português é morar em cima do modificador que fecha
-> janela — e como o fechar leva o app junto (bloco abaixo), um escorregão em
-> "ação" derrubava a sessão inteira. Casar com o `win+w` do GlazeWM não vale
-> isso.
+> **Closing moved off `Alt+W` on 2026-09-10.** Option is this keyboard's accent
+> key, so writing Portuguese means living on top of the modifier that closes
+> windows — and since closing takes the app with it (block below), one slip in
+> "ação" brought the whole session down. Matching GlazeWM's `win+w` is not worth
+> that.
 >
-> **O `Ctrl+W` custa mais caro do que o `Alt+W` que ele substitui**, e é bom
-> saber disso antes de estranhar: o AeroSpace captura `Ctrl+W` globalmente do
-> mesmo jeito que captura `Alt`, então o zsh perde o `backward-kill-word` (o
-> `Ctrl+W` que existe em todo shell) e o Neovim perde o `Ctrl+W`, prefixo dos
-> comandos de janela. Se essa metade doer mais que a outra, o `Ctrl+Shift+W` não
-> é de ninguém e a troca é uma linha em `aerospace.base.toml`.
+> **`Ctrl+W` costs more than the `Alt+W` it replaces**, and it is good to know
+> before it surprises you: AeroSpace grabs `Ctrl+W` globally the same way it
+> grabs `Alt`, so zsh loses `backward-kill-word` (the `Ctrl+W` every shell has)
+> and Neovim loses `Ctrl+W`, the prefix for window commands. If that half hurts
+> more than the other, `Ctrl+Shift+W` belongs to nobody and the swap is one line
+> in `aerospace.base.toml`.
 >
-> O `Alt+M` continua cobrando o `copy-prev-shell-word` do zsh. O `Alt+.`
-> (inserir último argumento), o realmente usado no dia a dia, segue intacto.
+> `Alt+M` still costs zsh's `copy-prev-shell-word`. `Alt+.` (insert last
+> argument), the one actually used day to day, is untouched.
 
-> **Minimizar tira a janela da árvore.** Ela passa a viver no Dock, o AeroSpace
-> deixa de enxergá-la e o `Alt` + `` ` `` não a encontra, porque ele só percorre
-> o que ainda está na árvore. O `Alt+Shift+M` é a volta (bloco abaixo). Se a
-> intenção era só tirar a janela da frente, `Alt+Shift+F` (soltar como floating)
-> costuma ser o que você queria.
+> **Minimising takes the window out of the tree.** It goes to live in the Dock,
+> AeroSpace stops seeing it, and `Alt` + `` ` `` does not find it, because that
+> only walks what is still in the tree. `Alt+Shift+M` is the way back (block
+> below). If the intention was just to get the window out of the way,
+> `Alt+Shift+F` (pop it out as floating) is usually what you wanted.
 
-> ⚠️ **"Dei `Cmd+Tab`, escolhi o app e nada aconteceu."** Não é o AeroSpace
-> comendo a tecla: o `Cmd+Tab` do macOS ativa um **app**, nunca uma janela. Se
-> o app não tem janela para mostrar, ele vira frontmost e a tela não muda. O
-> ícone do Dock funciona porque um clique nele manda um evento de *reopen*, que
-> é outra coisa — pede ao app que restaure ou crie uma janela.
+> ⚠️ **"I pressed `Cmd+Tab`, picked the app and nothing happened."** It is not
+> AeroSpace eating the key: macOS's `Cmd+Tab` activates an **app**, never a
+> window. If the app has no window to show, it becomes frontmost and the screen
+> does not change. The Dock icon works because a click on it sends a *reopen*
+> event, which is a different thing — it asks the app to restore or create a
+> window.
 >
-> Dois estados chegam nisso, e um app pode estar nos dois:
+> Two states lead there, and an app can be in both:
 >
-> - **janelas minimizadas** — o `Cmd+Tab` só restaura se você segurar `⌥` antes
->   de soltar o `⌘`. Esse truque é nativo e funciona sem nada instalado.
-> - **nenhuma janela** — um `Cmd+W` na última deixa o app vivo e vazio. Foi
->   assim que Finder e Claude foram pegos no diagnóstico. O `Ctrl+W` não produz
->   esse estado: o `--quit-if-last-window` leva o app junto.
+> - **minimised windows** — `Cmd+Tab` only restores them if you hold `⌥` before
+>   releasing `⌘`. That trick is native and works with nothing installed.
+> - **no windows** — a `Cmd+W` on the last one leaves the app alive and empty.
+>   That is how Finder and Claude were caught during the diagnosis. `Ctrl+W`
+>   does not produce that state: `--quit-if-last-window` takes the app with it.
 >
-> `Alt+Shift+M` resolve os dois com uma chamada só: `open -b <bundle-id>`, o
-> mesmo evento de *reopen* do clique no Dock. O tratamento padrão do AppKit para
-> ele é exatamente o que se quer — sem janela visível, desminimiza a última, ou
-> cria uma se não houver nenhuma. Testado em Spotify, Slack e Teams.
+> `Alt+Shift+M` solves both with a single call: `open -b <bundle-id>`, the same
+> *reopen* event as the Dock click. AppKit's default handling of it is exactly
+> what is wanted — with no visible window it un-minimises the last one, or
+> creates one if there is none. Tested on Spotify, Slack and Teams.
 >
-> É um script (`macos/aerospace/raise-frontmost.sh`) só porque o AeroSpace não
-> tem comando para disparar isso. **Ele não toca no Accessibility de propósito:**
-> a primeira versão limpava o `AXMinimized` janela a janela pelo System Events,
-> funcionava, e deixava a tecla tão confiável quanto uma permissão que a gente
-> viu cair sozinha no meio da sessão (`osascript is not allowed assistive
-> access`, -25211). `lsappinfo` e `open` passam pelo LaunchServices, que não pede
-> nada.
+> It is a script (`macos/aerospace/raise-frontmost.sh`) only because AeroSpace
+> has no command to fire that. **It deliberately does not touch Accessibility:**
+> the first version cleared `AXMinimized` window by window through System
+> Events, worked, and left the key only as reliable as a permission we watched
+> drop out on its own mid-session (`osascript is not allowed assistive access`,
+> -25211). `lsappinfo` and `open` go through LaunchServices, which asks for
+> nothing.
 >
-> Onde a janela reaparece depende do caso: quando o `open -b` **cria** janela, a
-> regra de `on-window-detected` dispara e ela vai para o workspace de sempre;
-> quando só desminimiza, nada é criado, a regra fica calada, e ela já voltou
-> tanto no workspace da regra quanto no que estava visível. `Alt+Shift+<n>` move
-> se cair no lugar errado.
+> Where the window reappears depends on the case: when `open -b` **creates** a
+> window, the `on-window-detected` rule fires and it goes to its usual
+> workspace; when it only un-minimises, nothing is created, the rule stays
+> silent, and it has been seen coming back both on the rule's workspace and on
+> the visible one. `Alt+Shift+<n>` moves
+> it if it lands in the wrong place.
 
-> Vale para o AltTab também: janela **minimizada** ele não lista, porque o que
-> está no Dock não é janela que ele possa oferecer. Nesse caso o `Alt+Shift+M` é
-> o único caminho de volta.
+> It applies to AltTab as well: it does not list a **minimised** window, because
+> what sits in the Dock is not a window it can offer. In that case `Alt+Shift+M`
+> is the only way back.
 
-> **`Ctrl+W` encerra o app junto com a última janela** (`--quit-if-last-window`),
-> como no Windows e no Omarchy — e ao contrário da convenção do macOS, onde o
-> app fica vivo com a menu bar vazia. Foi escolha deliberada: app que você não
-> vê mas continua rodando é exatamente o estado que um tiling WM existe para
-> evitar.
+> **`Ctrl+W` quits the app along with the last window**
+> (`--quit-if-last-window`), as on Windows and in Omarchy — and contrary to the
+> macOS convention, where the app stays alive with an empty menu bar. It was a
+> deliberate choice: an app you cannot see but that keeps running is exactly the
+> state a tiling WM exists to avoid.
 >
-> O custo aparece nos apps cuja janela **é** a sessão: a última janela do
-> Ghostty leva os shells junto, e a última do browser encerra o browser. Quando
-> você quiser fechar só a janela e manter o app, `Cmd+W` continua ali.
+> The cost shows up in apps whose window **is** the session: Ghostty's last
+> window takes the shells with it, and the browser's last window quits the
+> browser. When you want to close only the window and keep the app, `Cmd+W` is
+> still there.
 
-> ⚠️ **O AeroSpace captura `Alt+<tecla>` globalmente**, antes do app em foco. Por
-> isso `Alt+C` **não** está mapeado — é do fzf. Confira o arquivo antes de
-> adicionar binding novo.
+> ⚠️ **AeroSpace grabs `Alt+<key>` globally**, before the focused app. That is
+> why `Alt+C` is **not** mapped — it belongs to fzf. Check the file before
+> adding a new binding.
 >
-> Vale igual para o `Ctrl+W`, o único binding aqui fora do `Alt`. Que fique o
-> único: o `Ctrl` é onde o terminal guarda tudo, e o `Alt` ao menos tinha teclas
-> sobrando.
+> The same goes for `Ctrl+W`, the only binding here outside `Alt`. Let it stay
+> the only one: `Ctrl` is where the terminal keeps everything, and `Alt` at
+> least had keys to spare.
 
-> **Monitor principal.** O display "principal" do macOS é o que tem a menu bar,
-> e por definição é o que está na origem `(0,0)`. Na mesa é o **AW3225QF**, não
-> a tela do MacBook; na rua é o **ARZOPA**. Troca-se em System Settings →
-> Displays → **Arrange…**, arrastando a barra branca para o monitor desejado —
-> as posições relativas das outras telas são preservadas. Não é um
-> `defaults write`, então o `defaults.sh` não reproduz isso: é passo manual em
-> máquina nova.
+> **Primary monitor.** macOS's "main" display is the one with the menu bar, and
+> by definition it is the one at origin `(0,0)`. At the desk it is the
+> **AW3225QF**, not the MacBook's screen; on the road it is the **ARZOPA**. You
+> change it in System Settings → Displays → **Arrange…**, dragging the white bar
+> to the desired monitor — the other screens' relative positions are preserved.
+> It is not a `defaults write`, so `defaults.sh` does not reproduce it: it is a
+> manual step on a new machine.
 >
-> O macOS guarda o arranjo **por configuração de telas**, e clamshell é uma
-> configuração diferente de tampa aberta — arrastar a barra branca com a tampa
-> aberta não decide nada sobre o modo fechado.
+> macOS stores the arrangement **per screen configuration**, and clamshell is a
+> different configuration from lid-open — dragging the white bar with the lid
+> open decides nothing about the closed mode.
 >
-> Na prática, fechar a tampa **já colocou a menu bar no Alienware sozinho**
-> (verificado em 2026-09-08): sem o built-in, o macOS promove uma das externas e
-> escolheu a de maior resolução. Não precisou de Arrange… nenhum. Só volte lá se
-> ele promover a errada.
+> In practice, closing the lid **already put the menu bar on the Alienware by
+> itself** (verified 2026-09-08): without the built-in, macOS promotes one of
+> the externals and picked the higher-resolution one. It needed no Arrange… at
+> all. Only go back there if it promotes the wrong one.
 
-> ⚠️ **"Displays have separate Spaces"** precisa estar desligado — com ele ligado
-> o macOS reposiciona janelas por conta própria e briga com qualquer tiler. O
-> `defaults.sh` já escreve isso (`com.apple.spaces spans-displays`), mas só vale
-> depois de um **logout**; a chave é lida no login.
+> ⚠️ **"Displays have separate Spaces"** must be off — with it on, macOS
+> repositions windows on its own and fights any tiler. `defaults.sh` already
+> writes it (`com.apple.spaces spans-displays`), but it only takes effect after
+> a **logout**; the key is read at login.
 
 ---
 
-## 7. Terminal — o que muda vindo do WSL
+## 7. Terminal — what changes coming from WSL
 
-A mudança mental maior: **acabou a fronteira Windows ↔ Linux**. Não existe mais
-`/mnt/c`, nem `\\wsl$`, nem X410, nem `clip.exe`. Um sistema Unix só, e o Finder
-enxerga os mesmos arquivos.
+The biggest mental shift: **the Windows ↔ Linux border is gone**. There is no
+more `/mnt/c`, no `\\wsl$`, no X410, no `clip.exe`. One Unix system, and Finder
+sees the same files.
 
 | WSL | macOS |
 |---|---|
 | `explorer.exe .` | `open .` |
 | `clip.exe` / `Get-Clipboard` | `pbcopy` / `pbpaste` |
-| `wslpath` | — desnecessário |
-| X410 + `DISPLAY` | — apps são nativos |
+| `wslpath` | — unnecessary |
+| X410 + `DISPLAY` | — apps are native |
 | `nala` / `apt` | `brew` |
 | `systemctl` | `launchctl` / `brew services` |
-| `~/.config` | `~/.config` **e** `~/Library/Application Support` |
-| `/etc/hosts` | `/etc/hosts` (igual) |
+| `~/.config` | `~/.config` **and** `~/Library/Application Support` |
+| `/etc/hosts` | `/etc/hosts` (same) |
 
 ```sh
-cat id_rsa.pub | pbcopy     # copiar para o clipboard do sistema
-pbpaste > arquivo.txt
-open -a "Google Chrome" .   # abrir algo com app específico
-say "build terminou"        # notificação sonora do fim de um build longo
+cat id_rsa.pub | pbcopy     # copy to the system clipboard
+pbpaste > file.txt
+open -a "Google Chrome" .   # open something with a specific app
+say "build finished"        # audible notice at the end of a long build
 ```
 
-**Neovim:** `clipboard=unnamedplus` passa a funcionar direto via `pbcopy`. Todo
-o hack de `clip.exe` no `init.lua` fica desligado sozinho (`vim.fn.has("wsl")`).
+**Neovim:** `clipboard=unnamedplus` starts working directly via `pbcopy`. The
+whole `clip.exe` hack in `init.lua` turns itself off (`vim.fn.has("wsl")`).
 
-**Ghostty:** `Cmd+D` split à direita, `Cmd+Shift+D` embaixo,
-`Cmd+Option+setas` navega, `Cmd+Shift+Enter` zoom, `` Cmd+` `` terminal
-drop-down, `Cmd+Shift+,` recarrega a config.
+**Ghostty:** `Cmd+D` split to the right, `Cmd+Shift+D` below,
+`Cmd+Option+arrows` to navigate, `Cmd+Shift+Enter` zoom, `` Cmd+` `` drop-down
+terminal, `Cmd+Shift+,` reloads the config.
 
-> ⚠️ **O APFS é case-insensitive por padrão.** `Arquivo.ts` e `arquivo.ts` são o
-> mesmo arquivo. Repo que tem os dois (acontece em projeto grande vindo do Linux)
-> vai dar conflito estranho no `git status`. Se bater nisso, crie um volume APFS
-> case-sensitive só para aquele projeto.
+> ⚠️ **APFS is case-insensitive by default.** `File.ts` and `file.ts` are the
+> same file. A repo that has both (it happens in a large project coming from
+> Linux) will produce strange conflicts in `git status`. If you hit that, create
+> a case-sensitive APFS volume just for that project.
 
 ---
 
-## 8. Pacotes — brew
+## 8. Packages — brew
 
-Um gerenciador só, no lugar de `nala` + `scoop`:
+A single manager, in place of `nala` + `scoop`:
 
 ```sh
 brew install ripgrep            # CLI (formula)
-brew install --cask raycast     # app .app (cask)
-brew search <termo>
-brew info <pacote>
-brew uninstall <pacote>
-brew update && brew upgrade     # atualiza tudo, CLI e apps
-brew services start postgresql  # daemons (o systemctl daqui)
-brew doctor                     # diagnóstico
-brew autoremove && brew cleanup # limpar órfãos e caches
+brew install --cask raycast     # .app app (cask)
+brew search <term>
+brew info <package>
+brew uninstall <package>
+brew update && brew upgrade     # updates everything, CLI and apps
+brew services start postgresql  # daemons (the systemctl of this world)
+brew doctor                     # diagnostics
+brew autoremove && brew cleanup # clear orphans and caches
 ```
 
-Tudo o que esta máquina tem está em `macos/Brewfile`. Instalou algo novo à mão?
-`brew bundle dump --file=macos/Brewfile --force` e commite.
+Everything this machine has is in `macos/Brewfile`. Installed something new by
+hand? `brew bundle dump --file=macos/Brewfile --force` and commit it.
 
 ---
 
-## 9. Dev em Apple Silicon
+## 9. Dev on Apple Silicon
 
-| Ponto | O que saber |
+| Point | What to know |
 |---|---|
-| Prefixo do brew | `/opt/homebrew`, **não** `/usr/local` (esse é Intel) |
-| Imagens Docker amd64 | funcionam via Rosetta no OrbStack; force com `--platform linux/amd64` |
-| **Fim do Rosetta** | some no macOS 28 (out/2027). A exceção mantida é binário Intel **dentro de VM Linux** — ou seja, seus containers amd64 sobrevivem; apps Intel nativos, não. Prefira sempre build Apple Silicon |
-| `docker` / `docker compose` | idênticos — o OrbStack fornece o mesmo CLI |
-| asdf: node, java, go, kotlin, dotnet | têm build arm64 nativo, instalam normal |
-| **asdf: python 3.6.2 / 2.7.13** | **não compilam aqui** — anteriores ao Apple Silicon. Fixe um 3.x atual |
-| JetBrains | via Toolbox, build "Apple Silicon" (não a Intel) |
-| Java | temurin arm64; se um projeto exigir x86, `asdf` tem builds Intel via Rosetta |
-| Performance | 48 GB dá folga confortável para IDE + OrbStack + emulação amd64 simultâneos |
+| brew prefix | `/opt/homebrew`, **not** `/usr/local` (that one is Intel) |
+| amd64 Docker images | work via Rosetta on OrbStack; force it with `--platform linux/amd64` |
+| **End of Rosetta** | it goes away in macOS 28 (Oct 2027). The exception kept is an Intel binary **inside a Linux VM** — that is, your amd64 containers survive; native Intel apps do not. Always prefer an Apple Silicon build |
+| `docker` / `docker compose` | identical — OrbStack provides the same CLI |
+| asdf: node, java, go, kotlin, dotnet | have native arm64 builds, install normally |
+| **asdf: python 3.6.2 / 2.7.13** | **do not compile here** — they predate Apple Silicon. Pin a current 3.x |
+| JetBrains | via Toolbox, the "Apple Silicon" build (not the Intel one) |
+| Java | temurin arm64; if a project requires x86, `asdf` has Intel builds via Rosetta |
+| Performance | 48 GB leaves comfortable room for IDE + OrbStack + amd64 emulation at once |
 
 ---
 
-## 10. "Por que não funciona" — permissões
+## 10. "Why does it not work" — permissions
 
-macOS bloqueia por padrão, e frequentemente **sem mensagem de erro**. Os três
-lugares em System Settings → Privacy & Security:
+macOS blocks by default, and frequently **with no error message**. The three
+places in System Settings → Privacy & Security:
 
-| Permissão | Quem precisa | Sintoma sem ela |
+| Permission | Who needs it | Symptom without it |
 |---|---|---|
-| **Accessibility** | AeroSpace, Raycast, AltTab, Karabiner | app abre e simplesmente não faz nada |
-| **Screen & System Audio Recording** | AltTab | lista as janelas, mas sem título nem miniatura |
-| **Full Disk Access** | Terminal/Ghostty, backup | "Operation not permitted" em `~/Library`, Mail, etc. |
-| **Input Monitoring** | Karabiner | teclas não são capturadas |
+| **Accessibility** | AeroSpace, Raycast, AltTab, Karabiner | the app opens and simply does nothing |
+| **Screen & System Audio Recording** | AltTab | lists the windows, but with no title or thumbnail |
+| **Full Disk Access** | Terminal/Ghostty, backup | "Operation not permitted" in `~/Library`, Mail, etc. |
+| **Input Monitoring** | Karabiner | keys are not captured |
 
-**Gatekeeper**: app baixado fora da App Store dá "não pode ser aberto".
+**Gatekeeper**: an app downloaded outside the App Store gives "cannot be
+opened".
 
-> ⚠️ O truque de **botão direito → Open** foi **removido no macOS Sequoia** e
-> continua removido no Tahoe 26. Todo tutorial que ensina isso está desatualizado.
+> ⚠️ The **right-click → Open** trick was **removed in macOS Sequoia** and is
+> still removed in Tahoe 26. Every tutorial that teaches it is out of date.
 
-O caminho atual: **System Settings → Privacy & Security** → role até **Security**
-→ **Open Anyway**. Esse botão só aparece por **~1 hora** depois da tentativa
-bloqueada; se sumiu, tente abrir o app de novo e volte lá.
+The current path: **System Settings → Privacy & Security** → scroll to
+**Security** → **Open Anyway**. That button only appears for **~1 hour** after
+the blocked attempt; if it is gone, try opening the app again and go back there.
 
-Via CLI: `xattr -d com.apple.quarantine /Applications/App.app`. Apps instalados
-com `brew install --cask` já vêm sem quarentena.
+Via CLI: `xattr -d com.apple.quarantine /Applications/App.app`. Apps installed
+with `brew install --cask` come without quarantine already.
 
 ---
 
-## 11. Backup e segurança
+## 11. Backup and security
 
-| Item | Ação |
+| Item | Action |
 |---|---|
-| **FileVault** | ligue no dia 1 (Privacy & Security). Disco sem cripto em laptop de trabalho é risco |
-| **Time Machine** | um SSD externo. É o backup mais indolor que existe — restaura a máquina inteira |
-| **Touch ID para `sudo`** | já feito pelo `defaults.sh` via `/etc/pam.d/sudo_local` |
-| **Find My Mac** | ligue junto com o Apple Account |
-| **Senha de firmware** | opcional; Apple Silicon já protege bem com FileVault + Secure Enclave |
+| **FileVault** | turn it on day 1 (Privacy & Security). An unencrypted disk in a work laptop is a risk |
+| **Time Machine** | an external SSD. It is the most painless backup there is — it restores the whole machine |
+| **Touch ID for `sudo`** | already done by `defaults.sh` via `/etc/pam.d/sudo_local` |
+| **Find My Mac** | turn it on along with the Apple Account |
+| **Firmware password** | optional; Apple Silicon already protects well with FileVault + Secure Enclave |
 
-O `sudo_local` sobrevive a update de sistema, diferente de editar `/etc/pam.d/sudo`.
+`sudo_local` survives a system update, unlike editing `/etc/pam.d/sudo`.
 
 ---
 
-## 12. Equivalências do seu stack Windows
+## 12. Equivalents for your Windows stack
 
 | Windows | macOS |
 |---|---|
 | Windows Terminal | **Ghostty** |
-| PowerShell | zsh (o mesmo do WSL) |
+| PowerShell | zsh (the same one as WSL) |
 | Flow Launcher | **Raycast** |
 | Ditto | **Maccy** |
-| Windhawk / TranslucentTB | nativo — `background-blur = macos-glass-regular` no Ghostty |
-| FancyZones / Win+setas | **AeroSpace** |
-| Alt+Tab | **AeroSpace** — `Alt` + `` ` `` cicla as janelas do workspace; `Cmd+Tab` segue o switcher de apps do macOS |
+| Windhawk / TranslucentTB | native — `background-blur = macos-glass-regular` in Ghostty |
+| FancyZones / Win+arrows | **AeroSpace** |
+| Alt+Tab | **AltTab** — per-window switcher on `Alt+Tab`; `Alt` + `` ` `` cycles this workspace's windows in AeroSpace, and `Cmd+Tab` stays macOS's per-app switcher |
 | Scoop | `brew --cask` |
 | Nala / apt | `brew` |
 | Docker Desktop | **OrbStack** |
-| Registro do Windows | `defaults write` (veja `macos/defaults.sh`) |
-| Gerenciador de Tarefas | Activity Monitor + **Stats** na menu bar |
-| Bibata cursor | ❌ macOS não tem tema de cursor — só tamanho/contraste em Accessibility |
+| Windows registry | `defaults write` (see `macos/defaults.sh`) |
+| Task Manager | Activity Monitor + **Stats** in the menu bar |
+| Bibata cursor | ❌ macOS has no cursor theme — only size/contrast under Accessibility |
 
 ---
 
-## 13. Plano de 4 semanas
+## 13. The 4-week plan
 
-**Semana 1 — não quebrar nada.** Rode `bootstrap.sh` e `defaults.sh`, faça
-logout, conceda as permissões de Accessibility, valide `ssh -T git@github.com` e
-`git clone` nos dois remotes. Use `Cmd+Space` (Raycast) para tudo. Só isso.
+**Week 1 — do not break anything.** Run `bootstrap.sh` and `defaults.sh`, log
+out, grant the Accessibility permissions, validate `ssh -T git@github.com` and
+`git clone` on both remotes. Use `Cmd+Space` (Raycast) for everything. That is
+all.
 
-**Semana 2 — mãos.** Decore a tabela da seção 2, especialmente `Cmd+←/→`,
-`Fn+Delete` e `Cmd+Q` vs `Cmd+W`. Ative Caps Lock → Esc. Aprenda os 4 gestos de
-trackpad.
+**Week 2 — hands.** Memorise the table in section 2, especially `Cmd+←/→`,
+`Fn+Delete` and `Cmd+Q` vs `Cmd+W`. Enable Caps Lock → Esc. Learn the 4 trackpad
+gestures.
 
-**Semana 3 — janelas.** Só então ligue o AeroSpace para valer. Comece com
-`Alt+1..4` e `Alt+H/J/K/L`. O resto dos bindings vem depois.
+**Week 3 — windows.** Only then turn AeroSpace on for real. Start with
+`Alt+1..4` and `Alt+H/J/K/L`. The rest of the bindings come later.
 
-**Semana 4 — trabalho pesado.** Suba o ambiente Domo: OrbStack, `kubectl`,
-`tug`, `domo-admin`. Aqui você descobre o que ainda falta — e aí ajusta o
-`Brewfile` e commita.
+**Week 4 — heavy work.** Bring up the Domo environment: OrbStack, `kubectl`,
+`tug`, `domo-admin`. This is where you find out what is still missing — and then
+you adjust the `Brewfile` and commit.
 
 ---
 
-## Referência rápida
+## Quick reference
 
 ```sh
-./macos/bootstrap.sh        # setup da máquina (re-executável)
-./macos/defaults.sh         # preferências do sistema
+./macos/bootstrap.sh        # machine setup (re-runnable)
+./macos/defaults.sh         # system preferences
 brew bundle --file=macos/Brewfile
 aerospace reload-config
 ghostty +list-themes
-defaults read com.apple.dock                 # ver config atual de um app
-defaults delete com.apple.dock <chave>       # reverter uma tweak
+defaults read com.apple.dock                 # see an app's current config
+defaults delete com.apple.dock <key>         # revert one tweak
 ```

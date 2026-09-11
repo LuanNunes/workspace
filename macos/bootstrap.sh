@@ -12,7 +12,7 @@
 #   ./macos/bootstrap.sh --dry-run all     # print every command, change NOTHING
 #
 # The long-form explanation of each step — what actually changes on disk, how to
-# verify it, and how to undo it — is in ../macos-setup-passo-a-passo.md
+# verify it, and how to undo it — is in ../macos-setup-step-by-step.md
 #
 # Everything is idempotent: re-running a step that is already done is a no-op.
 set -euo pipefail
@@ -416,7 +416,7 @@ Then, separately:
   ./macos/defaults.sh      system preferences (see the file, it is commented)
 
 Long-form explanation of every step, with how to verify and how to undo:
-  macos-setup-passo-a-passo.md
+  macos-setup-step-by-step.md
 EOF
 }
 

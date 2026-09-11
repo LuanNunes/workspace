@@ -10,7 +10,7 @@ place, not snapshotted, so editing the repo is live.
 is about to do and why before doing it, so setting the machine up doubles as
 learning the OS. The long-form version of each step, with what changes on disk,
 how to verify it and how to undo it, is in
-[`../macos-setup-passo-a-passo.md`](../macos-setup-passo-a-passo.md).
+[`../macos-setup-step-by-step.md`](../macos-setup-step-by-step.md).
 
 ```sh
 git clone git@github-luan:LuanNunes/workspace.git ~/projects/resolveprogramming/workspace
