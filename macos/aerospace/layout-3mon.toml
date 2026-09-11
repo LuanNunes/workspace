@@ -156,6 +156,21 @@ alt-shift-9 = 'move-node-to-workspace 9 --focus-follows-window'
     { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 5 --focus-follows-window' },
     { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 5 --focus-follows-window' },
 
+    # Column A of the BROWSER desktop — the one slot that was empty in both
+    # layouts. Notion is reference material: you read it while doing something
+    # else, which is exactly what column A is for, and on the Mancer in portrait
+    # a document gets the full 1440x2560 instead of half a wide screen.
+    #
+    # NOT on ws 1 next to the terminal, which is where Hoppscotch ended up for
+    # the opposite reason: Hoppscotch is read alongside the thing making the
+    # request, and Notion is not tied to anything you are running.
+    #
+    # The bundle id really is `notion.id` — no reverse-DNS, no vendor prefix.
+    # Checked three ways (mdls, the Info.plist, and `aerospace list-apps` against
+    # the running app) precisely because it looks like a placeholder somebody
+    # forgot to replace, and per the note above a wrong id fails SILENTLY.
+    { if.app-id = 'notion.id',                   run = 'move-node-to-workspace 7 --focus-follows-window' },
+
     { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 8 --focus-follows-window' },
     { if.app-id = 'com.apple.Safari',            run = 'move-node-to-workspace 8 --focus-follows-window' },
     { if.app-id = 'org.mozilla.firefoxdeveloperedition', run = 'move-node-to-workspace 8 --focus-follows-window' },

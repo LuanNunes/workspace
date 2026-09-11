@@ -181,6 +181,7 @@ so everything stays in one place."
   run "$DOTFILES/macos/aerospace/apply-layout.py"
   link "$DOTFILES/macos/aerospace/aerospace.toml"  "$HOME/.config/aerospace/aerospace.toml"
   link "$DOTFILES/macos/aerospace/move-to-desktop.sh" "$HOME/.config/aerospace/move-to-desktop.sh"
+  link "$DOTFILES/macos/aerospace/raise-frontmost.sh" "$HOME/.config/aerospace/raise-frontmost.sh"
 
   # LinearMouse and Karabiner are the two entries linked as DIRECTORIES rather
   # than files, for the same reason: both rewrite their own JSON whenever you
@@ -209,7 +210,7 @@ Installs:
   ~/.config/aerospace/display-watch                        (symlink to the repo)
   ~/.config/aerospace/apply-layout.py                      (symlink to the repo)
   ~/Library/LaunchAgents/dev.luannunes.aerospace-display-watch.plist  (symlink)
-Logs to /tmp/aerospace-display-watch.log.
+Logs to ~/Library/Logs/aerospace-display-watch.log.
 
 To undo: launchctl bootout gui/\$UID/dev.luannunes.aerospace-display-watch
 and delete the two symlinks. The layout still works without it — you just go
@@ -247,7 +248,7 @@ back to running apply-layout.py by hand."
     run launchctl bootout "gui/$UID/$label"
   fi
   run launchctl bootstrap "gui/$UID" "$HOME/Library/LaunchAgents/$label.plist"
-  $DRY_RUN || ok "loaded — tail -f /tmp/aerospace-display-watch.log to watch it"
+  $DRY_RUN || ok "loaded — tail -f ~/Library/Logs/aerospace-display-watch.log to watch it"
 }
 
 # ===========================================================================
@@ -458,7 +459,7 @@ Steps that are NOT scripted, on purpose — they need your eyes:
                             Spaces settings are only read at login).
 
   2. Accessibility permission — System Settings → Privacy & Security →
-     Accessibility → add AeroSpace, Raycast, Karabiner-Elements.
+     Accessibility → add AeroSpace, Raycast, AltTab, Karabiner-Elements.
      macOS shows these apps NO error when the permission is missing; they just
      silently do nothing. It is the #1 "it's broken" on a new Mac.
 

@@ -78,23 +78,30 @@ A maior pegadinha para quem vem do Windows:
 A barra de menu no topo pertence ao **app em foco**, não à janela. Por isso ela
 muda quando você troca de app.
 
-> `Cmd+Tab` por app é irritante vindo do Windows, mas **fica como é**: ele é o
-> único switcher que te mostra os ícones dos apps na tela antes de você soltar a
-> tecla. Para "próxima janela **deste** workspace" existe `Alt` + `` ` ``
-> (AeroSpace, tabela na seção 7). `Alt+Tab` continua com o AeroSpace, para voltar
-> ao workspace anterior.
+> **`Alt+Tab` é o AltTab**, que é um switcher por **janela** — escolher já traz
+> a janela. O `Cmd+Tab` continua o nativo, por **app**, e é daí que vem o
+> "escolhi o app e ele não abriu": ativar um app não levanta janela nenhuma.
 >
-> **Duas coisas já tentadas e desfeitas, para não repetir:**
+> O AeroSpace **não mapeia nada** em `Alt+Tab` nem em `Alt+Shift+Tab`, de
+> propósito: esses dois são os atalhos padrão do AltTab, e o AeroSpace captura
+> antes do app, então qualquer binding ali comeria o switcher. Foi o que
+> acontecia — `Alt+Tab` era `workspace-back-and-forth` e trocava de workspace
+> quando você queria trocar de app. Esse comando saiu junto; se fizer falta,
+> ponha num chord que não seja tab.
 >
-> - **AltTab** (removido em 09/2026): pede **Screen & System Audio Recording** —
->   permissão de captura de tela, que é como o macOS lê título e miniatura de
->   janela alheia; o nome assustador vem do Sequoia, que juntou o áudio do
->   sistema no mesmo interruptor. E nem resolvia o pedido: não sabe filtrar por
->   workspace do AeroSpace, listava as janelas todas.
-> - **Remapear `Cmd+Tab` no Karabiner** para o ciclo do AeroSpace: funciona, mas
->   o Karabiner intercepta no nível do HID, então o macOS nunca vê a tecla e o
->   overlay com os ícones **some**. A troca vira um pulo cego. Desfeito no mesmo
->   dia.
+> Ele precisa de **Accessibility** para enxergar janela alheia, e de **Screen &
+> System Audio Recording** para mostrar título e miniatura (o nome assustador é
+> do Sequoia, que juntou o áudio do sistema no mesmo interruptor). Sem a
+> primeira ele abre e não faz nada.
+>
+> `Alt` + `` ` `` continua sendo o ciclo **deste** workspace (seção 6) — o
+> AltTab lista tudo, sem filtrar por workspace, e as duas coisas servem para
+> momentos diferentes.
+
+> **Uma coisa tentada e desfeita, para não repetir:** remapear `Cmd+Tab` no
+> **Karabiner** para o ciclo do AeroSpace. Funciona, mas o Karabiner intercepta
+> no nível do HID, então o macOS nunca vê a tecla e o overlay com os ícones
+> **some**. A troca vira um pulo cego. Desfeito no mesmo dia.
 
 ### ③ Por baixo é BSD, não Linux
 
@@ -355,17 +362,17 @@ Aqui `alt` = **Option**.
 | Atalho | Ação |
 |---|---|
 | `Alt+Shift+Enter` | focar o Ghostty (abre um se não houver) |
-| `Alt+H/J/K/L` | mover **foco** — atravessa os monitores |
-| `Alt+Shift+H/J/K/L` | mover a **janela** — idem |
+| `Alt+H/L` | mover **foco** na horizontal — atravessa os monitores |
+| `Alt+J/K` | mover **foco** na vertical — **fica** neste workspace |
+| `Alt+Shift+H/L` / `Alt+Shift+J/K` | mover a **janela**, mesmas fronteiras |
 | `Alt+A` | voltar à janela anterior (dentro do mesmo workspace) |
 | `Alt` + `` ` `` | **próxima** janela deste workspace |
 | `Alt+Shift` + `` ` `` | a anterior, mesma volta ao contrário |
 | `Alt+1/2/3` | trocar os **três monitores** de uma vez (desktop 1/2/3) |
 | `Alt+4..9` | mover **uma** tela só (quebra o trio de propósito) |
 | `Alt+Shift+1..9` | mandar janela para workspace |
-| `Alt+Ctrl+1/2/3` | mandar janela para outro **desktop**, na mesma tela |
-| `Alt+Tab` | voltar ao workspace anterior |
-| `Alt+Shift+Tab` | jogar o workspace para o próximo monitor |
+| `Alt+Ctrl+1/2/3` | mandar janela para outro **desktop**, na mesma coluna |
+| `Alt+Tab` / `Alt+Shift+Tab` | **AltTab**, não AeroSpace — ver acima |
 | `Alt+Ctrl+H/J/K/L` | mover o **foco** entre monitores |
 | `Alt+Ctrl+Shift+H/J/K/L` | mandar a janela para outro **monitor** |
 | `Alt+/` | alternar split horizontal/vertical |
@@ -374,6 +381,7 @@ Aqui `alt` = **Option**.
 | `Alt+Shift+F` | soltar a janela (floating) |
 | `Ctrl+W` | fechar a janela — e **encerrar o app** se for a última |
 | `Alt+M` | minimizar para o Dock |
+| `Alt+Shift+M` | trazer de volta as janelas do app em foco |
 | `Alt+-` / `Alt+=` | redimensionar (150px por toque) |
 | `Alt+Shift+;` | entrar no modo service (tabela abaixo) |
 
@@ -385,17 +393,27 @@ dá a volta no fim, enquanto `Alt+A` só alterna entre as **duas últimas**. O
 `--boundaries workspace` no binding é o que segura o ciclo dentro do workspace:
 sem ele o `dfs-next` atravessa para o workspace do monitor vizinho.
 
-O `Alt+H/J/K/L` **atravessa os monitores** desde 2026-09-10, e antes não: o
-`focus` do AeroSpace assume `--boundaries workspace` quando você não diz nada, e
-com isso o foco nunca saía da tela atual — num workspace com duas janelas ele só
-ficava pulando entre as duas, que é exatamente a cara de "o atalho está preso
-neste monitor". O `--boundaries all-monitors-outer-frame` nos bindings é o que
-solta, e o `move` ganhou o mesmo por simetria.
+O `Alt+H/L` **atravessa os monitores** desde 2026-09-10, e antes não: o `focus`
+do AeroSpace assume `--boundaries workspace` quando você não diz nada, e com isso
+o foco nunca saía da tela atual — num workspace com duas janelas ele só ficava
+pulando entre as duas, que é exatamente a cara de "o atalho está preso neste
+monitor". O `--boundaries all-monitors-outer-frame` nos bindings é o que solta,
+e o `move` ganhou o mesmo por simetria.
 
-Continua parando nas bordas externas da mesa, de propósito. Quando **não há**
-janela na direção que você quer — a tela vizinha está vazia, ou você só quer
-pular de painel — o atalho é o `Alt+Ctrl+H/J/K/L`, que age no monitor e dá a
-volta.
+**O `Alt+J/K` não recebeu isso, e no mesmo dia recebeu e foi desfeito.** As
+colunas desta mesa ficam lado a lado, então horizontal é o eixo que significa
+"próxima tela"; vertical só significa "a outra janela deste workspace". Com a
+tampa **aberta** a diferença aparece: o MacBook fica fisicamente **abaixo** dos
+externos, e aí o `Alt+J` parava de significar "a janela de baixo" e passava a
+significar "cair no painel do laptop". Pior no `Alt+Shift+J`, que jogava a
+janela para lá — e uma janela que muda de monitor muda de **workspace** junto,
+em silêncio, então o `Alt+1/2/3` seguinte mostrava ela num lugar que você não
+escolheu. No Mancer em retrato, com Teams em cima e Slack embaixo, é exatamente
+a tecla que você usa para ir de um para o outro.
+
+Nada se perdeu: viagem deliberada entre painéis é o `Alt+Ctrl+H/J/K/L`, que age
+no **monitor** e dá a volta. É também o que você quer quando **não há** janela
+na direção pedida — a tela vizinha está vazia, ou você só quer pular de painel.
 
 **Modo service** — `Alt+Shift+;` e depois **uma** tecla; toda opção já volta
 sozinha para o modo main:
@@ -443,7 +461,7 @@ um fragmento e recarrega:
 > de propósito): ela não muda a contagem de telas, então não pode mudar o layout.
 >
 > ```sh
-> tail -f /tmp/aerospace-display-watch.log
+> tail -f ~/Library/Logs/aerospace-display-watch.log
 > launchctl print gui/$UID/dev.luannunes.aerospace-display-watch
 > ```
 
@@ -456,7 +474,7 @@ ARZOPA. As colunas são por papel, então o mesmo arquivo serve os dois:
 |---|---|---|
 | **`Alt+1`** trabalho | ws 1 ← Ghostty, Toggl, Hoppscotch | **ws 2** ← IntelliJ, VS Code |
 | **`Alt+2`** chat | ws 3 ← Teams em cima, Slack embaixo | **ws 4** ← Claude, Codex, WhatsApp, Spotify |
-| **`Alt+3`** browsers | ws 5 — livre | **ws 6** ← Chrome, Safari |
+| **`Alt+3`** browsers | ws 5 ← Notion | **ws 6** ← Chrome, Safari |
 
 Na mesa a coluna A é o **Mancer em retrato** e a B é o **Alienware**; na rua a A
 é a tela do **MacBook** e a B é o **ARZOPA**. Nenhuma linha do arquivo muda entre
@@ -498,9 +516,11 @@ um para baixo.
 trio, com uma terceira coluna: `Alt+1` = ws 1/2/3, `Alt+2` = 4/5/6, `Alt+3` =
 7/8/9, e `Alt+4..9` como saída de emergência.
 
-Em ambos, as colunas são por **papel**: a coluna A é `secondary` (a tela que não
-é a principal) e a B é `main`. Trocar qual monitor é o principal inverte as
+Em ambos, as colunas são por **papel**: a coluna A é `secondary` (a tela que
+não é a principal) e a B é `main`. Trocar qual monitor é o principal inverte as
 colunas sozinho.
+
+
 
 **O terminal e o IDE ficam em colunas diferentes de propósito.** Dividindo um
 workspace, o IDE ficava com um terço da tela, e o reflexo era apertar `Alt+F`
@@ -613,7 +633,20 @@ para torná-lo persistente: conferi todas as chaves de configuração do binári
 >
 > Só chega lá app **sem regra**, que nasce onde o foco estiver. Se um app sumir
 > assim, o conserto não é mexer nas colunas — é dar uma regra a ele em
-> `on-window-detected`. Foi o caso do Hoppscotch, hoje fixado no ws 1.
+> `on-window-detected`. Foi o caso do Hoppscotch, hoje fixado no ws 1, e do
+> Notion, fixado no ws 5 em 2026-09-10.
+
+> **`on-window-detected` dispara em janela que NASCE, e desminimizar não é
+> nascer.** Descoberto testando a regra nova do Notion: ele estava rodando com a
+> única janela minimizada — invisível para o `aerospace list-windows`, porque
+> janela minimizada sai da árvore —, e o `open -a Notion` **restaurou** aquela
+> janela em vez de criar uma. Ela voltou no workspace onde o foco estava, não no
+> ws 5, e a regra pareceu quebrada. Depois de um `quit` de verdade e um relaunch,
+> foi para o ws 5 na primeira tentativa.
+>
+> Vale para o `Alt+Shift+M` também, que é exatamente essa restauração: ele traz a
+> janela de volta, mas não a re-roteia. Se ela voltar no lugar errado, é
+> `Alt+Shift+<n>` para empurrar — não é a regra que falhou.
 
 > **Qual tela é a principal decide onde o trabalho acontece**, porque a coluna B
 > é `main` e a A é `secondary`. Trocar o monitor principal inverte as duas
@@ -703,11 +736,48 @@ depois de um `reload-config`. Use `Alt+Shift+<n>` uma vez, ou feche e reabra.
 > O `Alt+M` continua cobrando o `copy-prev-shell-word` do zsh. O `Alt+.`
 > (inserir último argumento), o realmente usado no dia a dia, segue intacto.
 
-> **Minimizar é porta de mão única num tiling WM.** A janela sai da árvore do
-> workspace e passa a viver no Dock, e **não há atalho do AeroSpace que a traga
-> de volta** — use o Dock ou o `Cmd+Tab`. `Alt` + `` ` `` não serve: ele só
-> percorre janelas que ainda estão na árvore. Se a intenção era só tirar a janela da
-> frente, `Alt+Shift+F` (soltar como floating) costuma ser o que você queria.
+> **Minimizar tira a janela da árvore.** Ela passa a viver no Dock, o AeroSpace
+> deixa de enxergá-la e o `Alt` + `` ` `` não a encontra, porque ele só percorre
+> o que ainda está na árvore. O `Alt+Shift+M` é a volta (bloco abaixo). Se a
+> intenção era só tirar a janela da frente, `Alt+Shift+F` (soltar como floating)
+> costuma ser o que você queria.
+
+> ⚠️ **"Dei `Cmd+Tab`, escolhi o app e nada aconteceu."** Não é o AeroSpace
+> comendo a tecla: o `Cmd+Tab` do macOS ativa um **app**, nunca uma janela. Se
+> o app não tem janela para mostrar, ele vira frontmost e a tela não muda. O
+> ícone do Dock funciona porque um clique nele manda um evento de *reopen*, que
+> é outra coisa — pede ao app que restaure ou crie uma janela.
+>
+> Dois estados chegam nisso, e um app pode estar nos dois:
+>
+> - **janelas minimizadas** — o `Cmd+Tab` só restaura se você segurar `⌥` antes
+>   de soltar o `⌘`. Esse truque é nativo e funciona sem nada instalado.
+> - **nenhuma janela** — um `Cmd+W` na última deixa o app vivo e vazio. Foi
+>   assim que Finder e Claude foram pegos no diagnóstico. O `Ctrl+W` não produz
+>   esse estado: o `--quit-if-last-window` leva o app junto.
+>
+> `Alt+Shift+M` resolve os dois com uma chamada só: `open -b <bundle-id>`, o
+> mesmo evento de *reopen* do clique no Dock. O tratamento padrão do AppKit para
+> ele é exatamente o que se quer — sem janela visível, desminimiza a última, ou
+> cria uma se não houver nenhuma. Testado em Spotify, Slack e Teams.
+>
+> É um script (`macos/aerospace/raise-frontmost.sh`) só porque o AeroSpace não
+> tem comando para disparar isso. **Ele não toca no Accessibility de propósito:**
+> a primeira versão limpava o `AXMinimized` janela a janela pelo System Events,
+> funcionava, e deixava a tecla tão confiável quanto uma permissão que a gente
+> viu cair sozinha no meio da sessão (`osascript is not allowed assistive
+> access`, -25211). `lsappinfo` e `open` passam pelo LaunchServices, que não pede
+> nada.
+>
+> Onde a janela reaparece depende do caso: quando o `open -b` **cria** janela, a
+> regra de `on-window-detected` dispara e ela vai para o workspace de sempre;
+> quando só desminimiza, nada é criado, a regra fica calada, e ela já voltou
+> tanto no workspace da regra quanto no que estava visível. `Alt+Shift+<n>` move
+> se cair no lugar errado.
+
+> Vale para o AltTab também: janela **minimizada** ele não lista, porque o que
+> está no Dock não é janela que ele possa oferecer. Nesse caso o `Alt+Shift+M` é
+> o único caminho de volta.
 
 > **`Ctrl+W` encerra o app junto com a última janela** (`--quit-if-last-window`),
 > como no Windows e no Omarchy — e ao contrário da convenção do macOS, onde o
@@ -833,7 +903,8 @@ lugares em System Settings → Privacy & Security:
 
 | Permissão | Quem precisa | Sintoma sem ela |
 |---|---|---|
-| **Accessibility** | AeroSpace, Raycast, Karabiner | app abre e simplesmente não faz nada |
+| **Accessibility** | AeroSpace, Raycast, AltTab, Karabiner | app abre e simplesmente não faz nada |
+| **Screen & System Audio Recording** | AltTab | lista as janelas, mas sem título nem miniatura |
 | **Full Disk Access** | Terminal/Ghostty, backup | "Operation not permitted" em `~/Library`, Mail, etc. |
 | **Input Monitoring** | Karabiner | teclas não são capturadas |
 

@@ -15,11 +15,23 @@
       Both paths are the symlinks bootstrap.sh creates in ~/.config/aerospace,
       which is why nothing here mentions where the repo is checked out.
     -->
+    <!--
+      The redirect is here, in the shell, and NOT in StandardOutPath below — for
+      the same reason the paths are: launchd expands neither ~ nor $HOME in
+      those keys, and this file must not hardcode /Users/<name>.
+
+      It used to point at /tmp for exactly that reason, and that cost a
+      diagnosis. apply-layout.py's output is the only record of what happened
+      while you were not looking, and macOS empties /tmp — a reboot on
+      2026-09-10 took the whole history of a three-monitor session with it,
+      leaving one line written after the machine came back up. A log that does
+      not survive the crash you are investigating is not a log.
+    -->
     <key>ProgramArguments</key>
     <array>
         <string>/bin/sh</string>
         <string>-c</string>
-        <string>exec "$HOME/.config/aerospace/display-watch" "$HOME/.config/aerospace/apply-layout.py"</string>
+        <string>exec "$HOME/.config/aerospace/display-watch" "$HOME/.config/aerospace/apply-layout.py" >>"$HOME/Library/Logs/aerospace-display-watch.log" 2>&amp;1</string>
     </array>
 
     <!-- RunAtLoad starts it at login; the binary itself waits 10s before its
@@ -31,15 +43,10 @@
     <key>KeepAlive</key>
     <true/>
 
-    <!-- apply-layout.py prints which layout it chose and why, and that output is
-         the only record of what happened while you were not looking. Both
-         streams go to one file so the ordering is real:
-             tail -f /tmp/aerospace-display-watch.log
-         /tmp rather than ~/Library/Logs for the same reason as the paths above —
-         launchd will not expand $HOME here, and these keys take no shell. -->
-    <key>StandardOutPath</key>
-    <string>/tmp/aerospace-display-watch.log</string>
-    <key>StandardErrorPath</key>
-    <string>/tmp/aerospace-display-watch.log</string>
+    <!-- No StandardOutPath / StandardErrorPath: the shell redirect above sends
+         both streams to one file, so the ordering is real and the path can be
+         written relative to $HOME.
+             tail -f ~/Library/Logs/aerospace-display-watch.log -->
+
 </dict>
 </plist>

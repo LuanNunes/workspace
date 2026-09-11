@@ -179,7 +179,7 @@ Two things this script cannot do for you:
      won't repeat keys.
 
   2. Grant Accessibility permission, in System Settings → Privacy & Security →
-     Accessibility, to: AeroSpace, Raycast, Karabiner-Elements.
+     Accessibility, to: AeroSpace, Raycast, AltTab, Karabiner-Elements.
      macOS gives these apps NO error when the permission is missing — they just
      silently do nothing, which is the single most common "it's broken" on a
      fresh Mac.

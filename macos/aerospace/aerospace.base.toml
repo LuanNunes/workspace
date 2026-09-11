@@ -165,28 +165,47 @@ preset = 'qwerty'
 alt-shift-enter = 'exec-and-forget open -a Ghostty'
 
 # --- focus / move (i3 hjkl) -------------------------------------------------
-# `--boundaries all-monitors-outer-frame` is not decoration. A bare `focus left`
-# defaults to `--boundaries workspace`, so the focus never leaves the screen you
-# are on: on a workspace holding two windows it just bounces between them, which
-# reads as "hjkl is stuck on this monitor". Traced on 2026-09-10 — with focus on
-# the Alienware, `aerospace focus left` did nothing, and the same command with
-# this flag landed on the Mancer.
+# HORIZONTAL crosses monitors, VERTICAL does not, and the asymmetry is the whole
+# point. The columns of this desk are arranged side by side, so left/right is
+# the axis that means "next screen"; up/down only ever means "the other window
+# in this workspace".
 #
-# The default boundaries-action, `stop`, is kept: hjkl walks the whole desk and
-# then halts at its far edges. Wrapping around lives on alt-ctrl-hjkl below,
-# which is the binding you want when there is no window in that direction at all.
+# `--boundaries all-monitors-outer-frame` on h/l is not decoration. A bare
+# `focus left` defaults to `--boundaries workspace`, so the focus never leaves
+# the screen you are on: on a workspace holding two windows it just bounces
+# between them, which reads as "hjkl is stuck on this monitor". Traced on
+# 2026-09-10 — with focus on the Alienware, `aerospace focus left` did nothing,
+# and the same command with this flag landed on the Mancer.
+#
+# j/k got that same flag on 2026-09-10 and it was wrong, which only showed with
+# the lid open. The MacBook sits physically BELOW the externals, so on three
+# screens `alt-j` stopped meaning "the window under this one" and started
+# meaning "fall off onto the laptop panel" — and `alt-shift-j` threw the window
+# down there, silently changing its workspace number, because a window that
+# lands on another monitor lands on that monitor's workspace. On the Mancer, in
+# portrait with Teams above Slack, that is exactly the key you press to get from
+# one to the other. `--boundaries workspace` is the default, and it is spelled
+# out here so the next person does not "fix" the asymmetry back out.
+#
+# Nothing is lost: deliberate travel between panels is alt-ctrl-hjkl below,
+# which acts on the DISPLAY and wraps around.
+#
+# The default boundaries-action, `stop`, is kept on all four: h/l walk the whole
+# desk and then halt at its far edges, j/k halt at the ends of the workspace.
 alt-h = 'focus --boundaries all-monitors-outer-frame left'
-alt-j = 'focus --boundaries all-monitors-outer-frame down'
-alt-k = 'focus --boundaries all-monitors-outer-frame up'
+alt-j = 'focus --boundaries workspace down'
+alt-k = 'focus --boundaries workspace up'
 alt-l = 'focus --boundaries all-monitors-outer-frame right'
 
-# Same boundary on `move`, so a window travels exactly the path the focus does.
-# Without it `move` also stops at the workspace edge, and alt-shift-l against the
-# last window builds an implicit container instead of handing it to the monitor
-# next door.
+# Same boundaries on `move`, so a window travels exactly the path the focus
+# does. On h/l, without the flag `move` stops at the workspace edge and
+# alt-shift-l against the last window builds an implicit container instead of
+# handing it to the monitor next door. On j/k, `--boundaries-action stop` is
+# what keeps that implicit container from being built at the top and bottom of
+# the workspace now that the window has nowhere further to go.
 alt-shift-h = 'move --boundaries all-monitors-outer-frame left'
-alt-shift-j = 'move --boundaries all-monitors-outer-frame down'
-alt-shift-k = 'move --boundaries all-monitors-outer-frame up'
+alt-shift-j = 'move --boundaries workspace --boundaries-action stop down'
+alt-shift-k = 'move --boundaries workspace --boundaries-action stop up'
 alt-shift-l = 'move --boundaries all-monitors-outer-frame right'
 
 # Alternate between the last two WINDOWS. `alt-tab` below does the same for
@@ -203,12 +222,11 @@ alt-a = 'focus-back-and-forth'
 # behaviour this is meant to replace. `wrap-around-the-workspace` closes the
 # ring, so holding the key cycles instead of stopping on the last window.
 #
-# NOT on cmd-tab, and that was tried: the Dock owns cmd-tab as a system hotkey
-# and never hands it to AeroSpace, so the only way there is a Karabiner rule at
-# the HID level — which also swallows the keypress before macOS sees it, and
-# with it the app-switcher overlay that shows you the icons. Losing that overlay
-# was worse than the win. cmd-tab stays native and per-app; this is the
-# per-workspace cycle, on its own key.
+# This is the LOCAL switcher and AltTab (alt-tab) is the GLOBAL one — they are
+# complementary, and it took removing AltTab to see it. This key only ever walks
+# the workspace in front of you, and AeroSpace cannot do more: `focus dfs-next`
+# refuses any other boundary, in as many words —
+# "(dfs-next|dfs-prev) only supports --boundaries workspace".
 alt-backtick = 'focus dfs-next --boundaries workspace --boundaries-action wrap-around-the-workspace'
 alt-shift-backtick = 'focus dfs-prev --boundaries workspace --boundaries-action wrap-around-the-workspace'
 
@@ -250,12 +268,26 @@ alt-shift-f = 'layout floating tiling'              # pop this window out
 # is still there when you want to close a window and keep the app.
 ctrl-w = 'close --quit-if-last-window'
 
-# Minimising in a tiling WM is a one-way door worth knowing about: the window
-# leaves the workspace tree entirely and lives in the Dock, and there is no
-# AeroSpace binding that brings it back. Use the Dock, or cmd-tab, which is
-# still macOS's own app switcher. alt-backtick (above) will not find it either —
-# it only walks windows that are still in the tree.
+# Minimising takes the window OUT of the workspace tree: it lives in the Dock,
+# AeroSpace stops seeing it, and alt-backtick will not find it because that only
+# walks windows still in the tree. 0.21.3 has no unminimize command, which is
+# what used to make this a one-way door.
 alt-m = 'macos-native-minimize'
+
+# The way back, and the only one: a minimised window is invisible to AltTab too,
+# which lists windows and cannot offer one that lives in the Dock.
+#
+# It is also the answer to "I picked the app on cmd-tab and nothing came up".
+# That switcher is macOS's own and activates an APP, never a window, so an app
+# with only minimised windows — or none at all, which is where cmd+w leaves
+# Finder and Claude — comes to the front with nothing to show. The Dock icon
+# works because clicking it sends a REOPEN event instead. This is that event on
+# a key.
+#
+# It is a script because both halves are Accessibility calls AeroSpace does not
+# expose: clear AXMinimized on each window, and fall back to `open -b` when
+# there is no window to clear it on. See macos/aerospace/raise-frontmost.sh.
+alt-shift-m = 'exec-and-forget ~/.config/aerospace/raise-frontmost.sh'
 
 # --- resize -----------------------------------------------------------------
 # 150px per press, not 50. The step is in real pixels, so on a display this wide
@@ -292,11 +324,14 @@ alt-ctrl-shift-j = 'move-node-to-monitor --wrap-around --focus-follows-window do
 alt-ctrl-shift-k = 'move-node-to-monitor --wrap-around --focus-follows-window up'
 alt-ctrl-shift-l = 'move-node-to-monitor --wrap-around --focus-follows-window right'
 
-# Jump back to the previous workspace — the Alt-Tab you actually want.
-# This is workspace-level. For "next window inside THIS workspace", see
-# alt-backtick above.
-alt-tab = 'workspace-back-and-forth'
-alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+# alt-tab and alt-shift-tab are deliberately UNBOUND: the whole chord belongs to
+# AltTab, whose defaults are exactly these two (hold option, tab for next,
+# shift-tab for previous). AeroSpace grabs bindings before the focused app sees
+# them, so anything here would simply eat the switcher. Pressing alt-tab and
+# getting a workspace flip was the bug, not the feature.
+#
+# Gone with it: `workspace-back-and-forth`. If it is missed, give it a key that
+# is not tab.
 
 # --- sub-modes --------------------------------------------------------------
 alt-shift-semicolon = 'mode service'

@@ -81,6 +81,7 @@ brew "FelixKratz/formulae/borders"  # colored outline on the focused window
 
 cask "raycast"           # Spotlight replacement — the Flow Launcher of macOS
 cask "maccy"             # clipboard history — the Ditto of macOS
+cask "alt-tab"           # per-WINDOW switcher on alt-tab; macOS's own is per-APP
 cask "karabiner-elements" # key remapping when System Settings isn't enough
 cask "linearmouse"       # per-device scroll direction + accel for external mice
 cask "betterdisplay"     # scaled/HiDPI modes macOS will not offer, and DDC brightness

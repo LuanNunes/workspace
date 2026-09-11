@@ -26,7 +26,7 @@ cd ~/projects/resolveprogramming/workspace
 ```
 
 Then **log out and back in** (key repeat and the Spaces settings are read at
-login), grant Accessibility permission to AeroSpace/Raycast/Karabiner,
+login), grant Accessibility permission to AeroSpace/Raycast/AltTab/Karabiner,
 and open Ghostty — Zinit and lazy.nvim finish their first-run installs there.
 
 Every step is idempotent: re-running one that is already done is a no-op, and any
@@ -178,7 +178,7 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 
 | Symptom | Cause |
 |---|---|
-| AeroSpace / Raycast / Karabiner launch but do nothing | Accessibility permission not granted. macOS reports no error. |
+| AeroSpace / Raycast / AltTab launch but do nothing | Accessibility permission not granted. macOS reports no error. |
 | Holding `j` in Neovim doesn't repeat | `ApplePressAndHoldEnabled` — run `defaults.sh`, then **log out**. |
 | `Alt-C` (fzf) does nothing in Ghostty | `macos-option-as-alt` — set to `left` in `ghostty/config`. |
 | Accents (`á`, `ç`, `ã`) stopped working | Same setting, but set to `true`. Use `left` and type accents with the **right** Option. |
@@ -194,7 +194,7 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 | A display flickers under AeroSpace | `borders` drawing at non-retina resolution. Add `hidpi=on` to its invocation in `after-startup-command`. |
 | Editing `after-startup-command` appears to do nothing | It runs when the AeroSpace server starts, not on `reload-config`. Restart AeroSpace, or re-run the command by hand. |
 | `alt-1`…`alt-3` throw windows at the wrong screen right after opening or closing the lid | The screen count changed and the layout has not caught up. The `displaywatch` LaunchAgent normally handles this within ~3s; if it is not running (`launchctl print gui/$UID/dev.luannunes.aerospace-display-watch`), re-run `apply-layout.py` by hand. |
-| The display watcher never fires | Check `/tmp/aerospace-display-watch.log`. A run that fires before AeroSpace's server is up dies with "Can't connect to AeroSpace server" — that is the login race the binary's 10s startup delay exists for. |
+| The display watcher never fires | Check `~/Library/Logs/aerospace-display-watch.log`. A run that fires before AeroSpace's server is up dies with "Can't connect to AeroSpace server" — that is the login race the binary's 10s startup delay exists for. |
 | A CoreGraphics display callback registers fine and then never fires | The process is not an app. `CGDisplayRegisterReconfigurationCallback` reports success in a plain CLI tool spinning `CFRunLoopRun()` and delivers nothing — the callback rides the window server connection that `NSApplication` establishes. Use `NSApplication.shared` with `.accessory` policy and `app.run()`. This cost `display-watch.swift` a full silent failure. |
 | AeroSpace's server vanishes after a display change | Seen twice on 0.21.3-Beta, both during synthetic reconfigurations (a resolution change, and connecting/discarding a virtual screen); NOT on opening the lid. No crash report is written. `open -a AeroSpace`, then re-run `apply-layout.py`. |
 | `betterdisplaycli get --protectResolution` always says `true` | The CLI 4.3.6 read is constant and its output is a broken interpolation (`true ? ON : OFF)`). `=off`/`=0` are accepted silently, `=false` fails. Read `defaults read pro.betterdisplay.BetterDisplay \| grep protectResolution` instead — the mode string's presence is the enabled state. |

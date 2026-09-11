@@ -28,6 +28,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import time
 
 HERE = pathlib.Path(__file__).resolve().parent
 BASE = HERE / "aerospace.base.toml"
@@ -41,7 +42,7 @@ def die(msg):
     sys.exit(1)
 
 
-def count_monitors():
+def list_monitors():
     """Ask AeroSpace, not the OS: it is the thing whose view has to match."""
     try:
         out = subprocess.run([AEROSPACE, "list-monitors"], capture_output=True,
@@ -51,7 +52,41 @@ def count_monitors():
             f"Pass a layout explicitly, e.g. 'apply-layout.py 2mon'.")
     if out.returncode != 0:
         die(f"aerospace list-monitors failed: {out.stderr.strip()}")
-    return len([l for l in out.stdout.splitlines() if l.strip()])
+    return [l.strip() for l in out.stdout.splitlines() if l.strip()]
+
+
+def settled_monitors():
+    """The monitor list, once AeroSpace has stopped changing its mind.
+
+    THE SINGLE READ THIS REPLACES WAS A RACE, and it failed in the one direction
+    that never recovers. display-watch waits out its debounce and runs this, but
+    AeroSpace needs its own moment to agree with CoreGraphics after a
+    reconfiguration — opening the lid out of clamshell is the slow case. Read too
+    early and this returns the OLD count, writes the layout for it, and then
+    `changed` is False, so nothing reloads, nothing re-homes, AND NO FURTHER
+    DISPLAY EVENT IS COMING. The desk sits on three panels running the
+    two-screen layout, where 'secondary' matches two monitors at once: two
+    columns pile onto one screen and the third is left with an auto-created
+    workspace no key can reach. That is what "apps opened on the wrong screen"
+    looked like.
+
+    So: poll until two consecutive readings match, then trust it. Cheap when
+    nothing is moving (one extra call, one interval) and correct when it is.
+    """
+    interval, deadline = 1.0, 15.0
+    previous, waited = list_monitors(), 0.0
+    while waited < deadline:
+        time.sleep(interval)
+        waited += interval
+        current = list_monitors()
+        if current == previous:
+            return current
+        print(f"apply-layout: monitors still settling "
+              f"({len(previous)} -> {len(current)}), waiting")
+        previous = current
+    print(f"apply-layout: monitor list never settled in {deadline:.0f}s, "
+          f"going with {len(previous)}", file=sys.stderr)
+    return previous
 
 
 def parse_fragment(path):
@@ -150,13 +185,19 @@ def main():
     if args:
         layout = args[0]
     else:
-        n = count_monitors()
+        monitors = settled_monitors()
+        n = len(monitors)
         # Everything that is not three screens gets the two-column layout: on a
         # single display the pair layout degrades to six workspaces on one
         # screen, which is right, while the three-column one hides a third of
         # them behind the others.
         layout = "3mon" if n >= 3 else "2mon"
-        print(f"apply-layout: {n} monitor(s) -> {layout}")
+        # The NAMES, not just the count: this log is the only record of what
+        # happened while you were not looking, and "2 monitor(s)" cannot tell
+        # you whether the missing panel was the laptop or the one you care
+        # about. The assignment patterns match on these strings.
+        names = ", ".join(monitors) or "none"
+        print(f"apply-layout: {n} monitor(s) -> {layout}  [{names}]")
 
     frag = HERE / f"layout-{layout}.toml"
     if not frag.exists():
