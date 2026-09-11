@@ -1,0 +1,84 @@
+# Layout fragment — ONE screen. Merged into aerospace.base.toml by
+# apply-layout.py. Section markers must stay as written.
+#
+# THE ROAD LAYOUT: the MacBook on its own — a café, a plane, anywhere with
+# nothing plugged in. Six workspaces, the same six numbers the two-screen file
+# uses, and one key each.
+#
+# IT IS layout-2mon.toml WITH THE PAIRS UNDONE. Until 2026-09-11 a single screen
+# was served by the two-screen file directly, on the reasoning that a pair
+# layout "degrades to six workspaces on one screen". It does not degrade — it
+# breaks. The keys there are pairs:
+#
+#     alt-1 = ['workspace 1', 'workspace 2']
+#
+# and two `workspace` commands on ONE monitor both land on that monitor, so the
+# second simply overwrites the first and you always arrive at the EVEN
+# workspace. alt-1/2/3 reached ws 2, 4 and 6; ws 1, 3 and 5 had no key at all,
+# and alt-4/5/6 — the escape hatch for "move one screen only" — could not help
+# because it binds the even half too. Not a corner case: ws 1 is the terminal
+# and ws 3 is Teams and Slack, so the two workspaces reached for most often were
+# the two that could not be reached. Found with Ghostty sitting on ws 1 and no
+# key in the config that could get to it.
+#
+# WHY SIX WORKSPACES AND NOT THREE. One screen shows one workspace, so the
+# pairing has nothing left to express and folding each desktop down to a single
+# workspace looks like the obvious move. It is the wrong one: it would put the
+# terminal and the IDE back together, which layout-2mon.toml splits across
+# columns precisely because sharing a workspace leaves the IDE a third of a
+# screen. Six workspaces with one app-slot each keeps every app exactly where
+# the other two layouts put it.
+#
+# WHICH IS WHAT MAKES CLOSING THE LID FREE. apply-layout.py re-homes open
+# windows whenever the layout changes, reading each app's target workspace out
+# of the APP_RULES below — and those are the two-screen rules verbatim, by
+# inheritance rather than by copy. Identical numbers on both sides means the
+# re-home step finds nothing to move: switching between here and the desk
+# reloads the bindings and leaves every window where it was.
+
+# ---8<--- PERSISTENT_WORKSPACES
+persistent-workspaces = ['1', '2', '3', '4', '5', '6']
+
+# ---8<--- MONITOR_ASSIGNMENT
+# Nothing to assign. One screen cannot be partitioned, and every workspace lands
+# on it whether or not this file says so.
+#
+# `[workspace-to-monitor-force-assignment]` is deliberately ABSENT rather than
+# written out with all six workspaces pointing at 'main'. That table would be
+# six lines incapable of ever changing an outcome, and six lines to remember to
+# undo the first time a monitor is plugged in. The section MARKER has to stay —
+# apply-layout.py checks that all four are present — but nothing says its body
+# must be config, and here the honest body is this explanation.
+
+# ---8<--- WORKSPACE_BINDINGS
+# One key, one workspace. There are no pairs to switch both screens at once
+# because there is no second screen, and no alt-4/5/6 escape hatch for "move
+# only one of them" for the same reason. This is the only layout in the set
+# where alt-<n> means literally workspace n.
+alt-1 = 'workspace 1'   # terminal, Hoppscotch, Toggl
+alt-2 = 'workspace 2'   # editors and IDEs
+alt-3 = 'workspace 3'   # Teams and Slack
+alt-4 = 'workspace 4'   # Claude, Codex, WhatsApp, Spotify
+alt-5 = 'workspace 5'   # Notion
+alt-6 = 'workspace 6'   # browsers
+
+# alt-7/8/9 stay UNBOUND, exactly as in layout-2mon.toml: six workspaces need
+# six keys, and the note at the top of the base file explains that every
+# alt-<key> is taken from zsh, Neovim and fzf system-wide. Three keys that would
+# address nothing are three keys given back.
+
+alt-shift-1 = 'move-node-to-workspace 1 --focus-follows-window'
+alt-shift-2 = 'move-node-to-workspace 2 --focus-follows-window'
+alt-shift-3 = 'move-node-to-workspace 3 --focus-follows-window'
+alt-shift-4 = 'move-node-to-workspace 4 --focus-follows-window'
+alt-shift-5 = 'move-node-to-workspace 5 --focus-follows-window'
+alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
+
+# ---8<--- APP_RULES = layout-2mon.toml
+    # Inherited verbatim from the two-screen layout — see the note at the top of
+    # this file for why that matters more than it looks. Which app lives on
+    # which workspace is a decision about the APPS; how many workspaces are
+    # visible at once is a decision about the SCREENS. Only the second changes
+    # when the lid closes, which is what the two sections above are for.
+    #
+    # So: adding an app means editing layout-2mon.toml and nothing else.

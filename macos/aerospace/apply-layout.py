@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Merge aerospace.base.toml with a layout fragment and reload AeroSpace.
 
-The AeroSpace config format has no `include`, so a two-monitor and a
-three-monitor setup would otherwise be two ~300-line files differing in about
-forty — and two copies drift. This keeps one base and small fragments, the same
-arrangement windows/windows-terminal/apply-theme.py uses for its themes.
+The AeroSpace config format has no `include`, so the one-, two- and
+three-monitor setups would otherwise be three ~300-line files differing in a few
+dozen — and copies drift. This keeps one base and small fragments, the same
+arrangement windows/windows-terminal/apply-theme.py uses for its themes. A
+fragment can also inherit a single section from another fragment, which is how
+the one- and two-screen layouts share one copy of the app rules; see
+parse_fragment.
 
     ./apply-layout.py            detect screen count and apply the match
     ./apply-layout.py 2mon       force a layout
@@ -89,20 +92,72 @@ def settled_monitors():
     return previous
 
 
-def parse_fragment(path):
-    """Split a fragment on its `# ---8<--- NAME` markers."""
+def split_sections(path):
+    """Raw section bodies of a fragment, plus where any of them is inherited from.
+
+    A marker may name another fragment —
+    `# ---8<--- APP_RULES = layout-2mon.toml` — and that section then comes from
+    that file. Resolving it is parse_fragment's job; this only reports it.
+    """
     text = path.read_text()
-    parts, name, buf = {}, None, []
+    parts, inherits, name, buf = {}, {}, None, []
     for line in text.split("\n"):
-        m = re.match(r"^#\s*-+8<-+\s*([A-Z_]+)\s*$", line)
+        m = re.match(r"^#\s*-+8<-+\s*([A-Z_]+)\s*(?:=\s*(\S+))?\s*$", line)
         if m:
             if name:
                 parts[name] = "\n".join(buf).strip("\n")
             name, buf = m.group(1), []
+            if m.group(2):
+                inherits[name] = m.group(2)
         elif name:
             buf.append(line)
     if name:
         parts[name] = "\n".join(buf).strip("\n")
+    return parts, inherits
+
+
+def parse_fragment(path):
+    """A fragment's four sections, with any inherited section resolved.
+
+    INHERITANCE EXISTS FOR APP_RULES, AND ESSENTIALLY ONLY FOR IT. Which app
+    lives on which workspace is a decision about the APPS; how many workspaces
+    are visible at once is a decision about the SCREENS. layout-1mon.toml and
+    layout-2mon.toml disagree only on the second, so copying the ~60 lines of
+    app rules between them would give every newly installed app two files to be
+    added to — and the same drift the whole base+fragment arrangement exists to
+    prevent, just moved one level down.
+
+    ONE LEVEL ONLY: the file you inherit from must own the section outright.
+    Chains would need cycle detection to be safe, and nothing here asks for them.
+    """
+    parts, inherits = split_sections(path)
+
+    for section, source in inherits.items():
+        src = HERE / source
+        if not src.exists():
+            die(f"{path.name}: section {section} inherits from '{source}', "
+                f"which is not a file in {HERE}")
+        # The body of an inheriting section is a place to say WHY and nothing
+        # else. Silently dropping real config there would be a trap, and
+        # silently appending it to the inherited body a subtler one; refusing is
+        # the only reading that cannot surprise anyone.
+        stray = [l for l in parts[section].split("\n")
+                 if l.strip() and not l.lstrip().startswith("#")]
+        if stray:
+            die(f"{path.name}: section {section} inherits from {source}, so its "
+                f"body must be comments only — found: {stray[0].strip()!r}")
+        src_parts, src_inherits = split_sections(src)
+        if section in src_inherits:
+            die(f"{path.name}: section {section} inherits from {source}, which "
+                f"inherits it in turn — chains are not supported")
+        if section not in src_parts:
+            die(f"{path.name}: section {section} inherits from {source}, "
+                f"which has no {section} section")
+        # The local comments are KEPT, above the inherited body: they are the
+        # only place the generated config explains where those lines came from.
+        parts[section] = "\n".join(x for x in (parts[section],
+                                               src_parts[section]) if x)
+
     missing = [s for s in SECTIONS if s not in parts]
     if missing:
         die(f"{path.name} is missing section(s): {', '.join(missing)}")
@@ -187,11 +242,18 @@ def main():
     else:
         monitors = settled_monitors()
         n = len(monitors)
-        # Everything that is not three screens gets the two-column layout: on a
-        # single display the pair layout degrades to six workspaces on one
-        # screen, which is right, while the three-column one hides a third of
-        # them behind the others.
-        layout = "3mon" if n >= 3 else "2mon"
+        # One file per screen count, and the fallback goes UP at the top end
+        # only: a fourth monitor gets the three-column layout rather than no
+        # layout at all, because nine reachable workspaces beat a hard failure.
+        #
+        # There is no fallback downward any more, and that is the 2026-09-11
+        # fix. A single display used to be handed layout-2mon.toml on the theory
+        # that its pairs "degrade" to six workspaces on one screen; what
+        # actually happened is that `alt-1 = ['workspace 1', 'workspace 2']`
+        # runs both commands on the one monitor, so half the workspaces became
+        # unreachable from the keyboard. See the note at the top of
+        # layout-1mon.toml.
+        layout = "3mon" if n >= 3 else "2mon" if n == 2 else "1mon"
         # The NAMES, not just the count: this log is the only record of what
         # happened while you were not looking, and "2 monitor(s)" cannot tell
         # you whether the missing panel was the laptop or the one you care

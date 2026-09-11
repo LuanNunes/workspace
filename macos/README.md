@@ -111,6 +111,7 @@ macos/
 ├── ghostty/config            # → ~/.config/ghostty/config
 ├── aerospace/
 │   ├── aerospace.base.toml   # everything independent of screen count
+│   ├── layout-1mon.toml      # one screen: six workspaces, one key each
 │   ├── layout-2mon.toml      # two screens: pairs, six workspaces
 │   ├── layout-3mon.toml      # three screens: trios, nine workspaces
 │   ├── apply-layout.py       # merges base + fragment → aerospace.toml
@@ -178,6 +179,7 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 
 | Symptom | Cause |
 |---|---|
+| The pointer moves but nothing responds to clicks | A left-drag whose `mouseUp` was lost: the system still thinks the button is held, so every new click reads as continuing that drag. `TrackpadThreeFingerDrag` (set in `defaults.sh`) is what makes it reachable — a drag can start without you meaning one — and AeroSpace's `on-focused-monitor-changed = ['move-mouse …']` warping the pointer mid-drag is a way to lose the release. Seen on 2026-09-11, stuck for 12 minutes with Option held too. **Do not guess, read the HID state:** `python3 -c "import ctypes,ctypes.util as u;l=ctypes.CDLL(u.find_library('ApplicationServices'));l.CGEventSourceButtonState.restype=ctypes.c_bool;l.CGEventSourceFlagsState.restype=ctypes.c_uint64;print('left down:',l.CGEventSourceButtonState(0,0),hex(l.CGEventSourceFlagsState(0)))"` — `True` is the answer, and in the flags only Shift/Control/Option/Command (`0x20000`…`0x100000`) count; fn and numeric-pad bits float around on their own. Fix: tap **both** Option keys, then one firm physical click (press the trackpad down, not a tap) on empty desktop. |
 | AeroSpace / Raycast / AltTab launch but do nothing | Accessibility permission not granted. macOS reports no error. |
 | Holding `j` in Neovim doesn't repeat | `ApplePressAndHoldEnabled` — run `defaults.sh`, then **log out**. |
 | `Alt-C` (fzf) does nothing in Ghostty | `macos-option-as-alt` — set to `left` in `ghostty/config`. |
@@ -185,6 +187,7 @@ native `pbcopy`/`pbpaste`. The whole `clip.exe` workaround simply disappears.
 | Windows land on random Spaces | `mru-spaces` still true, or "Displays have separate Spaces" is on. |
 | `.DS_Store` in every commit | `core.excludesfile` — written by `bootstrap.sh`. |
 | Repos ask for a passphrase every time | Key not in the Keychain: `ssh-add --apple-use-keychain ~/.ssh/<key>`. |
+| `alt-1`/`alt-2`/`alt-3` skip a workspace on the laptop alone | Fixed on 2026-09-11 by `layout-1mon.toml`. The two-screen layout used to serve one screen too, and its keys are pairs (`alt-1 = ['workspace 1', 'workspace 2']`) — both commands land on the one monitor, so you always arrived at the even workspace and ws 1/3/5 had no key at all. Check the header of the generated `aerospace.toml` says `layout-1mon`; if it does not, run `apply-layout.py`. |
 | Edits to `aerospace.toml` vanish | It is generated. Edit `aerospace.base.toml` or a `layout-*.toml` and re-run `apply-layout.py`. |
 | An app sits on a workspace the current layout does not bind a key for | It was born under the other layout and kept that workspace. `apply-layout.py` re-homes open windows when the layout changes; if it is already applied, force it with `apply-layout.py <layout>` or move the window by `--window-id`. |
 | A monitor pattern grabs the wrong panel | The patterns are regexes, not names. `MSI MAG271C` is a prefix of `MSI MAG271CQR`; anchor with `^…$`. |

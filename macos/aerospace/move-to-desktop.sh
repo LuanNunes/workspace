@@ -29,12 +29,20 @@ case "$desktop" in
   *) echo "desktop must be 1, 2 or 3 — got '$desktop'" >&2; exit 2 ;;
 esac
 
-# COLUMNS IS NOT ALWAYS 3, and hardcoding it was a bug worth spelling out. Both
-# layouts have three desktops, but the two-screen one has two columns and six
-# workspaces — so on the everyday clamshell desk the trio arithmetic sent every
+# COLUMNS IS NOT ALWAYS 3, and hardcoding it was a bug worth spelling out. All
+# three layouts have three desktops, but only layout-3mon.toml has three
+# columns — so on the everyday clamshell desk the trio arithmetic sent every
 # alt-ctrl-3 to workspace 7, 8 or 9. Those do not exist in layout-2mon.toml:
 # they are outside its `persistent-workspaces` and no alt-<n> binds them, so the
 # window went somewhere invisible that the keyboard could not reach.
+#
+# ONE SCREEN COUNTS AS TWO COLUMNS, which reads wrong and is right. The column
+# here is a slot in the workspace NUMBERING, not a panel you can see:
+# layout-1mon.toml keeps the two-screen grid of six workspaces in three desktops
+# precisely so nothing has to move when the lid closes, and it only shows them
+# one at a time. So "same column, other desktop" still means ±2 and alt-ctrl-<n>
+# keeps doing on the road exactly what it does at the desk. If that file ever
+# drops to three workspaces, this branch has to become columns=1.
 #
 # The generated config's header names the fragment it was merged from, and that
 # is the only thing on the machine that knows which layout is actually LOADED —
@@ -43,7 +51,7 @@ esac
 # missing, which means someone bypassed apply-layout.py.
 if grep -q 'layout-3mon' "$CONFIG" 2>/dev/null; then
   columns=3
-elif grep -q 'layout-2mon' "$CONFIG" 2>/dev/null; then
+elif grep -qE 'layout-[12]mon' "$CONFIG" 2>/dev/null; then
   columns=2
 elif [[ "$("$AEROSPACE" list-monitors | grep -c .)" -ge 3 ]]; then
   columns=3

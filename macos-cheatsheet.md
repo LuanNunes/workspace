@@ -429,10 +429,12 @@ sozinha para o modo main:
 Os monitores se comportam como **uma tela só**: uma tecla troca todas as telas
 ao mesmo tempo. Ideia portada do `windows/glazewm/config.yaml`.
 
-Existem **dois layouts**, porque duas telas e três telas querem formas
-diferentes, e um arquivo só servindo aos dois deixava um terço dos workspaces
-escondido. O `macos/aerospace/apply-layout.py` mescla `aerospace.base.toml` com
-um fragmento e recarrega:
+Existem **três layouts**, um por contagem de tela, porque uma forma só nunca
+serve às três: o arquivo de três telas esconde um terço dos workspaces atrás dos
+outros quando só há duas, e o de duas telas deixa metade deles **sem tecla**
+quando só há uma (a história está na seção de uma tela, abaixo). O
+`macos/aerospace/apply-layout.py` mescla `aerospace.base.toml` com um fragmento
+e recarrega:
 
 ```sh
 ./macos/aerospace/apply-layout.py          # detecta as telas e aplica
@@ -442,7 +444,7 @@ um fragmento e recarrega:
 
 > ⚠️ **Abrir ou fechar a tampa muda a contagem de telas** — e portanto o layout
 > certo. Na mesa em clamshell são duas (`2mon`); levantar a tampa faz três
-> (`3mon`).
+> (`3mon`); desplugar tudo e sair de casa faz uma (`1mon`).
 >
 > Isso é automático desde 2026-09-08, via o LaunchAgent `displaywatch`
 > (`./macos/bootstrap.sh displaywatch`). Nada no sistema oferecia esse gatilho:
@@ -516,11 +518,61 @@ um para baixo.
 trio, com uma terceira coluna: `Alt+1` = ws 1/2/3, `Alt+2` = 4/5/6, `Alt+3` =
 7/8/9, e `Alt+4..9` como saída de emergência.
 
-Em ambos, as colunas são por **papel**: a coluna A é `secondary` (a tela que
+Nesses dois, as colunas são por **papel**: a coluna A é `secondary` (a tela que
 não é a principal) e a B é `main`. Trocar qual monitor é o principal inverte as
 colunas sozinho.
 
+**Layout de uma tela** (`layout-1mon.toml`) — os mesmos seis workspaces do layout
+de duas telas, **uma tecla cada**: `Alt+1..6` vão literalmente para o workspace
+de mesmo número. É o único layout em que `Alt+<n>` quer dizer exatamente isso.
 
+| | tecla | |
+|---|---|---|
+| ws 1 | `Alt+1` | Ghostty, Hoppscotch, Toggl |
+| ws 2 | `Alt+2` | IntelliJ, VS Code, Android Studio |
+| ws 3 | `Alt+3` | Teams em cima, Slack embaixo |
+| ws 4 | `Alt+4` | Claude, Codex, WhatsApp, Spotify |
+| ws 5 | `Alt+5` | Notion |
+| ws 6 | `Alt+6` | Chrome, Safari, Firefox |
+
+> ⚠️ **Este arquivo nasceu de um bug, em 2026-09-11.** Até então uma tela só era
+> servida pelo `layout-2mon.toml`, na teoria de que um layout de pares "degrada"
+> para seis workspaces numa tela. Ele não degrada — ele **quebra**. As teclas de
+> lá são pares:
+>
+> ```toml
+> alt-1 = ['workspace 1', 'workspace 2']
+> ```
+>
+> e os dois comandos caem no **mesmo** monitor quando só existe um, então o
+> segundo sobrescreve o primeiro e você chega sempre no workspace **par**.
+> `Alt+1/2/3` iam para ws 2, 4 e 6; **ws 1, 3 e 5 não tinham tecla nenhuma**, e o
+> `Alt+4/5/6` não socorria porque também é a metade par. Não é canto: ws 1 é o
+> terminal e ws 3 é Teams + Slack, ou seja, os dois workspaces mais procurados
+> eram os dois inalcançáveis. Descoberto no café, com o Ghostty parado na ws 1 e
+> nenhuma tecla capaz de chegar nele.
+
+**Por que seis workspaces e não três.** Uma tela mostra um workspace, então o
+par não tem mais nada a dizer e dobrar cada desktop num workspace só parece o
+movimento óbvio. É o errado: juntaria de volta o terminal e a IDE, que o layout
+de duas telas separa justamente porque dividir um workspace deixa a IDE com um
+terço de tela. Seis workspaces com um slot de app cada mantêm **cada app no
+mesmo número nos três layouts** — e é isso que torna fechar a tampa de graça: o
+`apply-layout.py` re-homeia janelas abertas quando o layout muda, e com os
+números idênticos dos dois lados ele não acha nada para mover.
+
+**As regras de app não são copiadas, são herdadas.** O `layout-1mon.toml` declara
+
+```toml
+# ---8<--- APP_RULES = layout-2mon.toml
+```
+
+e o `apply-layout.py` vai buscar aquela seção no outro arquivo. Qual app mora em
+qual workspace é decisão sobre **apps**; quantos workspaces aparecem ao mesmo
+tempo é decisão sobre **telas**. Só a segunda muda quando a tampa fecha, então
+instalar um app novo continua sendo editar **um** arquivo — `layout-2mon.toml` —
+e nada mais. A herança é de **um nível só** e o corpo da seção que herda tem que
+ser comentário: as duas coisas são checadas, com erro na cara em vez de silêncio.
 
 **O terminal e o IDE ficam em colunas diferentes de propósito.** Dividindo um
 workspace, o IDE ficava com um terço da tela, e o reflexo era apertar `Alt+F`

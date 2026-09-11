@@ -15,3 +15,8 @@ macos/aerospace/aerospace.toml
 # A Mach-O binary has no business in a dotfiles repo, and it would be the wrong
 # architecture on half the machines that clone it. The source is tracked.
 macos/aerospace/display-watch
+
+# CPython drops these next to any module it imports. apply-layout.py is run as a
+# script, so it normally leaves none — one appears the moment anything imports
+# it, which is what a test or an interactive session does.
+__pycache__/
