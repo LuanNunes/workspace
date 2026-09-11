@@ -20,3 +20,9 @@ macos/aerospace/display-watch
 # script, so it normally leaves none — one appears the moment anything imports
 # it, which is what a test or an interactive session does.
 __pycache__/
+
+# JetBrains project files, written by the IDE the moment this repo is opened in
+# it. `workspace.xml` alone holds the window layout, the run configurations and
+# the list of files you had open — per-machine state, and it changes on almost
+# every keystroke. Nothing here is shared setup: the shared setup IS this repo.
+.idea/
