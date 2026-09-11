@@ -270,8 +270,10 @@ alt-f = 'fullscreen'
 alt-shift-f = 'layout floating tiling'              # pop this window out
 
 # --- window lifecycle -------------------------------------------------------
-# ctrl-w closes and alt-m minimises. macOS already has cmd+w, but cmd+w is
-# per-app and inconsistent — some apps close a tab with it.
+# ctrl-w closes. Minimising has no binding here at all — it is left to macOS's
+# own cmd+m, for the reason spelled out above alt-shift-m below. macOS already
+# has cmd+w too, but cmd+w is per-app and inconsistent — some apps close a tab
+# with it.
 #
 # Closing used to be alt-w, matching win+w in windows/glazewm/config.yaml (and
 # SUPER+W on Omarchy), and moved off it on 2026-09-10: Option is the accent key
@@ -288,8 +290,8 @@ alt-shift-f = 'layout floating tiling'              # pop this window out
 # If the shell half turns out to hurt more, ctrl-shift-w is unclaimed everywhere
 # and is a one-line change.
 #
-# alt-m still costs zsh `copy-prev-shell-word`, per that same note. `alt-.`
-# (insert-last-word), the one actually used daily, remains untouched.
+# Nothing else here is on alt: unbinding alt-m on 2026-09-11 handed zsh back
+# `copy-prev-shell-word`, and `alt-.` (insert-last-word) was never touched.
 #
 # --quit-if-last-window makes this behave the way it does on Windows and
 # Omarchy: the app goes away with its last window, instead of lingering with an
@@ -301,14 +303,26 @@ alt-shift-f = 'layout floating tiling'              # pop this window out
 # is still there when you want to close a window and keep the app.
 ctrl-w = 'close --quit-if-last-window'
 
-# Minimising takes the window OUT of the workspace tree: it lives in the Dock,
-# AeroSpace stops seeing it, and alt-backtick will not find it because that only
-# walks windows still in the tree. 0.21.3 has no unminimize command, which is
-# what used to make this a one-way door.
-alt-m = 'macos-native-minimize'
-
-# The way back, and the only one: a minimised window is invisible to AltTab too,
-# which lists windows and cannot offer one that lives in the Dock.
+# alt-m IS DELIBERATELY UNBOUND. It ran `macos-native-minimize` until
+# 2026-09-11, and minimising takes the window OUT of the workspace tree: it
+# lives in the Dock, AeroSpace stops seeing it, alt-backtick cannot find it
+# because that only walks windows still in the tree, and AltTab cannot offer it
+# because that lists windows. It was the one key in this config that produced a
+# state neither switcher can see, and the failure it produced does not look like
+# a minimised window — it looks like "cmd-tab stopped opening Chrome", because
+# the browser had exactly one window and it was in the Dock. That was diagnosed
+# three times before the key came off.
+#
+# Which does not mean the state goes away: cmd+m still minimises, and that is
+# fine — it is macOS's key, pressed on purpose, and the Dock icon it produces is
+# the affordance that brings the window back. What is gone is minimising by
+# accident, from a tiling key next to alt-n and alt-comma.
+#
+# The way back when an app has NO window at all — the state cmd+w leaves Finder
+# and Claude in, where both switchers have nothing to offer. A merely MINIMISED
+# window does not need this key: AltTab lists it (`showMinimizedWindows`
+# defaults to Show) and picking it restores it. What cannot help there is
+# cmd+tab, which is macOS's own and activates an APP, never a window.
 #
 # It is also the answer to "I picked the app on cmd-tab and nothing came up".
 # That switcher is macOS's own and activates an APP, never a window, so an app

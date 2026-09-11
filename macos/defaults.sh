@@ -162,6 +162,29 @@ if [[ -f /etc/pam.d/sudo_local.template && ! -f /etc/pam.d/sudo_local ]]; then
 fi
 
 # ===========================================================================
+#  AltTab
+# ===========================================================================
+# The one third-party domain in this file, and it is here because the wrong
+# value does not look like a preference — it looks like the switcher is broken.
+# `screensToShow`/`spacesToShow` at 1 mean "active screen" and "active space",
+# so Alt+Tab lists only what is on the monitor you are focused on: the browsers
+# on the primary screen never appear while you are working on the side one.
+# 0 is "all", which is the whole point of a global switcher.
+#
+# AltTab writes its preferences WHEN IT QUITS, so a write against a running
+# AltTab is erased the next time it exits. Quit it first, then write, then put
+# it back if it was up.
+alttab_was_running=false
+if pgrep -x AltTab >/dev/null; then
+  alttab_was_running=true
+  osascript -e 'tell application "AltTab" to quit' >/dev/null 2>&1 || killall AltTab || true
+  sleep 1
+fi
+defaults write com.lwouis.alt-tab-macos screensToShow -int 0
+defaults write com.lwouis.alt-tab-macos spacesToShow -int 0
+if [[ "${alttab_was_running}" == true ]]; then open -a AltTab; fi
+
+# ===========================================================================
 #  Apply
 # ===========================================================================
 for app in Finder Dock SystemUIServer; do

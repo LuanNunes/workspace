@@ -100,6 +100,22 @@ is why it changes when you switch apps.
 > `Alt` + `` ` `` is still the cycle within **this** workspace (section 6) —
 > AltTab lists everything, with no workspace filter, and the two serve different
 > moments.
+>
+> ⚠️ **That "lists everything" is a SETTING, and the wrong value looks exactly
+> like a broken switcher.** AltTab → Settings → Windows has *Show windows from:*
+> **All screens** / **All spaces**; set to *Active screen*, it lists only the
+> windows on the monitor you are focused on, and the browsers on the primary
+> screen simply never appear while you are typing on the side one. Diagnosed on
+> 2026-09-11 as "`Alt+Tab` stopped opening Chrome". `macos/defaults.sh` now
+> writes both back to *all*:
+>
+> ```sh
+> defaults read com.lwouis.alt-tab-macos | grep -E 'screensToShow|spacesToShow'
+> ```
+>
+> Both must read `0`. AltTab writes its own preferences **when it quits**, so a
+> `defaults write` against a running AltTab is erased the next time it exits —
+> quit it first, write, then relaunch.
 
 > **One thing tried and undone, so it is not repeated:** remapping `Cmd+Tab` in
 > **Karabiner** to AeroSpace's cycle. It works, but Karabiner intercepts at the
@@ -391,7 +407,7 @@ i3-like tiling, without touching SIP. Config in
 | `Alt+F` | fullscreen |
 | `Alt+Shift+F` | pop the window out (floating) |
 | `Ctrl+W` | close the window — and **quit the app** if it is the last one |
-| `Alt+M` | minimise to the Dock |
+| `Cmd+M` | minimise to the Dock — macOS's own key; `Alt+M` is unbound on purpose |
 | `Alt+Shift+M` | bring the focused app's windows back |
 | `Alt+-` / `Alt+=` | resize (150px per press) |
 | `Alt+Shift+;` | enter service mode (table below) |
@@ -815,14 +831,23 @@ and reopen it.
 > more than the other, `Ctrl+Shift+W` belongs to nobody and the swap is one line
 > in `aerospace.base.toml`.
 >
-> `Alt+M` still costs zsh's `copy-prev-shell-word`. `Alt+.` (insert last
-> argument), the one actually used day to day, is untouched.
+> Nothing else here is on `Alt`: unbinding `Alt+M` on 2026-09-11 handed zsh back
+> `copy-prev-shell-word`, and `Alt+.` (insert last argument), the one actually
+> used day to day, was never touched.
 
 > **Minimising takes the window out of the tree.** It goes to live in the Dock,
 > AeroSpace stops seeing it, and `Alt` + `` ` `` does not find it, because that
 > only walks what is still in the tree. `Alt+Shift+M` is the way back (block
 > below). If the intention was just to get the window out of the way,
 > `Alt+Shift+F` (pop it out as floating) is usually what you wanted.
+>
+> Which is why **`Alt+M` no longer minimises**. It did until 2026-09-11, and it
+> was the only key in this config that produced a state neither switcher can
+> see. The failure never looks like a minimised window either — it looks like
+> "`Cmd+Tab` stopped opening Chrome", because the browser had one window and it
+> was in the Dock. Minimising is now macOS's `Cmd+M` and nothing else: still
+> available, still the same state, but pressed on purpose rather than by a slip
+> on a tiling key.
 
 > ⚠️ **"I pressed `Cmd+Tab`, picked the app and nothing happened."** It is not
 > AeroSpace eating the key: macOS's `Cmd+Tab` activates an **app**, never a
@@ -859,9 +884,26 @@ and reopen it.
 > the visible one. `Alt+Shift+<n>` moves
 > it if it lands in the wrong place.
 
-> It applies to AltTab as well: it does not list a **minimised** window, because
-> what sits in the Dock is not a window it can offer. In that case `Alt+Shift+M`
-> is the only way back.
+> **AltTab, on the other hand, DOES list a minimised window** — with a small
+> status icon marking it — and picking it brings the window back. This file said
+> the opposite until 2026-09-11, and that wrong sentence cost a diagnosis: it is
+> a preference, `showMinimizedWindows`, whose default is *Show*
+> (`ShowHowPreference.show`, index `0`, read off the AltTab source rather than
+> guessed). Check it in AltTab → Settings → Windows, or:
+>
+> ```sh
+> defaults read com.lwouis.alt-tab-macos showMinimizedWindows   # absent = default = Show
+> ```
+>
+> So after a `Cmd+M`, the switcher that answers is `Alt+Tab`, not `Cmd+Tab`.
+> `Cmd+Tab` is macOS's own and is per-APP — no setting in AltTab changes what it
+> does, because AltTab is not involved. `Alt+Shift+M` remains the one-press
+> answer when the app has no window at all.
+>
+> One more thing about these keys: every `*ToShow`/`showHow` preference exists
+> **once per AltTab shortcut**. Shortcut 1 uses the bare names above, shortcut 2
+> uses `showMinimizedWindows2`, `screensToShow2`, and so on
+> (`Preferences.indexToName`). Setting the bare key changes `Alt+Tab` only.
 
 > **`Ctrl+W` quits the app along with the last window**
 > (`--quit-if-last-window`), as on Windows and in Omarchy — and contrary to the
