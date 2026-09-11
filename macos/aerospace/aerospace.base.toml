@@ -125,6 +125,62 @@ on-window-detected = [
     { if.app-id = 'eu.exelban.Stats',            run = 'layout floating' },
     { if.app-id = 'com.apple.UserNotificationCenter', run = 'layout floating' },
 
+    # -----------------------------------------------------------------------
+    # WHICH APP LIVES WHERE. The rules themselves are in the layout fragment,
+    # because their workspace NUMBERS change with the screen count. The
+    # reasoning is here, because none of it does.
+    #
+    # It used to be copied into each fragment: 51 of layout-2mon.toml's 84
+    # comment lines existed verbatim in layout-3mon.toml, one run of them 36
+    # lines long. That is the drift this base+fragment split exists to prevent,
+    # and by 2026-09-11 it had already produced a paragraph that was wrong in
+    # two files at once — see the note on the nudges below.
+    #
+    # TWO COLUMNS, whatever the numbers. Column A is the SIDE panel and takes
+    # what you glance at; column B is the PRIMARY display and takes what you
+    # type into. The terminal and the IDE are deliberately apart: sharing one
+    # workspace meant an IDE with a third of a screen and reaching for alt-f to
+    # compensate, which never held, because AeroSpace fullscreen is "the focused
+    # window covers the workspace", not a maximised state, and 0.21.3 has no
+    # setting to make it persist (checked every config key in the binary). One
+    # window per workspace is what the [gaps] block below already assumes.
+    #
+    # Each slot lists EVERY app you actually open for that job — a slot with one
+    # app in it is the same as having no rule the day you switch tools.
+    #
+    # TEAMS AND SLACK are the one pair meant to SHARE a workspace, stacked one
+    # above the other on the side column. Chat is the one thing that reads
+    # better tall than wide, and on the portrait Mancer (1440x2560) two windows
+    # there are a top and a bottom half. The trailing `move up` / `move down` in
+    # those two rules is ORDERING ONLY — `on-window-detected` cannot say "insert
+    # at position 0", so Teams is nudged one step up and Slack one step down,
+    # and `--boundaries-action stop` keeps a nudge with nowhere to go from
+    # wrapping the window in a nested container.
+    #
+    # WHAT THE NUDGES DO NOT DO IS CREATE THE VERTICAL SPLIT. Both fragments
+    # used to claim they landed in a vertical container because `auto` resolves
+    # vertical on a portrait screen. It does not: `auto` is resolved ONCE, when
+    # the workspace's root container is created, against whatever monitor it was
+    # on then (see default-root-container-orientation above). A workspace born
+    # on a landscape screen stays horizontal on the Mancer, both nudges become
+    # no-ops, and Teams and Slack sit side by side until alt-shift-j makes the
+    # split vertical. Diagnosed on 2026-09-11 with exactly that on screen.
+    #
+    # KEEP EACH RULE ON ONE LINE. apply-layout.py's re-home step reads these
+    # with a line-oriented regex; a rule split across lines is a rule it
+    # silently skips, and the app then keeps whatever workspace the old layout
+    # gave it.
+    #
+    # HOPPSCOTCH sits with the TERMINAL, not with a browser: it is read
+    # alongside the thing making the request. NOTION is the opposite case and
+    # takes column A of the browser desktop — reference material you read while
+    # doing something else, and on the portrait panel a document gets the full
+    # height instead of half a wide screen. Its bundle id really is `notion.id`:
+    # no reverse-DNS, no vendor prefix, checked three ways (mdls, the
+    # Info.plist, and `aerospace list-apps` against the running app) precisely
+    # because it looks like a placeholder somebody forgot to replace — and per
+    # the note above, a wrong id fails SILENTLY.
+    # -----------------------------------------------------------------------
 @@APP_RULES@@
 ]
 

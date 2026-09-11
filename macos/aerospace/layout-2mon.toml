@@ -63,17 +63,13 @@ alt-shift-5 = 'move-node-to-workspace 5 --focus-follows-window'
 alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
 
 # ---8<--- APP_RULES
-    # Apps land on the column that suits them, not all on one screen.
-    # Column B (2/4/6) is the primary display and takes what you type into;
-    # column A (1/3/5) is the side panel and takes what you glance at.
+    # Six workspaces in two columns. The reasoning behind every slot below is in
+    # aerospace.base.toml, above the APP_RULES placeholder — it is the same for
+    # all three layouts, and it lives in one file so it can only be wrong once.
+    # What is local here is the numbering:
     #
-    # The terminal and the IDE are deliberately on different columns. Sharing
-    # one workspace meant an IDE with a third of a screen and reaching for
-    # alt-f to compensate — which never held, because AeroSpace fullscreen is
-    # "the focused window covers the workspace", not a maximised state.
-    #
-    # Each slot lists EVERY app you actually open for that job — a slot with one
-    # app in it is the same as having no rule the day you switch tools.
+    #   column A, the side panel   1 3 5
+    #   column B, the primary      2 4 6
     { if.app-id = 'com.mitchellh.ghostty',       run = 'move-node-to-workspace 1 --focus-follows-window' },
     { if.app-id = 'com.toggl.focus.desktop',     run = 'move-node-to-workspace 1 --focus-follows-window' },
     { if.app-id = 'io.hoppscotch.desktop',       run = 'move-node-to-workspace 1 --focus-follows-window' },
@@ -82,50 +78,14 @@ alt-shift-6 = 'move-node-to-workspace 6 --focus-follows-window'
     { if.app-id = 'com.google.android.studio',   run = 'move-node-to-workspace 2 --focus-follows-window' },
     { if.app-id = 'com.jetbrains.intellij',      run = 'move-node-to-workspace 2 --focus-follows-window' },
 
-    # Teams and Slack own the side column outright, stacked one above the other:
-    # that column is the Mancer in portrait (1440x2560), where
-    # `default-root-container-orientation = 'auto'` resolves to a VERTICAL split,
-    # so two windows there are already a top and a bottom half. Chat is the one
-    # thing that reads better tall than wide, and it is what the panel is for.
-    #
-    # The second command in each rule is what makes it Teams ON TOP rather than
-    # whichever of the two you happened to open first. `on-window-detected` has
-    # no way to say "insert at position 0", so the window is placed and then
-    # nudged: Teams one step up, Slack one step down. Both are no-ops once the
-    # window is already at that end, which is why `--boundaries-action stop`
-    # matters — the default there is `create-implicit-container`, and that would
-    # wrap the window in a nested container instead of leaving it alone.
-    #
-    # KEEP EACH RULE ON ONE LINE. apply-layout.py's re-home step reads these with
-    # a line-oriented regex; a rule split across lines is a rule it silently
-    # skips, and the app then keeps whatever workspace the old layout gave it.
-    #
-    # On the road the same workspace is the MacBook's own panel, which is
-    # landscape — 'auto' splits horizontally there and the two land side by side,
-    # with the up/down nudges doing nothing. Fine: the pairing is the point, the
-    # orientation is the monitor's business.
     { if.app-id = 'com.microsoft.teams2', run = ['move-node-to-workspace 3 --focus-follows-window', 'move --boundaries workspace --boundaries-action stop up'] },
     { if.app-id = 'com.tinyspeck.slackmacgap', run = ['move-node-to-workspace 3 --focus-follows-window', 'move --boundaries workspace --boundaries-action stop down'] },
 
-    # Everything else on the chat desktop goes to the wide primary screen.
     { if.app-id = 'com.anthropic.claudefordesktop', run = 'move-node-to-workspace 4 --focus-follows-window' },
     { if.app-id = 'com.openai.codex',            run = 'move-node-to-workspace 4 --focus-follows-window' },
     { if.app-id = 'net.whatsapp.WhatsApp',       run = 'move-node-to-workspace 4 --focus-follows-window' },
     { if.app-id = 'com.spotify.client',          run = 'move-node-to-workspace 4 --focus-follows-window' },
 
-    # Column A of the BROWSER desktop — the one slot that was empty in both
-    # layouts. Notion is reference material: you read it while doing something
-    # else, which is exactly what column A is for, and on the Mancer in portrait
-    # a document gets the full 1440x2560 instead of half a wide screen.
-    #
-    # NOT on ws 1 next to the terminal, which is where Hoppscotch ended up for
-    # the opposite reason: Hoppscotch is read alongside the thing making the
-    # request, and Notion is not tied to anything you are running.
-    #
-    # The bundle id really is `notion.id` — no reverse-DNS, no vendor prefix.
-    # Checked three ways (mdls, the Info.plist, and `aerospace list-apps` against
-    # the running app) precisely because it looks like a placeholder somebody
-    # forgot to replace, and per the note above a wrong id fails SILENTLY.
     { if.app-id = 'notion.id',                   run = 'move-node-to-workspace 5 --focus-follows-window' },
 
     { if.app-id = 'com.google.Chrome',           run = 'move-node-to-workspace 6 --focus-follows-window' },
