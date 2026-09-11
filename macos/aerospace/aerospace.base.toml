@@ -72,6 +72,12 @@ after-startup-command = [
 # ===========================================================================
 # 'auto' splits along the longer edge — horizontal on a wide display, vertical
 # on the built-in one. Beats hardcoding a direction on a laptop + monitor setup.
+#
+# It is resolved ONCE, when a workspace's root container is created, and never
+# again: move that workspace to a screen of a different shape and it keeps the
+# orientation it was born with, and `flatten-workspace-tree` does not reset it.
+# So this setting decides the FIRST split of a workspace, not its split today —
+# see the alt-shift-j/k note below for the key that fixes one up by hand.
 default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
@@ -200,12 +206,39 @@ alt-l = 'focus --boundaries all-monitors-outer-frame right'
 # Same boundaries on `move`, so a window travels exactly the path the focus
 # does. On h/l, without the flag `move` stops at the workspace edge and
 # alt-shift-l against the last window builds an implicit container instead of
-# handing it to the monitor next door. On j/k, `--boundaries-action stop` is
-# what keeps that implicit container from being built at the top and bottom of
-# the workspace now that the window has nowhere further to go.
+# handing it to the monitor next door.
+#
+# ON J/K THE DEFAULT BOUNDARIES-ACTION IS THE FEATURE, NOT A BUG, and it was
+# briefly deleted on 2026-09-11 by adding `--boundaries-action stop` here. In a
+# workspace that is split HORIZONTALLY — two windows side by side — every window
+# is already at the bottom of its container, so `down` is always a boundary hit:
+# with `stop` the key becomes a silent no-op (exit 0, nothing moves), and with
+# the default `create-implicit-container` the split flips to vertical and the
+# window lands UNDER its neighbour. That second behaviour is the only way to say
+# "put this one below that one" from the keyboard, and `stop` removed it.
+#
+# Which matters more than a portrait screen suggests, because
+# `default-root-container-orientation = 'auto'` is resolved ONCE, when the
+# workspace's root container is created, against the monitor it was on then —
+# it is not re-evaluated when the workspace moves to another screen, and
+# `flatten-workspace-tree` does not reset it either (both checked on
+# 2026-09-11). So a trip with the lid open leaves ws 1/3/5 as h_tiles, and back
+# at the desk they stay side by side on the portrait Mancer until something
+# makes the split vertical. This key is that something; alt-slash, which toggles
+# the container's own orientation, is the other.
+#
+# The cost is the one `stop` was reaching for: against the end of an ALREADY
+# vertical stack of three or more, `move down` nests the window in a new
+# container instead of doing nothing. Service mode `r` (flatten-workspace-tree)
+# undoes that in one keystroke, and with the two windows per workspace this
+# setup actually runs, AeroSpace re-orients the root rather than nesting.
+#
+# `--boundaries workspace` stays: that is the half of the 2026-09-10 fix that
+# kept alt-shift-j from throwing a window down onto the laptop panel, and it is
+# independent of the action taken at the boundary.
 alt-shift-h = 'move --boundaries all-monitors-outer-frame left'
-alt-shift-j = 'move --boundaries workspace --boundaries-action stop down'
-alt-shift-k = 'move --boundaries workspace --boundaries-action stop up'
+alt-shift-j = 'move --boundaries workspace down'
+alt-shift-k = 'move --boundaries workspace up'
 alt-shift-l = 'move --boundaries all-monitors-outer-frame right'
 
 # Alternate between the last two WINDOWS. `alt-tab` below does the same for
